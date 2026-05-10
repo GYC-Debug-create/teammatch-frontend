@@ -1,0 +1,96 @@
+<view class="request-page" wx:if="{{isAuthenticated}}">
+  <!-- 固定头部区 -->
+  <view class="page-sticky">
+    <view class="hero">
+      <view class="hero-copy">
+        <text class="eyebrow">TeamMatch · T-033</text>
+        <text class="page-title">组队请求</text>
+        <text class="page-subtitle">集中处理收到与发出的组队申请</text>
+      </view>
+      <view class="hero-actions">
+        <button class="back-hub-btn" bindtap="goFunctionHub">功能选择</button>
+        <view class="hero-icon">
+          <image class="hero-icon-img" src="/assets/CodeBuddyAssets/1_18/2.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+    </view>
+
+    <view class="tabs" aria-role="tablist">
+      <view class="tab {{activeTab === 'received' ? 'tab--active' : ''}}" aria-role="tab" data-tab="received" bindtap="switchTab">
+        <text>我收到的</text>
+      </view>
+      <view class="tab {{activeTab === 'sent' ? 'tab--active' : ''}}" aria-role="tab" data-tab="sent" bindtap="switchTab">
+        <text>我发出的</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载态：第二张原型 -->
+  <view class="state-wrap" wx:if="{{loading}}">
+    <view class="loading-state">
+      <view class="loading-icon"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+  </view>
+
+  <!-- 错误态 -->
+  <view class="state-wrap" wx:elif="{{error}}">
+    <view class="error-state">
+      <text class="error-text">{{error}}</text>
+      <button class="retry-btn" bindtap="loadRequests">重试</button>
+    </view>
+  </view>
+
+  <!-- 空状态：第三张原型 -->
+  <view class="state-wrap" wx:elif="{{requests.length === 0}}">
+    <view class="empty-state">
+      <view class="empty-box-icon">
+        <view class="empty-box"></view>
+        <view class="empty-lid"></view>
+      </view>
+      <text class="empty-text">{{activeTab === 'received' ? '暂无收到的请求' : '暂无发出的请求'}}</text>
+    </view>
+  </view>
+
+  <!-- 正常列表：第一张原型 -->
+  <scroll-view class="request-scroll" scroll-y enhanced show-scrollbar="{{false}}" wx:else>
+    <view
+      class="request-card"
+      wx:for="{{requests}}"
+      wx:key="requestId"
+    >
+      <!-- 卡片主内容行 -->
+      <view class="card-main-row">
+        <!-- 头像 -->
+        <view class="avatar">{{item.avatarText}}</view>
+
+        <!-- 信息区 -->
+        <view class="card-info">
+          <view class="card-title-row">
+            <text class="project-name">{{item.projectName}}</text>
+            <text class="request-type-tag {{item.requestType}}">{{item.requestTypeLabel}}</text>
+          </view>
+          <text class="counterpart-name">{{item.counterpartLabel}}：{{item.counterpart.nickname}}</text>
+          <text class="counterpart-major">{{item.counterpart.major}}</text>
+        </view>
+
+        <!-- 状态标签 -->
+        <view class="status-pill status-{{item.class}}">{{item.label}}</view>
+      </view>
+
+      <!-- 操作区 / 提示区 -->
+      <view class="card-actions" wx:if="{{item.status === 'pending' && item.isReceived && item.requestType === 'invite'}}">
+        <button class="action-btn btn-reject" data-action="reject" data-request-id="{{item.requestId}}" bindtap="handleAction">拒绝</button>
+        <button class="action-btn btn-accept" data-action="accept" data-request-id="{{item.requestId}}" bindtap="handleAction">接受</button>
+      </view>
+
+      <view class="card-actions" wx:elif="{{item.status === 'pending' && !item.isReceived && item.requestType === 'apply'}}">
+        <button class="action-btn btn-cancel-rect" data-action="cancel" data-request-id="{{item.requestId}}" bindtap="handleAction">取消</button>
+      </view>
+
+      <view class="result-hint" wx:else>
+        <text>{{item.hint}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

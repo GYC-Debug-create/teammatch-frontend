@@ -1,11 +1,15 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/function-hub/function-hub",
+    "pages/team-requests/team-requests",
+    "pages/project-members/project-members",
+    "pages/profile/profile",
     "pages/logs/logs"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "Weixin",
+    "navigationBarTitleText": "TeamMatch",
     "navigationBarBackgroundColor": "#ffffff"
   },
   "style": "v2",

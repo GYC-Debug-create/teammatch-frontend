@@ -1,9 +1,11 @@
 // index.js
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+const FUNCTION_HUB_PAGE_URL = '/pages/function-hub/function-hub'
+const TOKEN_KEY = 'token'
 
 Page({
   data: {
-    motto: 'Hello World',
+    motto: '登录后进入功能选择页',
     userInfo: {
       avatarUrl: defaultAvatarUrl,
       nickName: '',
@@ -12,38 +14,74 @@ Page({
     canIUseGetUserProfile: wx.canIUse('getUserProfile'),
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
   },
+
+  onShow() {
+    if (wx.getStorageSync(TOKEN_KEY)) {
+      this.goFunctionHub()
+    }
+  },
+
   bindViewTap() {
     wx.navigateTo({
       url: '../logs/logs'
     })
   },
+
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail
-    const { nickName } = this.data.userInfo
-    this.setData({
-      "userInfo.avatarUrl": avatarUrl,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
-    })
+    const nextUserInfo = Object.assign({}, this.data.userInfo, { avatarUrl })
+    this.updateProfileAndLogin(nextUserInfo)
   },
+
   onInputChange(e) {
     const nickName = e.detail.value
-    const { avatarUrl } = this.data.userInfo
-    this.setData({
-      "userInfo.nickName": nickName,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
-    })
+    const nextUserInfo = Object.assign({}, this.data.userInfo, { nickName })
+    this.updateProfileAndLogin(nextUserInfo)
   },
-  getUserProfile(e) {
-    // 推荐使用wx.getUserProfile获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认，开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
+
+  getUserProfile() {
     wx.getUserProfile({
-      desc: '展示用户信息', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
+      desc: '用于登录后进入功能选择入口',
       success: (res) => {
-        console.log(res)
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        })
+        console.log('[Index] getUserProfile response', res)
+        this.completeLogin(res.userInfo)
       }
     })
   },
+
+  updateProfileAndLogin(userInfo) {
+    const hasUserInfo = Boolean(userInfo.nickName && userInfo.avatarUrl && userInfo.avatarUrl !== defaultAvatarUrl)
+    this.setData({
+      userInfo,
+      hasUserInfo
+    }, () => {
+      if (hasUserInfo) {
+        this.completeLogin(userInfo)
+      }
+    })
+  },
+
+  completeLogin(userInfo) {
+    const mockToken = `mock-token-${Date.now()}`
+    wx.setStorageSync(TOKEN_KEY, mockToken)
+    wx.setStorageSync('userInfo', userInfo)
+    console.log('[Index] login success', { token: mockToken, userInfo })
+
+    this.setData({
+      userInfo,
+      hasUserInfo: true
+    }, () => {
+      wx.showToast({ title: '登录成功', icon: 'success' })
+      setTimeout(() => {
+        this.goFunctionHub()
+      }, 300)
+    })
+  },
+
+  goFunctionHub() {
+    wx.redirectTo({
+      url: FUNCTION_HUB_PAGE_URL
+    })
+  }
 })
+

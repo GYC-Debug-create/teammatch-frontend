@@ -1,0 +1,11 @@
+<view class="profile-page">
+  <view class="profile-card">
+    <view class="avatar-placeholder">{{avatarText}}</view>
+    <text class="title">成员资料</text>
+    <text class="desc">这是用于 T-032 卡片点击跳转验收的占位 Profile 页面。</text>
+    <view class="info-row">
+      <text class="label">用户 ID</text>
+      <text class="value">{{userId}}</text>
+    </view>
+  </view>
+</view>

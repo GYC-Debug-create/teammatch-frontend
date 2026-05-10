@@ -60,3 +60,21 @@ page {
 .nickname-input {
   flex: 1;
 }
+
+.team-entry-btn {
+  width: 520rpx;
+  height: 88rpx;
+  margin-top: 40rpx;
+  border-radius: 44rpx;
+  background: #4289f3;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 88rpx;
+  box-shadow: 0 16rpx 32rpx rgba(66, 137, 243, 0.24);
+}
+
+.team-entry-btn::after {
+  border: 0;
+}
+
