@@ -1,0 +1,66 @@
+<!--pages/projects/detail/detail.wxml-->
+<view class="container">
+  <!-- 加载状态 -->
+  <view class="loading-box" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <block wx:if="{{project && !loading}}">
+    <!-- 项目头部 -->
+    <view class="header">
+      <view class="header-top">
+        <text class="title">{{project.title}}</text>
+        <text class="status-tag {{project.status}}">{{project.statusText}}</text>
+      </view>
+      <view class="header-meta">
+        <text class="meta-item">📂 {{project.boardName}}</text>
+        <text class="meta-item">👥 {{project.currentMembers}}/{{project.maxMembers}}人</text>
+        <text class="meta-item">📅 {{project.deadline}} 截止</text>
+      </view>
+    </view>
+
+    <!-- 项目描述 -->
+    <view class="section">
+      <view class="section-title">项目描述</view>
+      <view class="section-content">{{project.description}}</view>
+    </view>
+
+    <!-- 技能需求 -->
+    <view class="section">
+      <view class="section-title">技能需求</view>
+      <view class="skill-tags">
+        <text class="skill-tag" wx:for="{{project.skills}}" wx:key="*this" wx:for-item="skill">{{skill}}</text>
+      </view>
+    </view>
+
+    <!-- 现有成员 -->
+    <view class="section">
+      <view class="section-title">现有成员 ({{project.currentMembers}}/{{project.maxMembers}})</view>
+      <view class="member-list">
+        <view class="member-item" wx:for="{{project.members}}" wx:key="id" bindtap="viewMember" data-id="{{item.id}}">
+          <image class="member-avatar" src="{{item.avatar}}" mode="aspectFill" />
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-role {{item.role === '队长' ? 'leader' : ''}}">{{item.role}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发布者信息 -->
+    <view class="section">
+      <view class="section-title">发布者</view>
+      <view class="creator-info">
+        <image class="creator-avatar" src="{{project.creatorAvatar}}" mode="aspectFill" />
+        <text class="creator-name">{{project.creatorName}}</text>
+        <text class="creator-date">发布于 {{project.createdAt}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{project && project.status === 'recruiting'}}">
+    <button class="apply-btn" type="primary" bindtap="applyJoin">申请加入</button>
+  </view>
+  <view class="bottom-bar closed" wx:elif="{{project && project.status !== 'recruiting'}}">
+    <button class="apply-btn" disabled>已无法申请</button>
+  </view>
+</view>

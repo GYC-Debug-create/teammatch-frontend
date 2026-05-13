@@ -1,4 +1,4 @@
-// index.js
+// index.js   
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 const FUNCTION_HUB_PAGE_URL = '/pages/function-hub/function-hub'
 const TOKEN_KEY = 'token'
@@ -10,7 +10,7 @@ Page({
       avatarUrl: defaultAvatarUrl,
       nickName: '',
     },
-    hasUserInfo: false,
+    hasUserInfo: false, 
     canIUseGetUserProfile: wx.canIUse('getUserProfile'),
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
   },
@@ -41,14 +41,14 @@ Page({
 
   getUserProfile() {
     wx.getUserProfile({
-      desc: '用于登录后进入功能选择入口',
+      desc: '用于展示用户信息并登录', // 合并你和M2的文案
       success: (res) => {
         console.log('[Index] getUserProfile response', res)
         this.completeLogin(res.userInfo)
       }
     })
   },
-
+  
   updateProfileAndLogin(userInfo) {
     const hasUserInfo = Boolean(userInfo.nickName && userInfo.avatarUrl && userInfo.avatarUrl !== defaultAvatarUrl)
     this.setData({
@@ -79,7 +79,7 @@ Page({
   },
 
   goFunctionHub() {
-    wx.redirectTo({
+    wx.switchTab({
       url: FUNCTION_HUB_PAGE_URL
     })
   }

@@ -1,0 +1,27 @@
+<!--pages/profile/edit.wxml-->
+<view class="container">
+  <view class="form">
+    <view class="form-item">
+      <text class="label">昵称</text>
+      <input class="input" placeholder="请输入昵称" value="{{form.nickname}}" bindinput="onFieldChange" data-field="nickname"/>
+    </view>
+    <view class="form-item">
+      <text class="label">学校</text>
+      <input class="input" placeholder="请输入学校" value="{{form.school}}" bindinput="onFieldChange" data-field="school"/>
+    </view>
+    <view class="form-item">
+      <text class="label">专业</text>
+      <input class="input" placeholder="请输入专业" value="{{form.major}}" bindinput="onFieldChange" data-field="major"/>
+    </view>
+    <view class="form-item">
+      <text class="label">年级</text>
+      <input class="input" placeholder="请输入年级" value="{{form.grade}}" bindinput="onFieldChange" data-field="grade"/>
+    </view>
+    <view class="form-item">
+      <text class="label">个人简介</text>
+      <textarea class="textarea" placeholder="介绍一下自己，寻找志同道合的队友..." value="{{form.bio}}" bindinput="onFieldChange" data-field="bio"/>
+    </view>
+    <button class="save-btn" type="primary" bindtap="saveProfile" loading="{{isLoading}}">保存档案</button>
+    <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+  </view>
+</view>

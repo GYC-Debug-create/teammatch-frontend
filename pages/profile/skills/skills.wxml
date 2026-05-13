@@ -1,0 +1,47 @@
+<!--pages/profile/skills/skills.wxml-->
+<view class="page-bg">
+  <view class="skills-page">
+    <!-- 头部 Hero 区域 -->
+    <view class="hero">
+      <text class="eyebrow">TeamMatch · 个人档案</text>
+      <text class="title">我的技能标签</text>
+      <text class="desc">选择你擅长的技能，让队友更快找到你。已选 {{selectedIds.length}} 项。</text>
+    </view>
+
+    <!-- 已选区域 -->
+    <view class="selected-card" wx:if="{{selectedIds.length > 0}}">
+      <text class="card-label">已选择的技能</text>
+      <view class="selected-tags">
+        <view class="selected-tag" wx:for="{{selectedIds}}" wx:key="*this" wx:for-item="skillId">
+          <text class="tag-name">{{allTags[skillId - 1].name}}</text>
+          <text class="tag-remove" data-id="{{skillId}}" bindtap="toggleSkill">✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 按分类展示可选标签 -->
+    <view class="category-card" wx:for="{{['language','framework','tool','soft_skill']}}" wx:key="*this" wx:for-item="category">
+      <text class="card-label">{{category === 'language' ? '编程语言' : category === 'framework' ? '框架/库' : category === 'tool' ? '工具/数据库' : '软技能'}}</text>
+      <view class="tag-grid">
+        <view class="skill-tag {{selectedIds.indexOf(item.id) > -1 ? 'active' : ''}}"
+              wx:for="{{allTags}}"
+              wx:key="id"
+              wx:for-item="item"
+              wx:if="{{item.category === category}}"
+              data-id="{{item.id}}"
+              bindtap="toggleSkill">
+          <text>{{item.name}}</text>
+          <text class="tag-check" wx:if="{{selectedIds.indexOf(item.id) > -1}}">✓</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 错误信息 -->
+    <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+
+    <!-- 保存按钮 -->
+    <button class="submit-btn" type="primary" bindtap="saveSkills" loading="{{saving}}" disabled="{{saving}}">
+      保存技能标签
+    </button>
+  </view>
+</view>

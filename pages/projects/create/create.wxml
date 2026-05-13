@@ -1,0 +1,71 @@
+<!--pages/projects/create/create.wxml-->
+<view class="page-bg">
+  <view class="create-page">
+    <!-- 头部 -->
+    <view class="hero">
+      <text class="eyebrow">TeamMatch · 项目管理</text>
+      <text class="title">发布新项目</text>
+      <text class="desc">填写以下信息，找到最合适的队友</text>
+    </view>
+
+    <!-- 表单卡片 -->
+    <view class="form-card">
+      <!-- 项目标题 -->
+      <view class="form-item">
+        <text class="form-label">项目标题</text>
+        <input class="form-input" placeholder="请输入项目标题" value="{{form.title}}" bindinput="onInputChange" data-field="title"/>
+      </view>
+
+      <!-- 项目描述 -->
+      <view class="form-item">
+        <text class="form-label">项目描述</text>
+        <textarea class="form-textarea" placeholder="详细描述你的项目目标、技术栈、预期成果等" value="{{form.description}}" bindinput="onInputChange" data-field="description" maxlength="500"/>
+        <text class="textarea-counter">{{form.description.length || 0}}/500</text>
+      </view>
+
+      <!-- 所属板块 -->
+      <view class="form-item">
+        <text class="form-label">所属板块</text>
+        <picker mode="selector" range="{{boardList}}" range-key="name" bindchange="onBoardChange">
+          <view class="picker-view">
+            {{form.boardId ? boardList[form.boardId-1].name : '请选择板块'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 项目人数 -->
+      <view class="form-item">
+        <text class="form-label">招募人数（含队长）</text>
+        <slider min="2" max="10" value="{{form.maxMembers}}" bindchange="onMemberChange" show-value block-size="18" activeColor="#2f54eb" backgroundColor="#e7edfb"/>
+      </view>
+
+      <!-- 技能需求 -->
+      <view class="form-item">
+        <text class="form-label">技能需求</text>
+        <view class="skill-options">
+          <view class="skill-tag {{form.skills.indexOf(item.id) > -1 ? 'active' : ''}}" wx:for="{{skillTagList}}" wx:key="id" data-id="{{item.id}}" bindtap="onSkillToggle">
+            {{item.name}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 截止日期 -->
+      <view class="form-item">
+        <text class="form-label">招募截止日期</text>
+        <picker mode="date" start="2026-05-10" end="2027-12-31" value="{{form.deadline}}" bindchange="onDateChange">
+          <view class="picker-view">
+            {{form.deadline || '请选择日期'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 错误信息 -->
+      <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+
+      <!-- 提交按钮 -->
+      <button class="submit-btn" type="primary" bindtap="submitForm" loading="{{submitting}}" disabled="{{submitting}}">
+        发布项目
+      </button>
+    </view>
+  </view>
+</view>

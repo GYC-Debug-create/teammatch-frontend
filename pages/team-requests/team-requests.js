@@ -73,7 +73,7 @@ Page({
   },
 
   goFunctionHub() {
-    wx.redirectTo({
+    wx.switchTab({
       url: FUNCTION_HUB_PAGE_URL
     })
   },
@@ -190,7 +190,7 @@ Page({
 
     wx.showToast({ title: '请先登录后使用', icon: 'none' })
     setTimeout(() => {
-      wx.redirectTo({ url: LOGIN_PAGE_URL })
+      wx.switchTab({ url: LOGIN_PAGE_URL })
     }, 300)
   }
 })

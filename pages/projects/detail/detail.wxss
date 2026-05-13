@@ -1,0 +1,192 @@
+/* pages/projects/detail/detail.wxss */
+.container {
+  background: #f5f5f5;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.loading-box {
+  display: flex;
+  justify-content: center;
+  padding-top: 100px;
+  color: #999;
+}
+
+/* 头部 */
+.header {
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 10px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.status-tag {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.status-tag.recruiting {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-tag.in_progress {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-tag.ended {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.header-meta {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  font-size: 13px;
+  color: #888;
+  margin-right: 16px;
+  margin-bottom: 4px;
+}
+
+/* 通用区块 */
+.section {
+  background: #fff;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.section-content {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.8;
+}
+
+/* 技能标签 */
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.skill-tag {
+  font-size: 12px;
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 6px;
+}
+
+/* 成员列表 */
+.member-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.member-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 24px;
+  margin-bottom: 12px;
+}
+
+.member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #eee;
+  margin-bottom: 6px;
+}
+
+.member-name {
+  font-size: 13px;
+  color: #333;
+}
+
+.member-role {
+  font-size: 11px;
+  color: #888;
+}
+
+.member-role.leader {
+  color: #ff9800;
+}
+
+/* 发布者 */
+.creator-info {
+  display: flex;
+  align-items: center;
+}
+
+.creator-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eee;
+  margin-right: 10px;
+}
+
+.creator-name {
+  font-size: 14px;
+  color: #333;
+  margin-right: 12px;
+}
+
+.creator-date {
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 12px 20px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+
+.apply-btn {
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  background: #1aad19;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.apply-btn[disabled] {
+  background: #ccc;
+  color: #999;
+}
