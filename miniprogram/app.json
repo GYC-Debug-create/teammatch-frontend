@@ -1,0 +1,49 @@
+{
+  "pages": [
+    
+    "pages/function-hub/function-hub",
+    "pages/team-requests/team-requests",
+    "pages/profile/profile",
+    "pages/login/login",
+    "pages/index/index",
+    "pages/exit-project/exit-project",
+    "pages/exit-vote-detail/exit-vote-detail",
+    "pages/projects/detail/detail",
+    "pages/profile/skills/skills",
+    "pages/projects/list/list",
+    "pages/email-verify/email-verify",
+    "pages/projects/create/create",
+    "pages/project-members/project-members",
+    "pages/evaluation/evaluation",
+    "pages/credit-history/credit-history",
+    "pages/report/report",
+    "pages/appeal/appeal",
+    "pages/my-reports/my-reports",
+    "pages/my-appeals/my-appeals",
+    "pages/logs/logs",
+    "pages/profile/edit/edit"
+    
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "TeamMatch",
+    "navigationBarBackgroundColor": "#ffffff"
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/function-hub/function-hub",
+        "text": "功能中心"
+      }
+    ],
+    "color": "#999",
+    "selectedColor": "#1aad19"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

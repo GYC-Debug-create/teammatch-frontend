@@ -2,6 +2,10 @@
 
 TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 
+> **仓库结构**
+> - `miniprogram/` — 微信小程序（用户端）
+> - `admin-web/` — Vue3 + ElementPlus Web 管理后台（待搭建）
+
 > **⚠️ 当前状态（W10）**
 > 以下页面均为**静态 Mock 页面**，仅完成了 UI 布局和 Mock 数据的展示逻辑。
 > **尚未实现的功能**：页面间跳转、真实接口联调、表单校验的完整覆盖、错误处理、页面美化等。
@@ -19,30 +23,36 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 ## 项目结构
 
 \`\`\`
-├── pages/
-│   ├── login/                    # 登录页
-│   ├── index/                    # 首页-微信登录入口
-│   ├── function-hub/             # 功能选择界面
-│   ├── team-requests/            # 组队请求管理
-│   ├── project-members/          # 项目成员列表
-│   ├── profile/
-│   │   ├── edit/                 # 个人档案编辑页
-│   │   ├── skills/               # 技能标签选择页
-│   │   └── profile/              # 跳转验收的占位 Profile 页面
-│   ├── email-verify/             # 邮箱认证页
-│   ├── projects/
-│   │   ├── list/                 # 项目列表页
-│   │   ├── detail/               # 项目详情页
-│   │   └── create/               # 发布项目表单
-│   └── logs/                     # 占位页
-├── utils/
-│   ├── util.js                   # 通用工具
-│   └── team-service.js           # 组队相关服务
-├── docs/
-│   └── alignment-T003-token.md   # Token 存储规则对齐记录
-├── app.js / app.json / app.wxss  # 全局配置
+├── miniprogram/                 # 微信小程序用户端
+│   ├── pages/
+│   │   ├── login/               # 登录页
+│   │   ├── index/               # 首页-微信登录入口
+│   │   ├── function-hub/        # 功能选择界面
+│   │   ├── team-requests/       # 组队请求管理
+│   │   ├── project-members/     # 项目成员列表
+│   │   ├── exit-project/        # 成员主动退出
+│   │   ├── exit-vote-detail/    # 退出投票详情
+│   │   ├── evaluation/          # 互评页
+│   │   ├── credit-history/      # 信誉分变化记录
+│   │   ├── report/              # 举报入口
+│   │   ├── appeal/              # 申诉入口
+│   │   ├── my-reports/          # 我的举报列表
+│   │   ├── my-appeals/          # 我的申诉列表
+│   │   ├── profile/             # 个人档案
+│   │   ├── email-verify/        # 邮箱认证
+│   │   ├── projects/            # 项目相关
+│   │   └── logs/                # 占位页
+│   ├── utils/
+│   │   ├── util.js              # 通用工具
+│   │   └── team-service.js      # 组队/互评/治理服务（18个方法）
+│   ├── docs/
+│   │   └── alignment-T003-token.md
+│   ├── app.js / app.json / app.wxss
+│   └── project.config.json
+├── admin-web/                   # Web 管理后台（待搭建）
+│   └── .gitkeep
 ├── .gitignore
-└── readme.md
+└── README.md
 \`\`\`
 
 
@@ -62,10 +72,56 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 
 ---
 
+## M2 已完成页面清单（Mock 模式，后端未就绪）
+
+| 任务ID | 页面名称 | 文件路径 | 说明 |
+|:---|:---|:---|:---|
+| T-031 | 组队请求页 | `pages/team-requests/team-requests` | 收到/发出请求列表，状态标签，操作按钮 |
+| T-032 | 项目成员列表 | `pages/project-members/project-members` | 角色标签、ACTIVE/EXITED、Trust 分、退出原因 |
+| T-033 | 请求列表联调准备 | `pages/team-requests/team-requests` | Service 层封装，加载/错误/空状态 |
+| T-034 | 接受/拒绝/取消联调 | `pages/team-requests/team-requests` | 防重复点击，操作 loading 状态 |
+| T-035 | 成员列表联调 | `pages/project-members/project-members` | Service 层接入，加载/错误/空状态 |
+| T-036 | 状态字段对齐 | — | 与 M4 对齐记录文档 |
+| T-037 | 成员主动退出页 | `pages/exit-project/exit-project` | 退出原因、确认弹窗、扣分提示 |
+| T-038 | 退出投票详情页 | `pages/exit-vote-detail/exit-vote-detail` | 倒计时、票数统计、投票按钮 ⚠️ timeout 问题待修复 |
+| T-039 | 退出投票联调 | `pages/exit-vote-detail/exit-vote-detail` | Service 层真实接口预留 |
+| T-040 | 互评页 | `pages/evaluation/evaluation` | 四维评分、标签选择、技能点赞 |
+| T-041 | 互评资格/提交联调 | `pages/evaluation/evaluation` | 资格校验、错误码处理 |
+| T-042 | 信誉分变化记录页 | `pages/credit-history/credit-history` | 当前分数总览、变化流水列表 |
+| T-043 | 举报入口页 | `pages/report/report` | 类型选择、对象搜索、原因标签 |
+| T-044 | 申诉入口页 | `pages/appeal/appeal` | 评价/处罚申诉、对象选择 |
+| T-045 | 举报申诉联调 | `pages/report/report`、`pages/appeal/appeal` | Service 层完善，My List 接口预留 |
+
+### M2 Service 层封装（`utils/team-service.js`）
+
+所有接口使用 `USE_MOCK = true` 切换 Mock/真实模式：
+
+| 方法 | 用途 |
+|------|------|
+| `getRequests(type)` | 获取组队请求列表 |
+| `acceptRequest(id)` | 接受请求 |
+| `rejectRequest(id)` | 拒绝请求 |
+| `cancelRequest(id)` | 取消请求 |
+| `getMembers(projectId)` | 获取项目成员 |
+| `selfExit(projectId, reason)` | 主动退出 |
+| `getExitVoteDetail(voteId)` | 获取退出投票详情 |
+| `submitExitVote(voteId, choice)` | 提交投票 |
+| `closeExitVote(voteId)` | 关闭投票 |
+| `checkEvaluationEligibility(projectId, targetUserId)` | 检查互评资格 |
+| `submitEvaluation(params)` | 提交互评 |
+| `getCurrentCreditScore()` | 获取当前信誉分 |
+| `getCreditHistory()` | 获取信誉变化记录 |
+| `submitReport(params)` | 提交举报 |
+| `getMyReports()` | 获取我的举报列表 |
+| `getAppealTargets(type)` | 获取可申诉对象 |
+| `submitAppeal(params)` | 提交申诉 |
+| `getMyAppeals()` | 获取我的申诉列表 |
+
+---
+
 ## 待完成内容
 
-以下内容将在 W10-W13 逐步实现：
-
+### M1 待完成
 - [ ] **页面间跳转**：如首页 → 档案页、项目列表 → 项目详情 → 申请加入等
 - [ ] **真实接口联调**（T-005/T-007/T-009/T-011/T-013/T-015/T-017）
 - [ ] **请求封装**：创建 `utils/request.js`，统一处理 Token 携带、401 拦截
@@ -73,6 +129,11 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 - [ ] **页面美化**：与 M2 统一 UI 风格，计划引入 WeUI 组件库
 - [ ] **搜索/筛选**（T-023）
 - [ ] **冷启动榜单/画像页面**（T-018/T-019/T-020）
+
+### M2 待完成
+- [ ] 修复 `exit-vote-detail` 页面 timeout 问题
+- [ ] T-046 ~ T-051 Vue3 Web 管理后台页面
+- [ ] T-052 ~ T-060 联调 / 测试 / 证据 / 答辩
 
 ---
 
@@ -96,7 +157,7 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
    | 字段 | 内容 |
    |:---|:---|
    | 项目名称 | 任意，如 `TeamMatch 前端` |
-   | 目录 | 选择克隆后的 `shixun12_frontend` 文件夹 |
+   | 目录 | 选择克隆后的 `shixun12_frontend/miniprogram` 文件夹 |
    | AppID | 使用你自己的测试号，或从 `project.config.json` 获取 |
 
 4. 点击 **“确定”**，工具会自动加载项目并编译。
@@ -107,6 +168,9 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
    - `pages/profile/skills/skills`
 
 6. 开始开发和调试。
+
+> **注意**：v2.0 起项目结构已拆分，小程序文件全部位于 `miniprogram/` 目录下。
+> 微信开发者工具导入时需选择 `shixun12_frontend/miniprogram` 而不是仓库根目录。
 
 ---
 
@@ -121,3 +185,12 @@ git push origin HEAD:refs/for/master
 \`\`\`
 
 提交说明需写清影响范围。
+
+---
+
+## 已知问题
+
+| 问题 | 影响范围 | 状态 |
+|------|----------|------|
+| `exit-vote-detail` 出现 `Error: timeout` | 投票详情页无法正常加载 | 待修复 |
+| 所有页面使用 Mock 数据 | 全平台 | 待后端接口就绪后切换 |

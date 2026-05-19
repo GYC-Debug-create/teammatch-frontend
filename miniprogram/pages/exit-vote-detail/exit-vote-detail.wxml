@@ -1,0 +1,101 @@
+<view class="page">
+  <!-- 固定头部区（与 T-031 一致，吸顶不跟随滑动） -->
+  <view class="page-sticky">
+    <view class="hd">
+      <text class="hd-sub">TeamMatch · T-038</text>
+      <text class="hd-title">退出投票</text>
+      <text class="hd-desc">对成员退出进行投票表决</text>
+    </view>
+  </view>
+
+  <!-- 加载态（与 T-031 一致，在 scroll-view 外部） -->
+  <view class="st-wrap" wx:if="{{loading}}">
+    <view class="ld-spin"></view>
+    <text class="st-txt">加载中...</text>
+  </view>
+
+  <!-- 错误态（与 T-031 一致，在 scroll-view 外部） -->
+  <view class="st-wrap" wx:elif="{{error}}">
+    <text class="st-txt">{{error}}</text>
+    <button class="retry-btn" bindtap="loadVoteDetail">重试</button>
+  </view>
+
+  <!-- 内容区（在 scroll-view 内部滚动） -->
+  <block wx:else>
+    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="card">
+        <image class="av" src="{{voteInfo.targetUser.avatar || '/assets/CodeBuddyAssets/114_182/2.svg'}}" mode="aspectFill" />
+        <view class="mi">
+          <view class="mi-top">
+            <text class="mi-name">{{voteInfo.targetUser.nickname}}</text>
+            <text class="mi-tag">{{voteInfo.penaltyLevel === 'negotiated' ? '协商退出' : '恶意退出'}}</text>
+          </view>
+          <text class="mi-major">{{voteInfo.targetUser.major}}</text>
+          <view class="mi-trust">
+            <text class="mi-trust-txt">Trust {{voteInfo.targetUser.trustScore}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="card cd">
+        <view class="cd-row">
+          <image class="cd-icon" src="/assets/CodeBuddyAssets/114_182/3.svg" mode="aspectFit" />
+          <text class="cd-num">剩余 {{countdownText}}</text>
+        </view>
+        <text class="cd-sub">投票将于 {{formatDeadline}} 截止</text>
+      </view>
+
+      <view class="card st">
+        <view class="st-hd">
+          <text class="st-hd-l">投票统计</text>
+          <text class="st-hd-r">已投票 {{voteInfo.agreeCount + voteInfo.disagreeCount}}/{{voteInfo.totalVoters}} 人</text>
+        </view>
+
+        <view class="st-bar">
+          <view class="st-bar-hd">
+            <text>赞成移除</text>
+            <text class="st-bar-num grn">{{voteInfo.agreeCount}} 票</text>
+          </view>
+          <view class="st-bar-trk">
+            <view class="st-bar-fill grn" style="width: {{voteInfo.totalVoters > 0 ? (voteInfo.agreeCount / voteInfo.totalVoters * 100) : 0}}%;"></view>
+          </view>
+        </view>
+
+        <view class="st-bar">
+          <view class="st-bar-hd">
+            <text>反对移除</text>
+            <text class="st-bar-num gry">{{voteInfo.disagreeCount}} 票</text>
+          </view>
+          <view class="st-bar-trk">
+            <view class="st-bar-fill gry" style="width: {{voteInfo.totalVoters > 0 ? (voteInfo.disagreeCount / voteInfo.totalVoters * 100) : 0}}%;"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card vt" wx:if="{{voteInfo.voters && voteInfo.voters.length > 0}}">
+        <text class="vt-title">已投票成员</text>
+        <view class="vt-row" wx:for="{{voteInfo.voters}}" wx:key="index">
+          <view class="vt-row-l">
+            <image class="vt-av" src="/assets/CodeBuddyAssets/114_182/{{index === 0 ? '4' : index === 1 ? '6' : '8'}}.svg" mode="aspectFill" />
+            <text class="vt-name">{{item.nickname}}</text>
+          </view>
+          <view class="vt-ch {{item.choice === 'agree' ? 'grn' : 'gry'}}">
+            <image class="vt-ch-icon" src="/assets/CodeBuddyAssets/114_182/{{item.choice === 'agree' ? '5' : '9'}}.svg" mode="aspectFit" />
+            <text>{{item.choice === 'agree' ? '赞成' : '反对'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="vote-btns" wx:if="{{voteInfo.status === 'voting' && !voteInfo.myVote && currentUserId !== voteInfo.targetUser.id}}">
+        <button class="btn-vote btn-yn" bindtap="handleVote" data-choice="agree" disabled="{{submitting}}">赞成移除</button>
+        <button class="btn-vote btn-nn" bindtap="handleVote" data-choice="disagree" disabled="{{submitting}}">反对移除</button>
+      </view>
+
+      <view class="voted-tip" wx:if="{{voteInfo.myVote}}">你已投票（{{voteInfo.myVote === 'agree' ? '赞成' : '反对'}}）</view>
+
+      <view class="close-wrap" wx:if="{{isLeader() && voteInfo.status === 'voting'}}">
+        <text class="close-link" bindtap="handleCloseVote">关闭投票</text>
+      </view>
+    </scroll-view>
+  </block>
+</view>
