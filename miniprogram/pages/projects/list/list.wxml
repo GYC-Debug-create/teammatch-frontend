@@ -1,54 +1,85 @@
 <!--pages/projects/list/list.wxml-->
-<view class="container">
-  <!-- 顶部搜索栏占位 -->
-  <view class="search-bar">
-    <view class="search-input">
-      <text class="search-icon">🔍</text>
-      <text class="search-placeholder">搜索项目...</text>
+<view class="page">
+  <!-- 固定头部区（与参考页面一致的吸顶结构） -->
+  <view class="page-sticky">
+    <view class="hd">
+      <text class="hd-sub">TeamMatch · Projects</text>
+      <text class="hd-title">项目广场</text>
+      <text class="hd-desc">发现感兴趣的项目，找到你的团队</text>
     </view>
   </view>
 
-  <!-- 项目列表 -->
-  <view class="project-list">
-    <block wx:for="{{projects}}" wx:key="id">
-      <view class="project-card" bindtap="goToDetail" data-id="{{item.id}}">
-        <!-- 项目标题和状态 -->
-        <view class="card-header">
-          <text class="project-title">{{item.title}}</text>
-          <text class="status-tag {{item.status}}">{{item.statusText}}</text>
-        </view>
+  <!-- 加载态（与参考页面一致） -->
+  <view class="st-wrap" wx:if="{{loading && projects.length === 0}}">
+    <view class="ld-spin"></view>
+    <text class="st-txt">加载中...</text>
+  </view>
 
-        <!-- 项目描述 -->
-        <view class="card-desc">{{item.description}}</view>
-
-        <!-- 板块和人数 -->
-        <view class="card-info">
-          <view class="info-item">
-            <text class="info-icon">📂</text>
-            <text class="info-text">{{item.boardName}}</text>
-          </view>
-          <view class="info-item">
-            <text class="info-icon">👥</text>
-            <text class="info-text">{{item.currentMembers}}/{{item.maxMembers}}人</text>
-          </view>
-        </view>
-
-        <!-- 技能标签 -->
-        <view class="skill-tags">
-          <text class="skill-tag" wx:for="{{item.skills}}" wx:key="*this" wx:for-item="skill">{{skill}}</text>
-        </view>
-
-        <!-- 底部信息 -->
-        <view class="card-footer">
-          <text class="creator">发布者：{{item.creatorName}}</text>
-          <text class="deadline">截止：{{item.deadline}}</text>
+  <!-- 内容区 -->
+  <block wx:else>
+    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-input">
+          <image class="search-icon" src="/assets/CodeBuddyAssets/114_182/1.svg" mode="aspectFit" />
+          <input class="search-field" placeholder="搜索项目..." placeholder-class="ph" />
         </view>
       </view>
-    </block>
-  </view>
 
-  <!-- 加载状态 -->
-  <view class="loading-more" wx:if="{{loading}}">
-    <text>加载中...</text>
-  </view>
+      <!-- 项目列表 -->
+      <view class="project-list">
+        <block wx:for="{{projects}}" wx:key="id">
+          <view class="card project-card" bindtap="goToDetail" data-id="{{item.id}}">
+            <!-- 项目标题和状态 -->
+            <view class="card-header">
+              <text class="project-title">{{item.title}}</text>
+              <text class="status-tag {{item.status}}">{{item.statusText}}</text>
+            </view>
+
+            <!-- 项目描述 -->
+            <text class="card-desc">{{item.description}}</text>
+
+            <!-- 板块和人数 -->
+            <view class="card-info">
+              <view class="info-item">
+                <text class="info-label">板块</text>
+                <text class="info-value">{{item.boardName}}</text>
+              </view>
+              <view class="info-item">
+                <text class="info-label">团队</text>
+                <text class="info-value">{{item.currentMembers}}/{{item.maxMembers}} 人</text>
+              </view>
+            </view>
+
+            <!-- 技能标签 -->
+            <view class="skill-tags" wx:if="{{item.skills && item.skills.length > 0}}">
+              <text class="skill-tag" wx:for="{{item.skills}}" wx:key="*this" wx:for-item="skill">{{skill}}</text>
+            </view>
+
+            <!-- 底部信息 -->
+            <view class="card-footer">
+              <text class="creator">{{item.creatorName}}</text>
+              <text class="deadline">截止 {{item.deadline}}</text>
+            </view>
+          </view>
+        </block>
+
+        <!-- 空态 -->
+        <view class="st-wrap empty" wx:if="{{projects.length === 0 && !loading}}">
+          <text class="st-txt">暂无项目</text>
+        </view>
+      </view>
+
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{loading && projects.length > 0}}">
+        <view class="ld-spin"></view>
+        <text class="st-txt">加载更多...</text>
+      </view>
+
+      <!-- 没有更多 -->
+      <view class="load-more" wx:if="{{noMore}}">
+        <text class="st-txt">— 没有更多项目了 —</text>
+      </view>
+    </scroll-view>
+  </block>
 </view>

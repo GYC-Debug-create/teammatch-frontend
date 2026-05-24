@@ -1,18 +1,18 @@
 {
   "pages": [
-    
-    "pages/function-hub/function-hub",
-    "pages/team-requests/team-requests",
-    "pages/profile/profile",
     "pages/login/login",
     "pages/index/index",
-    "pages/exit-project/exit-project",
-    "pages/exit-vote-detail/exit-vote-detail",
-    "pages/projects/detail/detail",
-    "pages/profile/skills/skills",
-    "pages/projects/list/list",
+    "pages/function-hub/function-hub",
     "pages/email-verify/email-verify",
+    "pages/exit-vote-detail/exit-vote-detail",
+    "pages/profile/skills/skills",
     "pages/projects/create/create",
+    "pages/projects/detail/detail",
+    "pages/projects/list/list",
+    "pages/profile/edit/edit",
+    "pages/team-requests/team-requests",
+    "pages/profile/profile",
+    "pages/exit-project/exit-project",
     "pages/project-members/project-members",
     "pages/evaluation/evaluation",
     "pages/credit-history/credit-history",
@@ -20,9 +20,10 @@
     "pages/appeal/appeal",
     "pages/my-reports/my-reports",
     "pages/my-appeals/my-appeals",
-    "pages/logs/logs",
-    "pages/profile/edit/edit"
-    
+    "pages/leaderboard/leaderboard",
+    "pages/profile-claim/profile-claim",
+    "pages/my-center/my-center",
+    "pages/logs/logs"
   ],
   "window": {
     "navigationBarTextStyle": "black",

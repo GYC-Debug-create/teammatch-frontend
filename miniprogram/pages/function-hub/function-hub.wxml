@@ -85,5 +85,77 @@
       </view>
       <text class="entry-arrow">›</text>
     </view>
+
+    <view class="entry-card entry-card--blue" bindtap="goProfileEdit">
+      <view class="entry-main">
+        <text class="entry-title">个人档案编辑</text>
+        <text class="entry-subtitle">编辑个人昵称、学校、专业等档案信息</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--green" bindtap="goSkills">
+      <view class="entry-main">
+        <text class="entry-title">技能标签选择</text>
+        <text class="entry-subtitle">选择擅长的技能标签，支持按分类多选</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--blue" bindtap="goEmailVerify">
+      <view class="entry-main">
+        <text class="entry-title">邮箱认证</text>
+        <text class="entry-subtitle">绑定学校邮箱，完成身份认证</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--green" bindtap="goProjectList">
+      <view class="entry-main">
+        <text class="entry-title">项目列表</text>
+        <text class="entry-subtitle">浏览所有招募中的项目</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--blue" bindtap="goProjectDetail">
+      <view class="entry-main">
+        <text class="entry-title">项目详情</text>
+        <text class="entry-subtitle">查看项目完整信息和成员列表</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--green" bindtap="goProjectCreate">
+      <view class="entry-main">
+        <text class="entry-title">发布项目</text>
+        <text class="entry-subtitle">创建新项目，填写需求并招募队友</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--orange" bindtap="goLeaderboard">
+      <view class="entry-main">
+        <text class="entry-title">技术排行榜（T-018）</text>
+        <text class="entry-subtitle">查看技术榜单，发现身边的优秀开发者</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--red" bindtap="goProfileClaim">
+      <view class="entry-main">
+        <text class="entry-title">认领技术画像（T-020）</text>
+        <text class="entry-subtitle">完成认证，让你的技术实力被更多人看到</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+
+    <view class="entry-card entry-card--purple" bindtap="goMyCenter">
+      <view class="entry-main">
+        <text class="entry-title">个人中心（T-021）</text>
+        <text class="entry-subtitle">查看档案、信誉分、项目与技能管理</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
   </view>
 </view>

@@ -9,6 +9,15 @@ const REPORT_PAGE_URL = '/pages/report/report'
 const APPEAL_PAGE_URL = '/pages/appeal/appeal'
 const MY_REPORTS_PAGE_URL = '/pages/my-reports/my-reports'
 const MY_APPEALS_PAGE_URL = '/pages/my-appeals/my-appeals'
+const PROFILE_EDIT_PAGE_URL = '/pages/profile/edit/edit'
+const SKILLS_PAGE_URL = '/pages/profile/skills/skills'
+const EMAIL_VERIFY_PAGE_URL = '/pages/email-verify/email-verify'
+const PROJECT_LIST_PAGE_URL = '/pages/projects/list/list'
+const PROJECT_DETAIL_PAGE_URL = '/pages/projects/detail/detail'
+const PROJECT_CREATE_PAGE_URL = '/pages/projects/create/create'
+const LEADERBOARD_PAGE_URL = '/pages/leaderboard/leaderboard'
+const PROFILE_CLAIM_PAGE_URL = '/pages/profile-claim/profile-claim'
+const MY_CENTER_PAGE_URL = '/pages/my-center/my-center'
 const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
 
 Page({
@@ -116,6 +125,60 @@ Page({
   goMyAppeals() {
     wx.navigateTo({
       url: MY_APPEALS_PAGE_URL
+    })
+  },
+
+  goProfileEdit() {
+    wx.navigateTo({
+      url: PROFILE_EDIT_PAGE_URL
+    })
+  },
+
+  goSkills() {
+    wx.navigateTo({
+      url: SKILLS_PAGE_URL
+    })
+  },
+
+  goEmailVerify() {
+    wx.navigateTo({
+      url: EMAIL_VERIFY_PAGE_URL
+    })
+  },
+
+  goProjectList() {
+    wx.navigateTo({
+      url: PROJECT_LIST_PAGE_URL
+    })
+  },
+
+  goProjectDetail() {
+    wx.navigateTo({
+      url: PROJECT_DETAIL_PAGE_URL
+    })
+  },
+
+  goProjectCreate() {
+    wx.navigateTo({
+      url: PROJECT_CREATE_PAGE_URL
+    })
+  },
+
+  goLeaderboard() {
+    wx.navigateTo({
+      url: LEADERBOARD_PAGE_URL
+    })
+  },
+
+  goProfileClaim() {
+    wx.navigateTo({
+      url: PROFILE_CLAIM_PAGE_URL
+    })
+  },
+
+  goMyCenter() {
+    wx.navigateTo({
+      url: MY_CENTER_PAGE_URL
     })
   }
 })

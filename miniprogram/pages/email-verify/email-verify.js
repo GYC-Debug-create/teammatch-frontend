@@ -1,4 +1,6 @@
 // pages/email-verify/email-verify.js
+const { request } = require('../../utils/api-service.js')
+
 Page({
   data: {
     email: '',
@@ -20,7 +22,7 @@ Page({
   },
 
   // 发送验证码
-  sendCode() {
+  async sendCode() {
     const { email, countdown } = this.data;
     if (!email.trim()) {
       this.setData({ errorMsg: '请先输入学校邮箱' });
@@ -34,8 +36,13 @@ Page({
 
     this.setData({ sendingCode: true, errorMsg: '' });
 
-    // Mock 发送验证码
-    setTimeout(() => {
+    try {
+      await request({
+        url: '/auth/email/send',
+        method: 'POST',
+        data: { email: email.trim() }
+      })
+
       this.setData({ sendingCode: false, countdown: 60 });
       this.countdownTimer = setInterval(() => {
         let remaining = this.data.countdown - 1;
@@ -46,12 +53,16 @@ Page({
         this.setData({ countdown: remaining });
       }, 1000);
 
-      wx.showToast({ title: '验证码已发送（Mock）', icon: 'success' });
-    }, 500);
+      wx.showToast({ title: '验证码已发送', icon: 'success' });
+    } catch (err) {
+      this.setData({ sendingCode: false });
+      const msg = (err && err.message) ? err.message : '发送失败，请稍后重试';
+      this.setData({ errorMsg: msg });
+    }
   },
 
   // 提交验证
-  verifyCode() {
+  async verifyCode() {
     const { email, code } = this.data;
     if (!email.trim() || !code.trim()) {
       this.setData({ errorMsg: '请填写完整信息' });
@@ -60,17 +71,23 @@ Page({
 
     this.setData({ verifying: true, errorMsg: '' });
 
-    // Mock 验证
-    setTimeout(() => {
+    try {
+      await request({
+        url: '/auth/email/verify',
+        method: 'POST',
+        data: { email: email.trim(), code: code.trim() }
+      })
+
       this.setData({ verifying: false });
-      if (code === '654321') {
-        wx.showToast({ title: '邮箱验证成功（Mock）', icon: 'success' });
-        // 后续可返回上一页或跳转
-        // wx.navigateBack();
-      } else {
-        this.setData({ errorMsg: '验证码错误，请重试' });
-      }
-    }, 1000);
+      wx.showToast({ title: '邮箱验证成功', icon: 'success' });
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 1000);
+    } catch (err) {
+      this.setData({ verifying: false });
+      const msg = (err && err.message) ? err.message : '验证失败，请重试';
+      this.setData({ errorMsg: msg });
+    }
   },
 
   onUnload() {

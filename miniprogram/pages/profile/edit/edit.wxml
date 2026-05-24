@@ -1,27 +1,55 @@
 <!--pages/profile/edit.wxml-->
-<view class="container">
-  <view class="form">
-    <view class="form-item">
-      <text class="label">昵称</text>
-      <input class="input" placeholder="请输入昵称" value="{{form.nickname}}" bindinput="onFieldChange" data-field="nickname"/>
+<view class="page">
+  <!-- 固定头部区（与参考页面一致的吸顶结构） -->
+  <view class="page-sticky">
+    <view class="hd">
+      <text class="hd-sub">TeamMatch · Profile</text>
+      <text class="hd-title">编辑档案</text>
+      <text class="hd-desc">完善个人信息，寻找最佳队友</text>
     </view>
-    <view class="form-item">
-      <text class="label">学校</text>
-      <input class="input" placeholder="请输入学校" value="{{form.school}}" bindinput="onFieldChange" data-field="school"/>
-    </view>
-    <view class="form-item">
-      <text class="label">专业</text>
-      <input class="input" placeholder="请输入专业" value="{{form.major}}" bindinput="onFieldChange" data-field="major"/>
-    </view>
-    <view class="form-item">
-      <text class="label">年级</text>
-      <input class="input" placeholder="请输入年级" value="{{form.grade}}" bindinput="onFieldChange" data-field="grade"/>
-    </view>
-    <view class="form-item">
-      <text class="label">个人简介</text>
-      <textarea class="textarea" placeholder="介绍一下自己，寻找志同道合的队友..." value="{{form.bio}}" bindinput="onFieldChange" data-field="bio"/>
-    </view>
-    <button class="save-btn" type="primary" bindtap="saveProfile" loading="{{isLoading}}">保存档案</button>
-    <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
   </view>
+
+  <!-- 内容可滑动区 -->
+  <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 基本信息卡片 -->
+    <view class="card">
+      <text class="card-title">基本信息</text>
+
+      <view class="form-item">
+        <text class="label">昵称</text>
+        <input class="input" placeholder="请输入昵称" placeholder-class="ph" value="{{form.nickname}}" bindinput="onFieldChange" data-field="nickname"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">学校</text>
+        <input class="input" placeholder="请输入学校" placeholder-class="ph" value="{{form.school}}" bindinput="onFieldChange" data-field="school"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">专业</text>
+        <input class="input" placeholder="请输入专业" placeholder-class="ph" value="{{form.major}}" bindinput="onFieldChange" data-field="major"/>
+      </view>
+
+      <view class="form-item form-item-last">
+        <text class="label">年级</text>
+        <input class="input" placeholder="请输入年级" placeholder-class="ph" value="{{form.grade}}" bindinput="onFieldChange" data-field="grade"/>
+      </view>
+    </view>
+
+    <!-- 个人简介卡片 -->
+    <view class="card">
+      <text class="card-title">个人简介</text>
+      <textarea class="textarea" placeholder="介绍一下自己，寻找志同道合的队友..." placeholder-class="ph" value="{{form.bio}}" bindinput="onFieldChange" data-field="bio"/>
+    </view>
+
+    <!-- 错误提示 -->
+    <view class="err" wx:if="{{errorMsg}}">
+      <text class="err-txt">{{errorMsg}}</text>
+    </view>
+
+    <!-- 保存按钮区 -->
+    <view class="btn-wrap">
+      <button class="save-btn" bindtap="saveProfile" loading="{{isLoading}}" disabled="{{isLoading}}">保存档案</button>
+    </view>
+  </scroll-view>
 </view>

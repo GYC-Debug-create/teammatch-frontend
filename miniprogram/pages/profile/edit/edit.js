@@ -1,4 +1,6 @@
 // pages/profile/edit.js
+const { request } = require('../../../utils/api-service.js')
+
 Page({
   data: {
     form: {
@@ -38,27 +40,21 @@ Page({
     this.setData({ isLoading: true, errorMsg: '' });
 
     try {
-      // 调用Mock保存接口
-      await mockSaveProfile(form);
+      await request({
+        url: '/profile/update',
+        method: 'PUT',
+        data: form
+      })
       // 保存到本地缓存，供首页展示
       wx.setStorageSync('profile', form);
       wx.showToast({ title: '档案保存成功', icon: 'success' });
       // 返回上一页
       setTimeout(() => wx.navigateBack(), 1500);
     } catch (err) {
-      this.setData({ errorMsg: err.message || '保存失败，请稍后重试' });
+      const msg = (err && err.message) ? err.message : '保存失败，请稍后重试';
+      this.setData({ errorMsg: msg });
     } finally {
       this.setData({ isLoading: false });
     }
   }
-});
-
-// Mock 保存档案函数
-function mockSaveProfile(data) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      console.log('Mock保存的档案数据：', data);
-      resolve({ code: "00000", message: "保存成功" });
-    }, 800);
-  });
-}
+})
