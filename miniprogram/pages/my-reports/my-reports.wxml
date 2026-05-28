@@ -26,8 +26,7 @@
           <text class="card-target">{{item.targetType === 'user' ? '👤' : '📁'}} {{item.targetName}}</text>
           <text class="card-status status-{{item.status}}">{{item.status === 'pending' ? '处理中' : '已处理'}}</text>
         </view>
-        <text class="card-reason">原因：{{item.reasons.join('、')}}</text>
-        <text class="card-desc">{{item.description}}</text>
+        <text class="card-reason">原因：{{item.reason}}</text>
         <text class="card-time">{{item.createdAt}}</text>
       </view>
     </view>

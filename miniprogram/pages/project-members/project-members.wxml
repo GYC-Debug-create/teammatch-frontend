@@ -56,13 +56,13 @@
         <!-- 信息区 -->
         <view class="member-info">
           <text class="member-name">{{item.nickname}}</text>
-          <text class="member-major">{{item.major}}</text>
+          <text class="member-id">ID: {{item.userId}}</text>
           <text class="exit-reason" wx:if="{{item.status === 'exited'}}">
             {{item.exitMode === 'self_exit' ? '主动退出' : '被投票移除'}} · {{item.exitDate}}
           </text>
         </view>
 
-        <!-- 右侧区：标签 + Trust + 更多 -->
+        <!-- 右侧区：标签 + 信誉分 + 更多 -->
         <view class="member-right">
           <!-- 标签行 -->
           <view class="tag-row">
@@ -70,10 +70,10 @@
             <text class="tag tag-{{item.status}}">{{item.status === 'active' ? 'ACTIVE' : 'EXITED'}}</text>
           </view>
 
-          <!-- 信任分 -->
+          <!-- 信誉分 -->
           <view class="trust-box {{item.status === 'active' ? 'active' : 'exited'}}">
-            <text class="trust-label">TRUST</text>
-            <text class="trust-score">{{item.trustScore}}</text>
+            <text class="trust-label">信誉分</text>
+            <text class="trust-score">{{item.creditScore}}</text>
           </view>
         </view>
 

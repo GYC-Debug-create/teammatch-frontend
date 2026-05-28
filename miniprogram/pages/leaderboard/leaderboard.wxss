@@ -223,8 +223,9 @@ page {
   font-size: 30rpx;
   font-weight: 700;
   border-radius: 24rpx;
-  line-height: 88rpx;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary::after {
@@ -241,8 +242,9 @@ page {
   font-size: 30rpx;
   font-weight: 600;
   border-radius: 24rpx;
-  line-height: 88rpx;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-secondary::after {

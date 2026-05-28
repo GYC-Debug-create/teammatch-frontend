@@ -200,8 +200,9 @@ page {
   color: #ffffff;
   font-size: 32rpx;
   font-weight: 700;
-  line-height: 96rpx;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submit-btn::after {

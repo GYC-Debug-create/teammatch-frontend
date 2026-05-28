@@ -24,15 +24,15 @@
   <block wx:else>
     <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
       <view class="card">
-        <image class="av" src="{{voteInfo.targetUser.avatar || '/assets/CodeBuddyAssets/114_182/2.svg'}}" mode="aspectFill" />
+        <view class="av" wx:if="{{voteInfo.targetUser.avatar}}">
+          <image src="{{voteInfo.targetUser.avatar}}" mode="aspectFill" />
+        </view>
+        <view class="av av-txt" wx:else>{{voteInfo.targetUser.nickname ? voteInfo.targetUser.nickname.slice(0, 1) : '?'}}</view>
         <view class="mi">
-          <view class="mi-top">
-            <text class="mi-name">{{voteInfo.targetUser.nickname}}</text>
-            <text class="mi-tag">{{voteInfo.penaltyLevel === 'negotiated' ? '协商退出' : '恶意退出'}}</text>
-          </view>
-          <text class="mi-major">{{voteInfo.targetUser.major}}</text>
+          <text class="mi-name">{{voteInfo.targetUser.nickname}}</text>
+          <text class="mi-id">ID: {{voteInfo.targetUser.id}}</text>
           <view class="mi-trust">
-            <text class="mi-trust-txt">Trust {{voteInfo.targetUser.trustScore}}</text>
+            <text class="mi-trust-txt">信誉分 {{voteInfo.targetUser.trustScore || voteInfo.targetUser.creditScore || 0}}</text>
           </view>
         </view>
       </view>
@@ -76,7 +76,7 @@
         <text class="vt-title">已投票成员</text>
         <view class="vt-row" wx:for="{{voteInfo.voters}}" wx:key="index">
           <view class="vt-row-l">
-            <image class="vt-av" src="/assets/CodeBuddyAssets/114_182/{{index === 0 ? '4' : index === 1 ? '6' : '8'}}.svg" mode="aspectFill" />
+            <view class="vt-av vt-av-txt">{{item.nickname ? item.nickname.slice(0, 1) : '?'}}</view>
             <text class="vt-name">{{item.nickname}}</text>
           </view>
           <view class="vt-ch {{item.choice === 'agree' ? 'grn' : 'gry'}}">

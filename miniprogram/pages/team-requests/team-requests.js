@@ -110,7 +110,29 @@ Page({
       const list = (res.data.list || []).map(item => {
         const meta = statusMetaMap[item.status] || statusMetaMap.pending
         const isReceived = activeTab === 'received'
-        const counterpart = isReceived ? item.from_user : item.to_user
+
+        // 后端返回扁平字段，转换为前端所需格式
+        var transformed = {
+          requestId: item.id || item.requestId,
+          projectName: item.projectName || '项目 #' + item.projectId,
+          from_user: {
+            id: item.fromUserId || (item.from_user && item.from_user.id),
+            nickname: (item.from_user && item.from_user.nickname) || ('用户' + (item.fromUserId || '')),
+            major: (item.from_user && item.from_user.major) || ''
+          },
+          to_user: {
+            id: item.toUserId || (item.to_user && item.to_user.id),
+            nickname: (item.to_user && item.to_user.nickname) || ('用户' + (item.toUserId || '')),
+            major: (item.to_user && item.to_user.major) || ''
+          },
+          message: item.message || '',
+          requestType: item.requestType || '',
+          status: item.status || '',
+          createdAt: item.createdAt || item.created_at || '',
+          displayRole: item.displayRole || ''
+        }
+
+        const counterpart = isReceived ? transformed.to_user : transformed.from_user
         const requestTypeLabel = item.requestType === 'invite' ? '邀请' : '申请'
         const counterpartLabel = isReceived ? '对方' : '队长'
         const hint =
@@ -119,7 +141,7 @@ Page({
             : ''
 
         return {
-          ...item,
+          ...transformed,
           ...meta,
           counterpart,
           requestTypeLabel,

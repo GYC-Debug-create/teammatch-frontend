@@ -43,9 +43,33 @@ Page({
     this.setData({ loading: true, error: null })
 
     try {
-      const members = await teamService.getMembers(this.data.projectId)
-      console.log('[T-035] loadMembers success', { count: members.length })
-      this.setData({ members, loading: false })
+      var list = await teamService.getMembers(this.data.projectId)
+      console.log('[T-035] loadMembers success', { count: list.length })
+
+      // 并发获取每个用户的详情（昵称、信誉分等）
+      var enriched = []
+      for (var i = 0; i < list.length; i++) {
+        var member = list[i]
+        var userId = member.userId || member.id
+        var profile = null
+        try {
+          profile = await teamService.getUserProfile(userId)
+        } catch (e) {
+          // 获取详情失败，使用默认值
+        }
+        enriched.push({
+          id: member.id,
+          userId: userId,
+          nickname: (profile && profile.nickname) || ('用户' + userId),
+          creditScore: (profile && (profile.creditScore || profile.trustScore)) || 0,
+          role: member.role || '',
+          status: member.status || 'active',
+          exitMode: member.exitMode || '',
+          exitDate: member.exitDate || ''
+        })
+      }
+
+      this.setData({ members: enriched, loading: false })
     } catch (err) {
       const errorMsg = (err && err.message) || '加载失败，请重试'
       console.log('[T-035] loadMembers failed', err)

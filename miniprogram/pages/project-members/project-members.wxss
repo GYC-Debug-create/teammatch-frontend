@@ -161,14 +161,15 @@
   color: #424753;
 }
 
-.member-major {
+.member-id {
   font-size: 26rpx;
-  color: #424753;
+  color: #727784;
+
   display: block;
   margin-top: 4rpx;
 }
 
-.member-card.exited .member-major {
+.member-card.exited .member-id {
   color: #727784;
 }
 

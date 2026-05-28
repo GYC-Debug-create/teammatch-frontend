@@ -1,16 +1,4 @@
 <view class="page" wx:if="{{isAuthenticated && !isLeader}}">
-  <!-- 顶部导航 -->
-  <view class="nav-bar">
-    <view class="nav-back" bindtap="goBack">
-      <image class="nav-back-icon" src="/assets/CodeBuddyAssets/87_792/1.svg" mode="aspectFit" />
-    </view>
-    <view class="nav-capsule">
-      <view class="capsule-dot"></view>
-      <view class="capsule-divider"></view>
-      <view class="capsule-dot"></view>
-    </view>
-  </view>
-
   <!-- 主要内容区 -->
   <view class="content">
     <!-- 头部标题 -->

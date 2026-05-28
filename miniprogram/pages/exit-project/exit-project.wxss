@@ -265,7 +265,9 @@ page {
   color: #ffffff;
   font-size: 36rpx;
   font-weight: 700;
-  line-height: 120rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 8rpx 12rpx -8rpx rgba(239, 68, 68, 0.20),
               0 20rpx 30rpx -6rpx rgba(239, 68, 68, 0.20);
 }

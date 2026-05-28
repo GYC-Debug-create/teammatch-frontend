@@ -107,7 +107,6 @@
           <block wx:if="{{item.isReceived && item.requestType === 'invite'}}">
             <button
               class="action-btn btn-reject"
-              size="mini"
               bindtap="handleAction"
               data-id="{{item.requestId}}"
               data-action="reject"
@@ -115,7 +114,6 @@
             >婉言拒绝</button>
             <button
               class="action-btn btn-accept"
-              size="mini"
               bindtap="handleAction"
               data-id="{{item.requestId}}"
               data-action="accept"
@@ -127,7 +125,6 @@
           <block wx:elif="{{!item.isReceived && item.requestType === 'apply'}}">
             <button
               class="action-btn btn-cancel"
-              size="mini"
               bindtap="handleAction"
               data-id="{{item.requestId}}"
               data-action="cancel"

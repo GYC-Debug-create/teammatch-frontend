@@ -86,7 +86,7 @@ Page({
         this.data.targetUserId
       )
       if (result.eligible) {
-        this.loadTargetUser()
+        await this.loadTargetUser()
       } else {
         wx.showModal({
           title: '无法评价',
@@ -101,16 +101,50 @@ Page({
     }
   },
 
-  loadTargetUser() {
-    const targetUser = {
-      id: this.data.targetUserId || 2,
-      nickname: '林乔',
-      major: '软件工程 22级',
-      avatar: '',
-      trustScore: 96,
-      avatarText: '林'
+  async loadTargetUser() {
+    try {
+      const members = await teamService.getEvaluatableMembers(this.data.projectId)
+      var member = null
+      for (var i = 0; i < members.length; i++) {
+        if (members[i].userId === this.data.targetUserId || members[i].id === this.data.targetUserId) {
+          member = members[i]
+          break
+        }
+      }
+      if (member) {
+        var targetUser = {
+          id: member.userId || member.id,
+          nickname: member.nickname || ('用户' + this.data.targetUserId),
+          major: member.major || '',
+          avatar: member.avatarUrl || '',
+          avatarText: (member.nickname || '?').slice(0, 1)
+        }
+        this.setData({ targetUser, loading: false })
+      } else {
+        this.setData({
+          targetUser: {
+            id: this.data.targetUserId,
+            nickname: '用户' + this.data.targetUserId,
+            avatarText: '?',
+            major: ''
+          },
+          loading: false
+        })
+      }
+    } catch (err) {
+      console.log('[T-040] loadTargetUser failed', err)
+      // 加载失败时使用默认值
+      this.setData({
+        targetUser: {
+          id: this.data.targetUserId || 2,
+          nickname: '林乔',
+          major: '软件工程 22级',
+          avatar: '',
+          avatarText: '林'
+        },
+        loading: false
+      })
     }
-    this.setData({ targetUser, loading: false })
   },
 
   handleStarTap(e) {

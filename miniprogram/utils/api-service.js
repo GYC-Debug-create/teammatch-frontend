@@ -171,8 +171,29 @@ function request(options) {
   })
 }
 
+/**
+ * 登录（Mock 微信登录）
+ * POST /api/auth/login
+ * @param {string} code - 任意字符串，用作 openid
+ * @returns {Promise<Object>} { id, nickname, token, ... }
+ */
+function login(code) {
+  return request({
+    url: '/auth/login',
+    method: 'POST',
+    data: { code: code || 'test123' }
+  }).then(function(res) {
+    // 成功则自动保存 token
+    if (res.data && res.data.token) {
+      wx.setStorageSync('token', res.data.token)
+    }
+    return res.data
+  })
+}
+
 module.exports = {
   request: request,
+  login: login,
   USE_MOCK: USE_MOCK,
   BASE_URL: BASE_URL
 }

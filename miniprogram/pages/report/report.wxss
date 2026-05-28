@@ -496,7 +496,9 @@ page {
   color: #ffffff;
   font-size: 36rpx;
   font-weight: 700;
-  line-height: 104rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 4rpx 6rpx -4rpx rgba(186, 26, 26, 0.20),
               0 10rpx 15rpx -3rpx rgba(186, 26, 26, 0.20);
 }

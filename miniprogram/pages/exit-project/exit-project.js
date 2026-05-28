@@ -18,39 +18,42 @@ Page({
   data: {
     isAuthenticated: false,
     isRedirectingToLogin: false,
-    projectId: 1,
-    projectTitle: 'AI创新实践队',
-    projectSubtitle: '校园失物招领智能助手',
-    projectStatus: 'in_progress',
+    projectId: 0,
+    projectTitle: '',
+    projectSubtitle: '',
+    projectStatus: '',
     reason: '',
     maxLength: 200,
     submitting: false,
-    // 用于控制二次确认弹窗
-    showConfirm: false
+    showConfirm: false,
+    loading: true,
+    error: null
   },
 
   onLoad(options) {
     if (!this.ensureLogin()) return
 
     const projectId = Number(options.projectId) || 1
-    const projectTitle = options.projectTitle || 'AI创新实践队'
-    const isLeader = options.isLeader === 'true'
+    this.setData({ projectId })
+    this.loadProjectDetail()
+  },
 
-    this.setData({
-      projectId,
-      projectTitle,
-      isLeader
-    })
-
-    // 如果当前用户是队长，不允许退出
-    if (isLeader) {
-      wx.showModal({
-        title: '提示',
-        content: '队长不可退出，请先转让队长',
-        showCancel: false,
-        success: () => {
-          wx.navigateBack()
-        }
+  async loadProjectDetail() {
+    this.setData({ loading: true, error: null })
+    try {
+      const project = await teamService.getProjectDetail(this.data.projectId)
+      console.log('[T-037] project detail', project)
+      this.setData({
+        projectTitle: project.name || project.title || '未知项目',
+        projectSubtitle: project.description || project.subtitle || '',
+        projectStatus: project.status || '',
+        loading: false
+      })
+    } catch (err) {
+      console.log('[T-037] loadProjectDetail failed', err)
+      this.setData({
+        loading: false,
+        error: '加载项目信息失败'
       })
     }
   },
