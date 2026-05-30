@@ -295,7 +295,11 @@ function checkEvaluationEligibility(projectId, targetUserId) {
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
-        if (res.data && isSuccessCode(res.data.code)) resolve(res.data.data)
+        if (res.data && isSuccessCode(res.data.code)) {
+          // 后端返回 Boolean（true/false），包装为 { eligible, reason } 对象给页面使用
+          var eligible = res.data.data === true
+          resolve({ eligible: eligible, reason: eligible ? '' : '您当前没有评价该成员的资格' })
+        }
         else reject(res.data)
       },
       fail: function(err) { reject(err) }
@@ -522,6 +526,108 @@ function getMyAppeals() {
   })
 }
 
+// ========== 方法 19-20：我的项目 / 待处理投票 ==========
+
+/**
+ * 获取当前用户已加入的项目列表
+ * 通过已接受的组队请求来聚合用户加入的项目，再获取项目详情
+ */
+function getMyJoinedProjects() {
+  var userId = getUserId()
+  return new Promise(function(resolve, reject) {
+    // 并行获取收到和发出的请求
+    var count = 0
+    var allRequests = []
+    function done() {
+      count++
+      if (count < 2) return
+      // 筛选 accepted 状态的请求，提取唯一 projectId
+      var accepted = allRequests.filter(function(r) { return r.status === 'accepted' })
+      var projectIds = []
+      for (var i = 0; i < accepted.length; i++) {
+        var pid = accepted[i].projectId
+        if (pid && projectIds.indexOf(pid) === -1) projectIds.push(pid)
+      }
+      if (projectIds.length === 0) {
+        resolve([])
+        return
+      }
+      // 获取项目详情
+      var detailPromises = projectIds.map(function(pid) {
+        return new Promise(function(dResolve) {
+          wx.request({
+            url: BASE_URL + '/m4/projects/' + pid,
+            method: 'GET', header: authHeader(), timeout: 10000,
+            success: function(res) {
+              if (res.data && isSuccessCode(res.data.code)) {
+                var detail = res.data.data || res.data
+                detail.projectId = pid
+                dResolve(detail)
+              } else dResolve(null)
+            },
+            fail: function() { dResolve(null) }
+          })
+        })
+      })
+      Promise.all(detailPromises).then(function(details) {
+        resolve(details.filter(function(d) { return d !== null }))
+      }).catch(function() { resolve([]) })
+    }
+    // 收到
+    wx.request({
+      url: BASE_URL + '/m4/team-requests?userId=' + userId + '&direction=received',
+      method: 'GET', header: authHeader(), timeout: 10000,
+      success: function(res) {
+        var data = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
+        if (Array.isArray(data)) allRequests = allRequests.concat(data)
+        done()
+      },
+      fail: function() { done() }
+    })
+    // 发出
+    wx.request({
+      url: BASE_URL + '/m4/team-requests?userId=' + userId + '&direction=sent',
+      method: 'GET', header: authHeader(), timeout: 10000,
+      success: function(res) {
+        var data = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
+        if (Array.isArray(data)) allRequests = allRequests.concat(data)
+        done()
+      },
+      fail: function() { done() }
+    })
+  })
+}
+
+/**
+ * 获取项目所有退出投票列表（用于投票管理页）
+ */
+function getProjectExitVotes(projectId) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects/' + projectId + '/exit/votes',
+      method: 'GET',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) {
+          var data = res.data.data
+          resolve(Array.isArray(data) ? data : [])
+        } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 获取项目的待处理退出投票列表
+ */
+function getProjectPendingVotes(projectId) {
+  return getProjectExitVotes(projectId).then(function(votes) {
+    return votes.filter(function(v) { return v.status === 'voting' })
+  })
+}
+
 module.exports = {
   getRequests: getRequests,
   acceptRequest: acceptRequest,
@@ -543,5 +649,8 @@ module.exports = {
   getMyReports: getMyReports,
   getAppealTargets: getAppealTargets,
   submitAppeal: submitAppeal,
-  getMyAppeals: getMyAppeals
+  getMyAppeals: getMyAppeals,
+  getMyJoinedProjects: getMyJoinedProjects,
+  getProjectPendingVotes: getProjectPendingVotes,
+  getProjectExitVotes: getProjectExitVotes
 }

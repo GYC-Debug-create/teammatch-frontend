@@ -1,28 +1,60 @@
-<!--index.wxml-->
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
-        </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-        <button class="team-entry-btn" bindtap="goFunctionHub">进入功能选择</button>
-      </block>
-    </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+<view class="page">
+  <!-- 顶部区域 -->
+  <view class="hero">
+    <view class="hero-left">
+      <text class="hero-logo">TeamMatch</text>
+      <text class="hero-title">发现你的队友</text>
+      <text class="hero-sub">浏览技术榜单，找到志同道合的伙伴</text>
     </view>
   </view>
-</scroll-view>
+
+  <!-- 项目广场入口（最显眼） -->
+  <view class="card marketplace-card" bindtap="goProjectList">
+    <view class="mp-bg"></view>
+    <view class="mp-content">
+      <view class="mp-badge">热门推荐</view>
+      <text class="mp-title">项目广场 🚀</text>
+      <text class="mp-desc">浏览全校项目，找到心仪团队并申请加入</text>
+      <view class="mp-btn"><text>立即探索</text></view>
+    </view>
+  </view>
+
+  <!-- 冷启动认证引导 -->
+  <view class="card auth-card" wx:if="{{!isEmailVerified}}">
+    <view class="auth-center">
+      <view class="auth-icon-wrap"><text class="auth-emoji">✉️</text></view>
+      <text class="auth-title">您还未完成身份认证</text>
+      <text class="auth-desc">完成学校邮箱认证，加入正式榜单，接收\n组队邀请，开启你的技术合作之旅</text>
+      <view class="btn-auth" bindtap="goEmailVerify"><text>立即认证</text></view>
+    </view>
+  </view>
+
+  <!-- 热门榜单 -->
+  <view class="section">
+    <view class="sec-hd">
+      <text class="sec-title">热门榜单</text>
+      <text class="sec-more" bindtap="goLeaderboard">查看全部</text>
+    </view>
+    <view class="board-grid">
+      <view class="board-item" wx:for="{{boards}}" wx:key="name" bindtap="goLeaderboard">
+        <text class="board-icon">{{item.emoji}}</text>
+        <text class="board-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 技术画像卡片 -->
+  <view class="card profile-card">
+    <view class="profile-row">
+      <text class="profile-icon">📊</text>
+      <view class="profile-info">
+        <text class="profile-title">技术画像</text>
+        <text class="profile-desc">输入 GitHub 用户名，看看全校排名</text>
+      </view>
+    </view>
+    <view class="profile-input-row">
+      <input class="profile-input" placeholder="输入 GitHub 用户名" placeholder-class="ph" />
+      <view class="btn-gen"><text>生成</text></view>
+    </view>
+  </view>
+</view>

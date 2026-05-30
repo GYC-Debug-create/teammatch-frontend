@@ -1,0 +1,58 @@
+page{background:#F9F9FF;color:#191C22}
+.page{padding:16px}
+
+.hero{margin-bottom:20px}
+.hero-title{display:block;font-size:20px;font-weight:700;color:#191C22}
+.hero-sub{display:block;font-size:13px;color:#424753;margin-top:4px}
+
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{padding:10px 24px;border-radius:24px;font-size:14px;font-weight:600;background:#EDEEF4;color:#424753}
+.tab--active{background:#0058BB;color:#fff}
+
+/* Discover hero card */
+.card{background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.03);border-radius:12px;margin-bottom:14px;padding:17px;display:flex;align-items:center}
+.hero-card{background:linear-gradient(135deg,#0058BB,#2C72DA);border:none;justify-content:space-between}
+.hc-left{flex:1}
+.hc-title{display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:4px}
+.hc-sub{display:block;font-size:13px;color:rgba(255,255,255,0.80)}
+.hc-btn{padding:10px 20px;background:#fff;border-radius:8px;flex-shrink:0}
+.hc-btn text{font-size:14px;font-weight:700;color:#0058BB}
+
+/* Card rows */
+.card-row-icon{font-size:24px;margin-right:14px;flex-shrink:0}
+.card-row-info{flex:1}
+.card-row-title{display:block;font-size:16px;font-weight:600;color:#191C22}
+.card-row-desc{display:block;font-size:13px;color:#424753;margin-top:2px}
+.card-arrow{font-size:22px;color:#C2C6D5;flex-shrink:0}
+
+/* Project card */
+.proj-card{flex-wrap:wrap;gap:12px}
+.proj-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.proj-avatar{width:44px;height:44px;border-radius:12px;background:#D2E4FF;color:#0058BB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.proj-info{flex:1;min-width:0}
+.proj-name{display:block;font-size:15px;font-weight:600;color:#191C22}
+.proj-meta{display:block;font-size:13px;color:#424753;margin-top:2px}
+
+.proj-actions{display:flex;gap:8px;width:100%}
+.proj-actions-secondary{margin-top:2px}
+.proj-act{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:14px;font-weight:600}
+.proj-act-members{background:rgba(0,88,187,0.10);color:#0058BB}
+.proj-act-eval{background:rgba(16,185,129,0.10);color:#059669}
+.proj-act-disabled{background:#EDEEF4;color:#C2C6D5}
+.proj-act-exit{background:rgba(239,68,68,0.10);color:#DC2626}
+.proj-act-vote{background:rgba(245,158,11,0.10);color:#D97706}
+
+/* Pending votes section */
+.section-hd{display:flex;align-items:center;gap:8px;margin:16px 0 10px}
+.section-title{font-size:16px;font-weight:700;color:#191C22}
+.section-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;background:#EF4444;color:#fff;border-radius:10px;font-size:12px;font-weight:600}
+.vote-card{flex-wrap:wrap;cursor:pointer}
+.vote-card-left{flex:1;min-width:0}
+.vote-project{display:block;font-size:15px;font-weight:600;color:#191C22}
+.vote-target{display:block;font-size:13px;color:#424753;margin-top:2px}
+.vote-status{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:4px;font-size:12px;color:#727784;background:#EDEEF4}
+.vote-active{color:#D97706;background:#FEF3C7}
+
+.empty{text-align:center;padding:48px 0}
+.empty-text{display:block;font-size:15px;color:#727784;margin-bottom:16px}
+.btn-link{display:inline-block;padding:10px 24px;border-radius:8px;background:#0058BB;color:#fff;font-size:14px;font-weight:600}

@@ -1,0 +1,71 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">组队中心</text>
+    <text class="hero-sub">探索项目、管理你的团队</text>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab==='discover'?'tab--active':''}}" data-tab="discover" bindtap="switchTab">发现项目</view>
+    <view class="tab {{activeTab==='joined'?'tab--active':''}}" data-tab="joined" bindtap="switchTab">已加入项目</view>
+  </view>
+
+  <!-- 发现项目 -->
+  <view wx:if="{{activeTab==='discover'}}">
+    <view class="card hero-card" bindtap="goProjectList">
+      <view class="hc-left">
+        <text class="hc-title">项目广场</text>
+        <text class="hc-sub">浏览全校所有项目，找到适合你的团队</text>
+      </view>
+      <view class="hc-btn"><text>去看看</text></view>
+    </view>
+
+    <view class="card" bindtap="goTeamRequests">
+      <text class="card-row-icon">📩</text>
+      <view class="card-row-info">
+        <text class="card-row-title">我的请求</text>
+        <text class="card-row-desc">查看收到的邀请和发出的申请</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 已加入项目 -->
+  <view wx:if="{{activeTab==='joined'}}">
+    <view class="card proj-card" wx:for="{{joinedProjects}}" wx:key="id">
+      <view class="proj-left" bindtap="goProjectDetail" data-id="{{item.id}}">
+        <view class="proj-avatar">{{item.name[0]}}</view>
+        <view class="proj-info">
+          <text class="proj-name">{{item.name}}</text>
+          <text class="proj-meta">{{item.leader}} · {{item.members}}人 · {{item.status==='active'?'进行中':'已结束'}}</text>
+        </view>
+      </view>
+      <view class="proj-actions">
+        <view class="proj-act proj-act-members" bindtap="goProjectMembers" data-id="{{item.id}}">成员</view>
+        <view class="proj-act {{item.status==='active'?'proj-act-disabled':'proj-act-eval'}}" bindtap="goEvaluation" data-id="{{item.id}}" data-name="{{item.name}}">互评</view>
+      </view>
+      <view class="proj-actions proj-actions-secondary">
+        <view class="proj-act proj-act-exit" bindtap="goExitProject" data-id="{{item.id}}">退出项目</view>
+        <view class="proj-act proj-act-vote" bindtap="goVoteManagement" data-id="{{item.id}}" data-name="{{item.name}}">投票管理</view>
+      </view>
+    </view>
+
+    <!-- 待处理退出投票 -->
+    <view class="section-hd" wx:if="{{pendingVotes.length>0}}">
+      <text class="section-title">待处理投票</text>
+      <text class="section-badge">{{pendingVotes.length}}</text>
+    </view>
+    <view class="card vote-card" wx:for="{{pendingVotes}}" wx:key="id" bindtap="goExitVoteDetail" data-vote-id="{{item.id}}" data-project-id="{{item.projectId}}">
+      <view class="vote-card-left">
+        <text class="vote-project">{{item.projectName}}</text>
+        <text class="vote-target">目标: 用户{{item.targetUserId}}</text>
+        <text class="vote-status {{item.status==='voting'?'vote-active':''}}">{{item.status==='voting'?'投票中':'已结束'}}</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+
+    <view class="empty" wx:if="{{joinedProjects.length===0}}">
+      <text class="empty-text">暂未加入任何项目</text>
+      <view class="btn-link" bindtap="switchTab" data-tab="discover">去发现项目</view>
+    </view>
+  </view>
+</view>

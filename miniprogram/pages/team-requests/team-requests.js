@@ -132,9 +132,11 @@ Page({
           displayRole: item.displayRole || ''
         }
 
-        const counterpart = isReceived ? transformed.to_user : transformed.from_user
+        // received：我是 toUserId（接收方），对方是 fromUserId（发送方）
+        // sent：我是 fromUserId（发送方），对方是 toUserId（接收方）
+        const counterpart = isReceived ? transformed.from_user : transformed.to_user
         const requestTypeLabel = item.requestType === 'invite' ? '邀请' : '申请'
-        const counterpartLabel = isReceived ? '对方' : '队长'
+        const counterpartLabel = isReceived ? '发起者' : '接收者'
         const hint =
           item.status !== 'pending'
             ? getResultHint(item.requestType, item.status)

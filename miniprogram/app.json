@@ -1,7 +1,9 @@
 {
   "pages": [
-    "pages/login/login",
     "pages/index/index",
+    "pages/team-center/index",
+    "pages/credit-center/index",
+    "pages/login/login",
     "pages/function-hub/function-hub",
     "pages/email-verify/email-verify",
     "pages/exit-vote-detail/exit-vote-detail",
@@ -21,6 +23,7 @@
     "pages/my-reports/my-reports",
     "pages/my-appeals/my-appeals",
     "pages/leaderboard/leaderboard",
+    "pages/vote-management/vote-management",
     "pages/profile-claim/profile-claim",
     "pages/my-center/my-center",
     "pages/logs/logs"
@@ -31,18 +34,28 @@
     "navigationBarBackgroundColor": "#ffffff"
   },
   "tabBar": {
+    "color": "#424753",
+    "selectedColor": "#0058BB",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
         "text": "首页"
       },
       {
-        "pagePath": "pages/function-hub/function-hub",
-        "text": "功能中心"
+        "pagePath": "pages/team-center/index",
+        "text": "组队"
+      },
+      {
+        "pagePath": "pages/credit-center/index",
+        "text": "动态"
+      },
+      {
+        "pagePath": "pages/my-center/my-center",
+        "text": "我的"
       }
-    ],
-    "color": "#999",
-    "selectedColor": "#1aad19"
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",

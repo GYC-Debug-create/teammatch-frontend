@@ -127,10 +127,9 @@ Page({
     this.setData({ noMore: true })
   },
 
-  // 跳转项目详情（暂不实现，后续统一串通）
+  // 跳转项目详情
   goToDetail: function(e) {
     var projectId = e.currentTarget.dataset.id
-    wx.showToast({ title: '查看项目 ' + projectId, icon: 'none' })
-    // 后续改为：wx.navigateTo({ url: '/pages/projects/detail/detail?id=' + projectId })
+    wx.navigateTo({ url: '/pages/projects/detail/detail?id=' + projectId })
   }
 })
