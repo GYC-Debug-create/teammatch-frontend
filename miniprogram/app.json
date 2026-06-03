@@ -1,10 +1,11 @@
 {
   "pages": [
+    "pages/login/login",
     "pages/index/index",
     "pages/team-center/index",
     "pages/credit-center/index",
-    "pages/login/login",
     "pages/function-hub/function-hub",
+    "pages/profile-claim/profile-claim",
     "pages/email-verify/email-verify",
     "pages/exit-vote-detail/exit-vote-detail",
     "pages/profile/skills/skills",
@@ -14,6 +15,7 @@
     "pages/profile/edit/edit",
     "pages/team-requests/team-requests",
     "pages/profile/profile",
+    "pages/profile-auth/profile-auth",
     "pages/exit-project/exit-project",
     "pages/project-members/project-members",
     "pages/evaluation/evaluation",
@@ -24,7 +26,6 @@
     "pages/my-appeals/my-appeals",
     "pages/leaderboard/leaderboard",
     "pages/vote-management/vote-management",
-    "pages/profile-claim/profile-claim",
     "pages/my-center/my-center",
     "pages/logs/logs"
   ],

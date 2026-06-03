@@ -65,7 +65,16 @@ Page({
           url: '/m4/projects/' + projectId,
           method: 'GET'
         })
-        var data = res.data || {}
+        // 检查项目是否存在
+        if (!res.data) {
+          var msg = '项目不存在'
+          wx.showToast({ title: msg, icon: 'none', duration: 2000 })
+          this.setData({ loading: false })
+          setTimeout(function() { wx.navigateBack() }, 2000)
+          return
+        }
+
+        var data = res.data
         this.setData({
           project: {
             id: data.id || projectId,

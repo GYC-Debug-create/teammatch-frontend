@@ -76,7 +76,7 @@ page {
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
-  background: #ECEDF7;
+  background-color: #ECEDF7;
   flex-shrink: 0;
 }
 
@@ -90,6 +90,23 @@ page {
   color: #111111;
   font-weight: 700;
   line-height: 50rpx;
+}
+
+.btn-get-profile {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 10rpx 28rpx;
+  background: #2f54eb;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 600;
+  border-radius: 32rpx;
+  line-height: 40rpx;
+  text-align: center;
+}
+
+.btn-get-profile::after {
+  border: 0;
 }
 
 /* 信誉分徽章 */
@@ -114,6 +131,34 @@ page {
   color: #2f54eb;
   font-weight: 900;
   line-height: 50rpx;
+}
+
+/* 后端档案信息 */
+.profile-extra {
+  margin-top: 20rpx;
+  padding: 20rpx 0 0;
+  border-top: 2rpx solid #f0f2ff;
+}
+
+.extra-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+.extra-row:last-child {
+  margin-bottom: 0;
+}
+
+.extra-icon {
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.extra-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 40rpx;
 }
 
 /* ========== 功能菜单 ========== */

@@ -15,30 +15,22 @@ App({
     logs.unshift(Date.now())
     wx.setStorageSync('logs', logs)
 
-    // 自动登录获取 token
-    this.autoLogin()
+    // 已有 token 则恢复用户信息，无 token 等用户手动登录
+    this.restoreSession()
   },
 
-  async autoLogin() {
+  restoreSession() {
     var token = wx.getStorageSync('token') || ''
-    // 已有 token 则跳过登录
-    if (token) {
-      console.log('[app] 已有 token，跳过登录')
+    if (!token) {
+      console.log('[app] 无 token，待用户登录')
       return
     }
 
-    try {
-      var result = await apiService.login('test123')
-      if (result && result.token) {
-        wx.setStorageSync('token', result.token)
-        wx.setStorageSync('userId', result.id)
-        this.globalData.userId = result.id
-        this.globalData.userInfo = result
-        console.log('[app] 自动登录成功, userId:', result.id)
-      }
-    } catch (err) {
-      console.error('[app] 自动登录失败:', err)
-    }
+    var userId = wx.getStorageSync('userId') || ''
+    var userInfo = wx.getStorageSync('userInfo')
+    this.globalData.userId = userId
+    this.globalData.userInfo = userInfo || null
+    console.log('[app] 会话恢复, userId:', userId)
   },
 
   globalData: {

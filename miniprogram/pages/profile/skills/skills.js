@@ -1,8 +1,7 @@
 // pages/profile/skills/skills.js
-const { request } = require('../../../utils/api-service.js')
-
-// ========== Mock 数据 ==========
-const USE_MOCK = false
+var api = require('../../../utils/api-service.js')
+var request = api.request
+var USE_MOCK = api.USE_MOCK
 
 const MOCK_TAGS = [
   // 语言

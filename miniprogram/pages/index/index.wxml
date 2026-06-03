@@ -49,12 +49,29 @@
       <text class="profile-icon">📊</text>
       <view class="profile-info">
         <text class="profile-title">技术画像</text>
-        <text class="profile-desc">输入 GitHub 用户名，看看全校排名</text>
+        <text class="profile-desc" wx:if="{{hasTechProfile}}">技术评分 {{techScore}} 分</text>
+        <text class="profile-desc" wx:else>输入 GitHub 用户名，看看全校排名</text>
       </view>
     </view>
-    <view class="profile-input-row">
-      <input class="profile-input" placeholder="输入 GitHub 用户名" placeholder-class="ph" />
-      <view class="btn-gen"><text>生成</text></view>
+
+    <!-- 已生成画像：展示数据 -->
+    <block wx:if="{{hasTechProfile}}">
+      <view class="tech-stats">
+        <view class="tech-stat"><text class="ts-num">{{totalRepos}}</text><text class="ts-label">仓库</text></view>
+        <view class="tech-stat"><text class="ts-num">{{totalStars}}</text><text class="ts-label">Stars</text></view>
+        <view class="tech-stat"><text class="ts-num">{{totalPrs}}</text><text class="ts-label">PR</text></view>
+        <view class="tech-stat"><text class="ts-num">{{totalCommits}}</text><text class="ts-label">Commits</text></view>
+      </view>
+      <view class="tech-langs" wx:if="{{topLanguages.length > 0}}">
+        <text class="tl-label">主力语言：</text>
+        <text class="tl-chip" wx:for="{{topLanguages}}" wx:key="*this" wx:for-item="lang">{{lang}}</text>
+      </view>
+    </block>
+
+    <!-- 未生成：输入框 + 按钮 -->
+    <view class="profile-input-row" wx:else>
+      <input class="profile-input" placeholder="输入 GitHub 用户名" placeholder-class="ph" value="{{githubUsername}}" bindinput="onGitHubInput"/>
+      <view class="btn-gen" bindtap="generateProfile"><text>生成</text></view>
     </view>
   </view>
 </view>

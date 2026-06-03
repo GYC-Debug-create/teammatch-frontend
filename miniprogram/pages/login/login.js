@@ -1,9 +1,67 @@
 // pages/login/login.js
+var apiService = require('../../utils/api-service.js')
+
 Page({
   data: {},
 
-  // 跳转到首页（微信一键登录入口）
-  goToLogin() {
-    wx.switchTab({ url: '/pages/index/index' });
+  // 微信一键登录
+  goToLogin: function() {
+    var that = this
+
+    // Step 1: 获取微信用户头像和昵称
+    wx.getUserProfile({
+      desc: '用于完善你的个人资料',
+      success: function(profileRes) {
+        var userInfo = profileRes.userInfo
+        console.log('[login] 获取微信用户信息成功', userInfo)
+
+        // Step 2: 微信登录获取临时 code，发给后端换取 token
+        wx.login({
+          success: function(loginRes) {
+            if (!loginRes.code) {
+              wx.showToast({ title: '微信登录失败', icon: 'none' })
+              return
+            }
+            console.log('[login] wx.login code:', loginRes.code)
+
+            apiService.login(loginRes.code).then(function(result) {
+              // token/id/nickname 已由 api-service login() 自动存入 storage
+              // 此处仅补充微信头像昵称
+              wx.setStorageSync('userInfo', userInfo)
+              console.log('[login] 登录成功, userId:', result.id)
+
+              wx.showToast({ title: '登录成功', icon: 'success' })
+              setTimeout(function() {
+                wx.switchTab({ url: '/pages/index/index' })
+              }, 500)
+            }).catch(function(err) {
+              console.error('[login] 后端登录失败:', err)
+              wx.showToast({ title: '登录失败，请重试', icon: 'none' })
+            })
+          },
+          fail: function() {
+            wx.showToast({ title: '微信登录失败', icon: 'none' })
+          }
+        })
+      },
+      fail: function() {
+        // 用户拒绝授权头像昵称，仍可继续登录
+        console.log('[login] 用户拒绝授权，使用默认登录')
+        wx.login({
+          success: function(loginRes) {
+            if (!loginRes.code) return
+            apiService.login(loginRes.code).then(function(result) {
+              // token/id/nickname 已由 api-service login() 自动存入 storage
+              wx.showToast({ title: '已登录', icon: 'success' })
+              setTimeout(function() {
+                wx.switchTab({ url: '/pages/index/index' })
+              }, 500)
+            }).catch(function() {
+              wx.showToast({ title: '登录失败', icon: 'none' })
+            })
+          }
+        })
+      }
+    })
   }
-});
+})

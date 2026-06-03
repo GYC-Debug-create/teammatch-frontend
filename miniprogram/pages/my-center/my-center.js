@@ -1,10 +1,19 @@
 // pages/my-center/my-center.js
+var api = require('../../utils/api-service.js')
+var request = api.request
+var USE_MOCK = api.USE_MOCK
+
 Page({
   data: {
     loading: true,
+    hasUserProfile: false,
     userInfo: {
       nickname: 'TeamMatch 用户',
-      creditScore: 100
+      avatarUrl: '',
+      creditScore: 100,
+      emailVerified: false,
+      email: '',
+      school: ''
     },
     menuList: [
       {
@@ -34,70 +43,111 @@ Page({
         title: '邮箱认证',
         desc: '绑定学校邮箱完成身份验证',
         action: 'goEmailVerify'
-      },
-      {
-        id: 'credit',
-        icon: '⭐',
-        title: '信誉分详情',
-        desc: '查看信誉分变化与历史记录',
-        action: 'goCredit'
       }
     ]
   },
 
-  onLoad() {
-    this.setData({ loading: true })
-
-    // 从本地缓存读取用户信息
-    const profile = wx.getStorageSync('profile')
-    if (profile && profile.nickname) {
-      this.setData({
-        'userInfo.nickname': profile.nickname
-      })
-    }
-
-    setTimeout(() => {
-      this.setData({ loading: false })
-    }, 600)
+  onLoad: function() {
+    this.loadUserProfile()
+    this.setData({ loading: false })
+    this.loadProfileDetail()
   },
 
-  goProjectList() {
+  onShow: function() {
+    this.loadUserProfile()
+    this.loadProfileDetail()
+  },
+
+  loadUserProfile: function() {
+    var userInfo = wx.getStorageSync('userInfo')
+    var profile = wx.getStorageSync('profile')
+
+    // 清理无效的旧缓存（avatarUrl 不以 http 开头 或 nickName 只是 "微信用户"）
+    if (userInfo && typeof userInfo === 'object') {
+      var avatarOk = userInfo.avatarUrl &&
+                     typeof userInfo.avatarUrl === 'string' &&
+                     userInfo.avatarUrl.indexOf('http') === 0
+      var nickOk = userInfo.nickName &&
+                   typeof userInfo.nickName === 'string' &&
+                   userInfo.nickName !== '微信用户'
+      if (!avatarOk || !nickOk) {
+        wx.removeStorageSync('userInfo')
+        userInfo = null
+      }
+    }
+
+    if (userInfo && userInfo.avatarUrl && userInfo.nickName) {
+      this.setData({
+        hasUserProfile: true,
+        'userInfo.avatarUrl': userInfo.avatarUrl,
+        'userInfo.nickname': userInfo.nickName
+      })
+    } else {
+      this.setData({ hasUserProfile: false })
+      if (profile && profile.nickname) {
+        this.setData({ 'userInfo.nickname': profile.nickname })
+      }
+    }
+  },
+
+  // 静默拉取后端档案数据（不影响授权逻辑）
+  async loadProfileDetail() {
+    if (USE_MOCK) return
+
+    try {
+      var res = await request({
+        url: '/profile/detail',
+        method: 'GET'
+      })
+      var data = res.data || {}
+      this.setData({
+        'userInfo.creditScore': data.creditScore != null ? data.creditScore : this.data.userInfo.creditScore,
+        'userInfo.emailVerified': data.emailVerified || false,
+        'userInfo.email': data.email || '',
+        'userInfo.school': data.school || ''
+      })
+    } catch (err) {
+      // 静默失败，保留页面原有内容
+      console.log('[my-center] 档案数据拉取失败，使用默认值')
+    }
+  },
+
+  goProfileAuth: function() {
+    wx.navigateTo({
+      url: '/pages/profile-auth/profile-auth'
+    })
+  },
+
+  goProjectList: function() {
     wx.navigateTo({
       url: '/pages/projects/list/list'
     })
   },
 
-  goProfileEdit() {
+  goProfileEdit: function() {
     wx.navigateTo({
       url: '/pages/profile/edit/edit'
     })
   },
 
-  goSkills() {
+  goSkills: function() {
     wx.navigateTo({
       url: '/pages/profile/skills/skills'
     })
   },
 
-  goEmailVerify() {
+  goEmailVerify: function() {
     wx.navigateTo({
       url: '/pages/email-verify/email-verify'
     })
   },
 
-  goCredit() {
-    wx.showToast({
-      title: '信誉分功能开发中',
-      icon: 'none',
-      duration: 1500
-    })
-  },
-
-  doLogout() {
+  doLogout: function() {
+    var that = this
     wx.showModal({
       title: '退出登录',
       content: '确定要退出登录吗？',
-      success: (res) => {
+      success: function(res) {
         if (res.confirm) {
           // 清除登录 token
           wx.removeStorageSync('token')
@@ -105,6 +155,7 @@ Page({
           wx.removeStorageSync('userToken')
           wx.removeStorageSync('sessionToken')
           wx.removeStorageSync('profile')
+          wx.removeStorageSync('userInfo')
 
           wx.showToast({
             title: '已退出登录',
@@ -112,7 +163,7 @@ Page({
             duration: 1200
           })
 
-          setTimeout(() => {
+          setTimeout(function() {
             wx.redirectTo({
               url: '/pages/login/login'
             })

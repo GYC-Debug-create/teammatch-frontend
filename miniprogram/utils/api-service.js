@@ -16,7 +16,24 @@ var USE_MOCK = false
 
 // ========== Mock 数据（仅覆盖 M3 模块接口） ==========
 var MOCK_MAP = {
-  // POST /auth/login
+  // POST /auth/login/mock（开发/测试用）
+  'POST:/auth/login/mock': function() {
+    return {
+      code: '00000',
+      message: '成功',
+      data: {
+        id: 1,
+        nickname: 'Mock用户',
+        avatarUrl: null,
+        emailVerified: false,
+        formalProfileCompleted: false,
+        creditScore: 100,
+        token: 'mock-token-' + Date.now()
+      }
+    }
+  },
+
+  // POST /auth/login（真实微信登录）
   'POST:/auth/login': function() {
     return {
       code: '00000',
@@ -172,20 +189,26 @@ function request(options) {
 }
 
 /**
- * 登录（Mock 微信登录）
- * POST /api/auth/login
- * @param {string} code - 任意字符串，用作 openid
- * @returns {Promise<Object>} { id, nickname, token, ... }
+ * 统一登录入口
+ * USE_MOCK=true  → POST /auth/login/mock  (开发测试用)
+ * USE_MOCK=false → POST /auth/login       (真实微信登录)
+ *
+ * @param {string} code - 微信 wx.login() 返回的临时 code
+ * @returns {Promise<Object>} { id, nickname, token, avatarUrl, creditScore, ... }
  */
 function login(code) {
+  var url = USE_MOCK ? '/auth/login/mock' : '/auth/login'
+  var body = USE_MOCK ? { code: 'test_openid_123' } : { code: code }
   return request({
-    url: '/auth/login',
+    url: url,
     method: 'POST',
-    data: { code: code || 'test123' }
+    data: body
   }).then(function(res) {
-    // 成功则自动保存 token
+    // 成功则自动保存 token 和基础信息
     if (res.data && res.data.token) {
       wx.setStorageSync('token', res.data.token)
+      wx.setStorageSync('userId', res.data.id)
+      wx.setStorageSync('nickname', res.data.nickname || '')
     }
     return res.data
   })

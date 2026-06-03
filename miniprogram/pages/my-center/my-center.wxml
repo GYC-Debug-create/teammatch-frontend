@@ -11,15 +11,40 @@
     <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
       <!-- 用户信息卡片 -->
       <view class="user-card">
-        <view class="user-top">
+        <!-- 已授权：显示头像和昵称 -->
+        <block wx:if="{{hasUserProfile}}">
+          <view class="user-top">
+            <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+            <view class="user-info">
+              <text class="user-nickname">{{userInfo.nickname}}</text>
+            </view>
+          </view>
+        </block>
+
+        <!-- 未授权：显示获取按钮 -->
+        <view class="user-top" wx:else>
           <image class="user-avatar" src="/assets/CodeBuddyAssets/114_182/2.svg" mode="aspectFill" />
           <view class="user-info">
             <text class="user-nickname">{{userInfo.nickname}}</text>
+            <button class="btn-get-profile" bindtap="goProfileAuth">授权微信信息</button>
           </view>
         </view>
+
         <view class="credit-badge">
           <text class="credit-label">信誉分</text>
           <text class="credit-score">{{userInfo.creditScore}}</text>
+        </view>
+
+        <!-- 后端档案数据 -->
+        <view class="profile-extra" wx:if="{{userInfo.school || userInfo.email}}">
+          <view class="extra-row" wx:if="{{userInfo.school}}">
+            <text class="extra-icon">🏫</text>
+            <text class="extra-text">{{userInfo.school}}</text>
+          </view>
+          <view class="extra-row">
+            <text class="extra-icon">✉️</text>
+            <text class="extra-text">{{userInfo.emailVerified ? '邮箱已认证' : '邮箱未认证'}}</text>
+          </view>
         </view>
       </view>
 
