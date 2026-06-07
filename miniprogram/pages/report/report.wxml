@@ -1,12 +1,4 @@
 <view class="page">
-  <!-- 顶部导航栏 -->
-  <view class="nav-bar">
-    <view class="nav-back" bindtap="goBack">
-      <text class="nav-back-icon">‹</text>
-    </view>
-    <text class="nav-title">举报</text>
-  </view>
-
   <!-- 吸顶头部区 -->
   <view class="page-sticky">
     <text class="hd-sub">TeamMatch · T-043</text>

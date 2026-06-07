@@ -18,6 +18,8 @@
     "pages/profile-auth/profile-auth",
     "pages/exit-project/exit-project",
     "pages/project-members/project-members",
+    "pages/evaluation-list/evaluation-list",
+    "pages/member-match/member-match",
     "pages/evaluation/evaluation",
     "pages/credit-history/credit-history",
     "pages/report/report",

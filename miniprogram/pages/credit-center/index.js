@@ -1,7 +1,10 @@
+var teamService = require('../../utils/team-service')
+
 Page({
   data: {
-    creditScore: 100,
-    scoreLevel: 'green'
+    creditScore: 0,
+    scoreLevel: 'green',
+    loading: true
   },
 
   onShow() {
@@ -9,9 +12,18 @@ Page({
   },
 
   loadScore() {
-    var score = wx.getStorageSync('creditScore') || 100
-    var level = score >= 80 ? 'green' : score >= 50 ? 'orange' : 'red'
-    this.setData({ creditScore: score, scoreLevel: level })
+    var that = this
+    this.setData({ loading: true })
+    teamService.getCurrentCreditScore().then(function(score) {
+      var level = score >= 80 ? 'green' : score >= 50 ? 'orange' : 'red'
+      wx.setStorageSync('creditScore', score)
+      that.setData({ creditScore: score, scoreLevel: level, loading: false })
+    }).catch(function() {
+      // 失败时回退本地缓存
+      var score = wx.getStorageSync('creditScore') || 100
+      var level = score >= 80 ? 'green' : score >= 50 ? 'orange' : 'red'
+      that.setData({ creditScore: score, scoreLevel: level, loading: false })
+    })
   },
 
   goCreditHistory() {

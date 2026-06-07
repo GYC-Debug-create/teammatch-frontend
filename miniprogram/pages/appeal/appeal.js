@@ -40,8 +40,30 @@ Page({
   async loadTargets() {
     this.setData({ loading: true, error: null })
     try {
-      var targets = await teamService.getAppealTargets(this.data.appealType)
-      this.setData({ targets: targets, loading: false })
+      var rawTargets = await teamService.getAppealTargets(this.data.appealType)
+      var mapped
+      if (this.data.appealType === 'evaluation') {
+        mapped = (rawTargets || []).map(function(e) {
+          return {
+            id: e.id || e.evaluationId,
+            displayName: '被评价 #' + (e.id || e.evaluationId),
+            desc: (e.comment || '无评语').slice(0, 50),
+            meta: '评分 ' + (e.communicationScore || 0) + '/' + (e.taskScore || 0) + '/' + (e.skillScore || 0) + '/' + (e.responsibilityScore || 0),
+            time: e.createdAt || ''
+          }
+        })
+      } else {
+        mapped = (rawTargets || []).map(function(p) {
+          return {
+            id: p.id,
+            displayName: p.type === 'credit_deduct' ? '扣分 ' + (p.creditDeductValue || 0) + '分' : p.type,
+            desc: (p.reason || '无说明').slice(0, 50),
+            meta: '处罚 · ' + (p.status === 'active' ? '生效中' : p.status),
+            time: p.createdAt || ''
+          }
+        })
+      }
+      this.setData({ targets: mapped, loading: false })
     } catch (err) {
       this.setData({ loading: false, error: '加载失败，请重试' })
     }

@@ -65,8 +65,8 @@ Page({
   },
 
   onLoad(options) {
-    const projectId = options.projectId || 1
-    const targetUserId = options.targetUserId || 2
+    const projectId = Number(options.projectId) || 0
+    const targetUserId = Number(options.targetUserId) || 0
     this.setData({ projectId, targetUserId, loading: true })
   },
 
@@ -136,11 +136,11 @@ Page({
       // 加载失败时使用默认值
       this.setData({
         targetUser: {
-          id: this.data.targetUserId || 2,
-          nickname: '林乔',
-          major: '软件工程 22级',
-          avatar: '',
-          avatarText: '林'
+        id: this.data.targetUserId || 0,
+        nickname: '加载失败',
+        major: '',
+        avatar: '',
+        avatarText: '?'
         },
         loading: false
       })
@@ -254,11 +254,11 @@ Page({
       wx.showToast({ title: '评价已提交', icon: 'success' })
       setTimeout(function() { wx.navigateBack() }, 1500)
     } catch (err) {
-      const code = err && err.code
-      let msg = '提交失败'
+      var code = err && err.code
+      var msg = (err && err.message) || '提交失败'
       if (code === 409) msg = '您已评价过该成员'
       else if (code === 422) msg = '评价窗口已关闭或项目状态不正确'
-      else if (code === 400) msg = '参数错误，请检查评分完整性'
+      else if (code === 400 || code === 'M5206' || code === 'M5201') msg = (err && err.message) || '参数错误'
       wx.showToast({ title: msg, icon: 'none' })
       this.setData({ submitting: false })
     }

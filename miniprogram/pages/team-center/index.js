@@ -18,25 +18,44 @@ Page({
 
   loadJoinedProjects() {
     var that = this
+    if (this.data.loadingJoined) return
     this.setData({ loadingJoined: true })
     teamService.getMyJoinedProjects().then(function(projects) {
-      // 统一字段映射：name/title、leader/creatorName、status、members/maxMembers
-      var mapped = projects.map(function(p) {
-        return {
-          id: p.projectId || p.id,
-          name: p.name || p.title || ('项目#' + (p.projectId || p.id)),
-          leader: p.leader || p.creatorName || '--',
-          members: p.memberCount || p.currentMembers || '--',
-          maxMembers: p.maxMembers || '--',
-          status: p.status || 'active',
-          projectId: p.projectId || p.id
-        }
+      // 并行获取每个项目的成员列表，得到真实人数
+      var countPromises = projects.map(function(p) {
+        var pid = p.projectId || p.id
+        return teamService.getMembers(pid).then(function(members) {
+          return (members && members.length) ? members.length : 0
+        }).catch(function() { return 0 })
       })
-      that.setData({ joinedProjects: mapped, loadingJoined: false })
-      that.loadPendingVotes(mapped)
+      Promise.all(countPromises).then(function(counts) {
+        var mapped = projects.map(function(p, i) {
+          var rawStatus = (p.status || '').toUpperCase()
+          var status, statusText
+          if (rawStatus === 'ENDED' || rawStatus === 'COMPLETED' || rawStatus === 'FINISHED') {
+            status = 'ended'; statusText = '已结束'
+          } else if (rawStatus === 'RECRUITING') {
+            status = 'active'; statusText = '招募中'
+          } else {
+            status = 'active'; statusText = '进行中'
+          }
+          return {
+            id: p.projectId || p.id,
+            name: p.name || p.title || ('项目#' + (p.projectId || p.id)),
+            leader: p.leader || p.creatorName || '--',
+            members: counts[i] || p.currentMembers || p.memberCount || '--',
+            maxMembers: p.maxMembers || '--',
+            status: status,
+            statusText: statusText,
+            projectId: p.projectId || p.id
+          }
+        })
+        that.setData({ joinedProjects: mapped, loadingJoined: false })
+      })
+    }).catch(function(err) {
     }).catch(function(err) {
       console.log('[team-center] 加载项目失败:', err)
-      that.setData({ loadingJoined: false, joinedProjects: [] })
+      that.setData({ loadingJoined: false })
     })
   },
 
@@ -95,12 +114,7 @@ Page({
   goEvaluation(e) {
     var id = e.currentTarget.dataset.id
     var name = e.currentTarget.dataset.name || ''
-    var project = this.data.joinedProjects.find(function(p) { return p.id === id })
-    if (project && project.status === 'active') {
-      wx.showToast({ title: '项目进行中，结束后方可互评', icon: 'none' })
-      return
-    }
-    wx.navigateTo({ url: '/pages/evaluation/evaluation?projectId=' + id + '&projectName=' + name })
+    wx.navigateTo({ url: '/pages/evaluation-list/evaluation-list?projectId=' + id + '&projectName=' + name })
   },
 
   goExitProject(e) {

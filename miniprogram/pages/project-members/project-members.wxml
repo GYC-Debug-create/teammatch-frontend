@@ -9,7 +9,6 @@
           <text class="page-header-title">项目成员</text>
           <text class="page-header-desc">管理你的团队</text>
         </view>
-        <button class="back-hub-btn" bindtap="goFunctionHub">功能选择</button>
       </view>
     </view>
 
@@ -79,7 +78,7 @@
 
         <!-- 更多图标 -->
         <image
-          wx:if="{{currentUserId === 1 && item.role !== 'leader' && item.status === 'active'}}"
+          wx:if="{{currentUserId && currentUserId !== item.userId && item.role !== 'leader' && item.status === 'active'}}"
           class="action-icon"
           src="/assets/CodeBuddyAssets/47_53/31.svg"
           mode="aspectFit"
@@ -89,4 +88,9 @@
       </view>
     </view>
   </scroll-view>
+
+  <!-- 底部邀请成员按钮（仅队长可见） -->
+  <view class="invite-bar" wx:if="{{isLeader}}">
+    <button class="invite-btn" bindtap="goInviteMember">+ 邀请成员</button>
+  </view>
 </view>

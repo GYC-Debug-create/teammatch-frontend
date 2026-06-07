@@ -37,11 +37,13 @@ Page({
     submitting: false,
     canSubmit: false,
 
-    _tagStates: {}
+    _tagStates: {},
+    _allProjects: []
   },
 
   onLoad() {
-    // 无异步操作
+    // 预加载全量项目列表用于搜索
+    this.preloadProjects()
   },
 
   onReady() {
@@ -50,8 +52,13 @@ Page({
     })
   },
 
-  goBack() {
-    wx.navigateBack()
+  preloadProjects() {
+    var that = this
+    teamService.getAllProjects().then(function(projects) {
+      that.setData({ _allProjects: projects || [] })
+    }).catch(function() {
+      that.setData({ _allProjects: [] })
+    })
   },
 
   // 切换举报类型
@@ -79,25 +86,33 @@ Page({
     }
   },
 
-  // Mock 搜索
+  // 搜索（项目用真实API，用户暂Mock）
   mockSearch(keyword) {
     var results
-    if (this.data.reportType === 'user') {
-      results = [
-        { id: 101, name: '林乔', avatarText: '林', grade: '22级', desc: '软件工程 · 计算机学院' },
-        { id: 102, name: '周予安', avatarText: '周', grade: '21级', desc: '计算机科学' }
-      ]
+    if (this.data.reportType === 'project') {
+      // 真实项目搜索
+      var projects = this.data._allProjects
+      results = projects.filter(function(p) {
+        var name = p.name || p.title || ''
+        return name.indexOf(keyword) > -1
+      }).map(function(p) {
+        return {
+          id: p.id || p.projectId,
+          name: p.name || p.title || '项目#' + (p.id || p.projectId),
+          avatarText: (p.name || 'P').slice(0, 1),
+          desc: (p.description || '').slice(0, 30)
+        }
+      })
     } else {
+      // 用户搜索暂Mock（需后端提供用户搜索接口）
       results = [
-        { id: 201, name: 'AI创新实践队', avatarText: 'AI', desc: '校园失物招领智能助手' },
-        { id: 202, name: '智能课表小程序', avatarText: '课', desc: '课程表管理与分享' }
-      ]
-    }
-    this.setData({
-      searchResults: results.filter(function(item) {
+        { id: 101, name: '林乔', avatarText: '林', desc: '软件工程 · 计算机学院' },
+        { id: 102, name: '周予安', avatarText: '周', desc: '计算机科学' }
+      ].filter(function(item) {
         return item.name.indexOf(keyword) > -1
       })
-    })
+    }
+    this.setData({ searchResults: results })
   },
 
   // 选中搜索结果

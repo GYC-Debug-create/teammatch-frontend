@@ -11,7 +11,6 @@
 
 const teamService = require('../../utils/team-service')
 const LOGIN_PAGE_URL = '/pages/index/index'
-const FUNCTION_HUB_PAGE_URL = '/pages/function-hub/function-hub'
 const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
 
 Page({
@@ -21,7 +20,8 @@ Page({
     projectTitle: 'AI创新实践队',
     projectId: 1,
     members: [],
-    currentUserId: 1,
+    currentUserId: null,
+    isLeader: false,
 
     // 新增：页面状态
     loading: false,
@@ -31,8 +31,19 @@ Page({
   onLoad(options) {
     if (!this.ensureLogin()) return
 
-    const projectId = Number(options.projectId) || 1
-    this.setData({ projectId })
+    var app = getApp()
+    var currentUserId = (app && app.globalData && app.globalData.userId) || parseInt(wx.getStorageSync('userId')) || null
+    const projectId = Number(options.projectId) || 0
+    this.setData({ projectId, currentUserId })
+    this.checkLeader(projectId, currentUserId)
+  },
+
+  async checkLeader(projectId, currentUserId) {
+    try {
+      var project = await teamService.getProjectDetail(projectId)
+      var leaderId = project.creatorId || project.creator_id || 0
+      this.setData({ isLeader: parseInt(leaderId) === parseInt(currentUserId) })
+    } catch (e) { this.setData({ isLeader: false }) }
   },
 
   onReady() {
@@ -82,11 +93,12 @@ Page({
     wx.showToast({ title: `成员操作: ${id}`, icon: 'none' })
   },
 
-  goFunctionHub() {
-    if (!this.ensureLogin()) return
 
-    wx.switchTab({
-      url: FUNCTION_HUB_PAGE_URL
+
+  goInviteMember() {
+    var name = this.data.projectTitle || ''
+    wx.navigateTo({
+      url: '/pages/member-match/member-match?projectId=' + this.data.projectId + '&projectName=' + name
     })
   },
 

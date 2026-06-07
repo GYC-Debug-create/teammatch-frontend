@@ -43,57 +43,28 @@
       <view class="sec">
         <text class="sec-label">被申诉目标</text>
 
-        <!-- 评价申诉列表 -->
-        <view wx:if="{{appealType === 'evaluation'}}" class="target-list">
-          <view
+        <!-- 可滚动目标列表 -->
+        <scroll-view class="target-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+          <view wx:for="{{targets}}" wx:key="id"
             class="target-card {{selectedTargetId === item.id ? 'selected' : ''}}"
-            wx:for="{{targets}}" wx:key="id"
             data-id="{{item.id}}"
             bindtap="selectTarget"
           >
             <view class="target-left">
-              <view class="target-thumb">📋</view>
+              <view class="target-thumb">{{appealType === 'evaluation' ? '📋' : '⚠'}}</view>
               <view class="target-info">
-                <view class="target-name-row">
-                  <text class="target-name">{{item.projectName}}</text>
-                  <view class="target-score">
-                    <text class="target-score-icon">★</text>
-                    <text class="target-score-val">{{item.avgScore}}</text>
-                  </view>
-                </view>
+                <text class="target-name">{{item.displayName}}</text>
                 <text class="target-time">{{item.time}}</text>
-                <view class="target-tags">
-                  <text
-                    class="target-tag"
-                    wx:for="{{item.tags}}" wx:key="*this"
-                  >{{item}}</text>
-                </view>
+                <text class="target-desc">{{item.desc}}</text>
+                <text class="target-meta">{{item.meta}}</text>
               </view>
             </view>
+            <view class="target-check" wx:if="{{selectedTargetId === item.id}}">✓</view>
           </view>
-        </view>
-
-        <!-- 处罚申诉列表 -->
-        <view wx:else class="target-list">
-          <view
-            class="target-card {{selectedTargetId === item.id ? 'selected' : ''}}"
-            wx:for="{{targets}}" wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="selectTarget"
-          >
-            <view class="target-left">
-              <view class="target-thumb">⚠</view>
-              <view class="target-info">
-                <view class="target-name-row">
-                  <text class="target-name">{{item.penaltyType}}</text>
-                  <text class="target-value">{{item.value}}</text>
-                </view>
-                <text class="target-reason">{{item.reason}}</text>
-                <text class="target-time">{{item.time}}</text>
-              </view>
-            </view>
+          <view class="target-empty" wx:if="{{targets.length === 0}}">
+            <text>暂无可申诉项目</text>
           </view>
-        </view>
+        </scroll-view>
       </view>
 
       <!-- 申诉理由 -->

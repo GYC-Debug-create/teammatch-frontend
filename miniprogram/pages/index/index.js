@@ -124,6 +124,14 @@ Page({
     wx.navigateTo({ url: '/pages/projects/list/list' })
   },
 
+  goCreateProject: function() {
+    wx.navigateTo({ url: '/pages/projects/create/create' })
+  },
+
+  goMemberMatch: function() {
+    wx.navigateTo({ url: '/pages/member-match/member-match' })
+  },
+
   goEmailVerify: function() {
     wx.navigateTo({ url: '/pages/email-verify/email-verify' })
   },

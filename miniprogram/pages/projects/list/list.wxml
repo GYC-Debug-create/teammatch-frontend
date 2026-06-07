@@ -7,6 +7,13 @@
       <text class="hd-title">项目广场</text>
       <text class="hd-desc">发现感兴趣的项目，找到你的团队</text>
     </view>
+    <!-- 搜索栏（吸顶不跟随滚动） -->
+    <view class="search-bar">
+      <view class="search-input">
+        <image class="search-icon" src="/assets/CodeBuddyAssets/114_182/1.svg" mode="aspectFit" />
+        <input class="search-field" placeholder="搜索项目..." placeholder-class="ph" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      </view>
+    </view>
   </view>
 
   <!-- 加载态（与参考页面一致） -->
@@ -17,15 +24,7 @@
 
   <!-- 内容区 -->
   <block wx:else>
-    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
-      <!-- 搜索栏 -->
-      <view class="search-bar">
-        <view class="search-input">
-          <image class="search-icon" src="/assets/CodeBuddyAssets/114_182/1.svg" mode="aspectFit" />
-          <input class="search-field" placeholder="搜索项目..." placeholder-class="ph" />
-        </view>
-      </view>
-
+    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower" lower-threshold="100">
       <!-- 项目列表 -->
       <view class="project-list">
         <block wx:for="{{projects}}" wx:key="id">
@@ -77,8 +76,8 @@
       </view>
 
       <!-- 没有更多 -->
-      <view class="load-more" wx:if="{{noMore}}">
-        <text class="st-txt">— 没有更多项目了 —</text>
+      <view class="load-more" wx:if="{{!hasMore && projects.length > 0}}">
+        <text class="st-txt">— 已显示全部项目 —</text>
       </view>
     </scroll-view>
   </block>

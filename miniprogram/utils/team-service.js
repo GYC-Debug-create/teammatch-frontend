@@ -21,6 +21,9 @@ function getToken() {
 
 function getUserId() {
   var app = getApp()
+  // 优先从 localStorage 读取真实登录 userId，回退到 globalData
+  var id = wx.getStorageSync('userId')
+  if (id) return id
   return (app && app.globalData && app.globalData.userId) || 0
 }
 
@@ -36,6 +39,50 @@ function authHeader() {
  */
 function isSuccessCode(code) {
   return code === 200 || code === '00000' || code === 0
+}
+
+// ========== 方法 0：发起组队请求 ==========
+
+/**
+ * 用户申请加入项目
+ * POST /api/m4/team-requests/apply
+ */
+function sendApplyRequest(projectId, fromUserId, toUserId, message) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/team-requests/apply',
+      method: 'POST',
+      header: authHeader(),
+      data: { projectId: projectId, fromUserId: fromUserId, toUserId: toUserId, message: message || '' },
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 队长邀请用户
+ * POST /api/m4/team-requests/invite
+ */
+function sendInviteRequest(projectId, targetUserId, message) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/team-requests/invite',
+      method: 'POST',
+      header: authHeader(),
+      data: { projectId: projectId, fromUserId: getUserId(), toUserId: targetUserId, message: message || '' },
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
 }
 
 // ========== 方法 1-4：组队请求 ==========
@@ -463,19 +510,60 @@ function getMyReports() {
 // ========== 方法 16-18：申诉 ==========
 
 /**
- * 获取可申诉对象列表（后端无对应接口，保留 Mock）
+ * 获取可申诉对象列表
+ * @param {'evaluation'|'penalty'} appealType
  */
 function getAppealTargets(appealType) {
   if (appealType === 'evaluation') {
-    return Promise.resolve([
-      { id: 101, projectName: 'AI创新实践队', time: '2024-05-12 14:30', avgScore: 2.5, tags: ['沟通差', '延期'] },
-      { id: 102, projectName: '智能课表小程序', time: '2024-05-10 10:15', avgScore: 2.0, tags: ['质量低'] }
-    ])
+    return getMyReceivedEvaluations()
   }
-  return Promise.resolve([
-    { id: 201, penaltyType: '扣分', time: '2024-05-01 08:00', reason: '违规处罚', value: -20 },
-    { id: 202, penaltyType: '封禁', time: '2024-04-28 09:00', reason: '恶意行为', value: '账号封禁' }
-  ])
+  return getMyActivePenalties()
+}
+
+/**
+ * 获取我收到的互评列表（用于申诉）
+ * GET /api/m5/evaluations/received?status=normal
+ */
+function getMyReceivedEvaluations() {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m5/evaluations/received',
+      method: 'GET',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) {
+          var data = res.data.data
+          var list = Array.isArray(data) ? data : (data && data.list ? data.list : [])
+          // 只返回 normal 状态（可申诉）
+          resolve(list.filter(function(e) { return e.status === 'normal' }))
+        } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 获取我的活跃处罚列表（用于申诉）
+ * GET /api/penalties/my/active
+ */
+function getMyActivePenalties() {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/penalties/my/active',
+      method: 'GET',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) {
+          var data = res.data.data
+          resolve(Array.isArray(data) ? data : (data && data.list ? data.list : []))
+        } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
 }
 
 /**
@@ -530,79 +618,131 @@ function getMyAppeals() {
 
 /**
  * 获取当前用户已加入的项目列表
- * 通过已接受的组队请求来聚合用户加入的项目，再获取项目详情
+ * 策略：team-requests(已接受) + 全局项目列表(按成员过滤) 双路聚合
  */
 function getMyJoinedProjects() {
   var userId = getUserId()
   return new Promise(function(resolve, reject) {
-    // 并行获取收到和发出的请求
-    var count = 0
-    var allRequests = []
-    function done() {
-      count++
-      if (count < 2) return
-      // 筛选 accepted 状态的请求，提取唯一 projectId
-      var accepted = allRequests.filter(function(r) { return r.status === 'accepted' })
-      var projectIds = []
-      for (var i = 0; i < accepted.length; i++) {
-        var pid = accepted[i].projectId
-        if (pid && projectIds.indexOf(pid) === -1) projectIds.push(pid)
-      }
-      if (projectIds.length === 0) {
-        resolve([])
-        return
-      }
-      // 获取项目详情
-      var detailPromises = projectIds.map(function(pid) {
+    var projectIdSet = {}
+    var allDone = 0
+
+    // 收集 projectId 并去重
+    function addProjectId(pid) {
+      if (pid && !projectIdSet[pid]) projectIdSet[pid] = true
+    }
+
+    // 检查是否所有异步源都完成
+    function checkDone() {
+      allDone++
+      if (allDone < 2) return
+      var pids = Object.keys(projectIdSet)
+      if (pids.length === 0) { resolve([]); return }
+      fetchDetails(pids)
+    }
+
+    // 用 projectIds 获取详情
+    function fetchDetails(pids) {
+      var promises = pids.map(function(pid) {
         return new Promise(function(dResolve) {
           wx.request({
             url: BASE_URL + '/m4/projects/' + pid,
             method: 'GET', header: authHeader(), timeout: 10000,
             success: function(res) {
               if (res.data && isSuccessCode(res.data.code)) {
-                var detail = res.data.data || res.data
-                detail.projectId = pid
-                dResolve(detail)
+                var d = res.data.data || res.data
+                d.projectId = parseInt(pid)
+                dResolve(d)
               } else dResolve(null)
             },
             fail: function() { dResolve(null) }
           })
         })
       })
-      Promise.all(detailPromises).then(function(details) {
+      Promise.all(promises).then(function(details) {
         resolve(details.filter(function(d) { return d !== null }))
       }).catch(function() { resolve([]) })
     }
-    // 收到
+
+    // --- 来源 1：已接受的组队请求 ---
+    var reqCount = 0, allReqs = []
+    function onReqDone() {
+      reqCount++
+      if (reqCount < 2) return
+      for (var i = 0; i < allReqs.length; i++) {
+        if (allReqs[i].status === 'accepted') addProjectId(allReqs[i].projectId)
+      }
+      checkDone()
+    }
     wx.request({
       url: BASE_URL + '/m4/team-requests?userId=' + userId + '&direction=received',
       method: 'GET', header: authHeader(), timeout: 10000,
       success: function(res) {
-        var data = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
-        if (Array.isArray(data)) allRequests = allRequests.concat(data)
-        done()
+        var d = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
+        if (Array.isArray(d)) allReqs = allReqs.concat(d)
+        onReqDone()
       },
-      fail: function() { done() }
+      fail: function() { onReqDone() }
     })
-    // 发出
     wx.request({
       url: BASE_URL + '/m4/team-requests?userId=' + userId + '&direction=sent',
       method: 'GET', header: authHeader(), timeout: 10000,
       success: function(res) {
-        var data = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
-        if (Array.isArray(data)) allRequests = allRequests.concat(data)
-        done()
+        var d = (res.data && isSuccessCode(res.data.code)) ? res.data.data : null
+        if (Array.isArray(d)) allReqs = allReqs.concat(d)
+        onReqDone()
       },
-      fail: function() { done() }
+      fail: function() { onReqDone() }
+    })
+
+    // --- 来源 2：全局项目列表 → 按成员过滤 ---
+    wx.request({
+      url: BASE_URL + '/m4/projects?pageNum=1&pageSize=100',
+      method: 'GET', header: authHeader(), timeout: 10000,
+      success: function(res) {
+        if (!res.data || !isSuccessCode(res.data.code)) { checkDone(); return }
+        var projects = res.data.data
+        var list = Array.isArray(projects) ? projects : (projects && projects.records ? projects.records : [])
+        if (list.length === 0) { checkDone(); return }
+        // 并行检查每个项目：用户是否为其成员
+        var memberChecks = list.map(function(p) {
+          var pid = p.id || p.projectId
+          if (!pid) return Promise.resolve(false)
+          return new Promise(function(mResolve) {
+            wx.request({
+              url: BASE_URL + '/m4/projects/' + pid + '/members',
+              method: 'GET', header: authHeader(), timeout: 8000,
+              success: function(mRes) {
+                if (!mRes.data || !isSuccessCode(mRes.data.code)) { mResolve(false); return }
+                var members = mRes.data.data
+                var memberList = Array.isArray(members) ? members : (members && members.list ? members.list : [])
+                for (var k = 0; k < memberList.length; k++) {
+                  var muid = memberList[k].userId || memberList[k].id
+                  if (muid == userId) { mResolve(true); return }
+                }
+                mResolve(false)
+              },
+              fail: function() { mResolve(false) }
+            })
+          })
+        })
+        Promise.all(memberChecks).then(function(results) {
+          for (var j = 0; j < results.length; j++) {
+            if (results[j]) addProjectId(list[j].id || list[j].projectId)
+          }
+          checkDone()
+        })
+      },
+      fail: function() { checkDone() }
     })
   })
 }
 
 /**
  * 获取项目所有退出投票列表（用于投票管理页）
+ * 注意：后端暂无 GET /exit/votes 列表接口（405），待后端提供后启用
  */
 function getProjectExitVotes(projectId) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function(resolve) {
     wx.request({
       url: BASE_URL + '/m4/projects/' + projectId + '/exit/votes',
       method: 'GET',
@@ -612,9 +752,11 @@ function getProjectExitVotes(projectId) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data
           resolve(Array.isArray(data) ? data : [])
-        } else reject(res.data)
+        } else {
+          resolve([])  // 接口暂未实现，返回空数组
+        }
       },
-      fail: function(err) { reject(err) }
+      fail: function() { resolve([]) }
     })
   })
 }
@@ -628,7 +770,34 @@ function getProjectPendingVotes(projectId) {
   })
 }
 
+// ========== 方法 21：全量项目（用于前端搜索） ==========
+
+/**
+ * 获取尽可能多的项目列表（前端按名称搜索用）
+ * GET /api/m4/projects?pageSize=999
+ */
+function getAllProjects() {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects?pageNum=1&pageSize=999',
+      method: 'GET',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) {
+          var data = res.data.data
+          var list = Array.isArray(data) ? data : (data && data.records ? data.records : (data && data.list ? data.list : []))
+          resolve(list)
+        } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
 module.exports = {
+  sendApplyRequest: sendApplyRequest,
+  sendInviteRequest: sendInviteRequest,
   getRequests: getRequests,
   acceptRequest: acceptRequest,
   rejectRequest: rejectRequest,
@@ -648,9 +817,12 @@ module.exports = {
   submitReport: submitReport,
   getMyReports: getMyReports,
   getAppealTargets: getAppealTargets,
+  getMyReceivedEvaluations: getMyReceivedEvaluations,
+  getMyActivePenalties: getMyActivePenalties,
   submitAppeal: submitAppeal,
   getMyAppeals: getMyAppeals,
   getMyJoinedProjects: getMyJoinedProjects,
   getProjectPendingVotes: getProjectPendingVotes,
-  getProjectExitVotes: getProjectExitVotes
+  getProjectExitVotes: getProjectExitVotes,
+  getAllProjects: getAllProjects
 }

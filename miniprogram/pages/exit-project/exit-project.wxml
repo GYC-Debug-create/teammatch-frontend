@@ -56,7 +56,6 @@
       loading="{{submitting}}"
       bindtap="onConfirmTap"
     >{{submitting ? '处理中...' : '确认退出'}}</button>
-    <text class="btn-stay" bindtap="goBack">暂时留着</text>
   </view>
 
   <!-- 二次确认弹窗 -->

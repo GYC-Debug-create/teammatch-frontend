@@ -324,3 +324,8 @@
   font-size: 40px;
   opacity: 0.5;
 }
+
+/* ========== 邀请成员 ========== */
+.invite-bar{flex-shrink:0;padding:16px 0 32px}
+.invite-btn{width:100%;height:48px;background:#0058BB;color:#fff;border-radius:12px;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;margin:0;padding:0}
+.invite-btn::after{border:0}

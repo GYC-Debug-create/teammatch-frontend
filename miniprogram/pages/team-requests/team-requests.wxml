@@ -7,11 +7,8 @@
         <text class="page-title">组队请求</text>
         <text class="page-subtitle">集中处理收到与发出的组队申请</text>
       </view>
-      <view class="hero-actions">
-        <button class="back-hub-btn" bindtap="goFunctionHub">功能选择</button>
-        <view class="hero-icon">
-          <image class="hero-icon-img" src="/assets/CodeBuddyAssets/1_18/2.svg" mode="aspectFit"></image>
-        </view>
+      <view class="hero-icon">
+        <image class="hero-icon-img" src="/assets/CodeBuddyAssets/1_18/2.svg" mode="aspectFit"></image>
       </view>
     </view>
 

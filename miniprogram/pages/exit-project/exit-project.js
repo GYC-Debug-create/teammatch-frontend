@@ -95,9 +95,7 @@ Page({
     }
   },
 
-  goBack() {
-    wx.navigateBack()
-  },
+
 
   ensureLogin() {
     const token = this.getLoginToken()

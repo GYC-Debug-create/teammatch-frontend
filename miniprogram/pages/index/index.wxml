@@ -19,6 +19,26 @@
     </view>
   </view>
 
+  <!-- 创建项目入口 -->
+  <view class="card create-card" bindtap="goCreateProject">
+    <view class="mp-content">
+      <view class="mp-badge create-badge">发起项目</view>
+      <text class="mp-title">创建项目 ✨</text>
+      <text class="mp-desc">发布你的项目，招募志同道合的队友</text>
+      <view class="mp-btn create-btn"><text>立即创建</text></view>
+    </view>
+  </view>
+
+  <!-- 推荐成员入口 -->
+  <view class="card match-card" bindtap="goMemberMatch">
+    <view class="mp-content">
+      <view class="mp-badge match-badge">智能匹配</view>
+      <text class="mp-title">推荐成员 👥</text>
+      <text class="mp-desc">根据项目技能标签匹配最合适的队友</text>
+      <view class="mp-btn match-btn"><text>去看看</text></view>
+    </view>
+  </view>
+
   <!-- 冷启动认证引导 -->
   <view class="card auth-card" wx:if="{{!isEmailVerified}}">
     <view class="auth-center">

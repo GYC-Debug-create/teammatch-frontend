@@ -10,7 +10,6 @@
 
 const teamService = require('../../utils/team-service')
 const LOGIN_PAGE_URL = '/pages/index/index'
-const FUNCTION_HUB_PAGE_URL = '/pages/function-hub/function-hub'
 const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
 
 const statusMetaMap = {
@@ -76,11 +75,7 @@ Page({
     this.loadRequests()
   },
 
-  goFunctionHub() {
-    wx.switchTab({
-      url: FUNCTION_HUB_PAGE_URL
-    })
-  },
+
 
   switchTab(event) {
     if (!this.ensureLogin()) return
@@ -107,7 +102,13 @@ Page({
         return
       }
 
-      const list = (res.data.list || []).map(item => {
+      var rawData = res.data.list || []
+      var cancelledIds = wx.getStorageSync('cancelled_requests') || []
+      const list = rawData.map(item => {
+        // 用本地 storage 覆盖后端可能丢失的 cancelled 状态
+        if (cancelledIds.indexOf(item.id) !== -1) {
+          item.status = 'cancelled'
+        }
         const meta = statusMetaMap[item.status] || statusMetaMap.pending
         const isReceived = activeTab === 'received'
 
@@ -200,12 +201,28 @@ Page({
       } else if (action === 'cancel') {
         result = await teamService.cancelRequest(requestId)
         this.updateRequestStatus(requestId, 'cancelled')
-        this.removeRequestFromList(requestId)
+        // 持久化已取消的请求 ID
+        var cancelledIds = wx.getStorageSync('cancelled_requests') || []
+        if (cancelledIds.indexOf(requestId) === -1) {
+          cancelledIds.push(requestId)
+          wx.setStorageSync('cancelled_requests', cancelledIds)
+        }
         wx.showToast({ title: '已取消', icon: 'success' })
       }
       console.log('[T-034] doAction success', { requestId, action, result })
     } catch (err) {
-      const msg = (err && err.message) || '操作失败'
+      var code = err && err.code
+      // M4005：取消时后端已执行但返回非成功码，视为已生效
+      if (code === 'M4005' && action === 'cancel') {
+        this.updateRequestStatus(requestId, 'cancelled')
+        var cancelledIds = wx.getStorageSync('cancelled_requests') || []
+        if (cancelledIds.indexOf(requestId) === -1) {
+          cancelledIds.push(requestId)
+          wx.setStorageSync('cancelled_requests', cancelledIds)
+        }
+        return
+      }
+      var msg = (err && err.message) || '操作失败'
       console.log('[T-034] doAction failed', { requestId, action, err })
       wx.showToast({ title: msg, icon: 'none' })
     }

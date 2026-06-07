@@ -36,12 +36,12 @@
         <view class="proj-avatar">{{item.name[0]}}</view>
         <view class="proj-info">
           <text class="proj-name">{{item.name}}</text>
-          <text class="proj-meta">{{item.leader}} · {{item.members}}人 · {{item.status==='active'?'进行中':'已结束'}}</text>
+          <text class="proj-meta">{{item.leader}} · {{item.members}}人 · {{item.statusText}}</text>
         </view>
       </view>
       <view class="proj-actions">
         <view class="proj-act proj-act-members" bindtap="goProjectMembers" data-id="{{item.id}}">成员</view>
-        <view class="proj-act {{item.status==='active'?'proj-act-disabled':'proj-act-eval'}}" bindtap="goEvaluation" data-id="{{item.id}}" data-name="{{item.name}}">互评</view>
+        <view class="proj-act {{item.status==='active'?'proj-act-disabled':'proj-act-eval'}}" bindtap="{{item.status==='active'?'':'goEvaluation'}}" data-id="{{item.id}}" data-name="{{item.name}}">互评</view>
       </view>
       <view class="proj-actions proj-actions-secondary">
         <view class="proj-act proj-act-exit" bindtap="goExitProject" data-id="{{item.id}}">退出项目</view>

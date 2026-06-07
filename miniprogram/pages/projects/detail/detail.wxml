@@ -71,10 +71,13 @@
     </scroll-view>
 
     <!-- 底部操作栏 -->
-    <view class="bottom-bar" wx:if="{{project.status === 'recruiting'}}">
+    <view class="bottom-bar" wx:if="{{project.status === 'recruiting' && !project.isCreator}}">
       <button class="apply-btn" bindtap="applyJoin">申请加入</button>
     </view>
-    <view class="bottom-bar" wx:elif="{{project.status !== 'recruiting'}}">
+    <view class="bottom-bar" wx:elif="{{project.isCreator}}">
+      <button class="apply-btn" disabled>这是你的项目</button>
+    </view>
+    <view class="bottom-bar" wx:else>
       <button class="apply-btn" disabled>已无法申请</button>
     </view>
   </block>

@@ -140,8 +140,7 @@ Page({
 
     this.setData({ submitting: true, errorMsg: '' })
 
-    var userInfo = wx.getStorageSync('userInfo') || {}
-    var creatorId = userInfo.id || 1
+    var creatorId = wx.getStorageSync('userId') || 0
 
     try {
       await request({

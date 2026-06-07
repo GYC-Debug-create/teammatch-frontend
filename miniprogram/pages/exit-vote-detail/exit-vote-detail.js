@@ -39,10 +39,10 @@ Page({
   },
 
   onLoad(options) {
-    const voteId = parseInt(options.voteId) || 1
+    const voteId = parseInt(options.voteId) || 0
     const projectId = parseInt(options.projectId) || 0
     const app = getApp()
-    const currentUserId = (app && app.globalData && app.globalData.userId) || 1
+    const currentUserId = (app && app.globalData && app.globalData.userId) || null
     this.setData({ voteId, projectId, currentUserId })
   },
 
@@ -234,7 +234,5 @@ Page({
     return this.data.currentUserId === this.data.voteInfo.initiatorId
   },
 
-  goBack() {
-    wx.navigateBack()
-  }
+
 })

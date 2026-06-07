@@ -1,6 +1,7 @@
 // pages/projects/detail/detail.js
 var api = require('../../../utils/api-service.js')
 var request = api.request
+var teamService = require('../../../utils/team-service.js')
 var USE_MOCK = api.USE_MOCK
 
 // ========== Mock 项目详情 ==========
@@ -87,6 +88,8 @@ Page({
             statusText: getStatusText(data.status),
             skills: data.skills || [],
             deadline: data.deadline || '',
+            creatorId: data.creatorId || data.creator_id || 0,
+            isCreator: parseInt(data.creatorId || data.creator_id || 0) === parseInt(wx.getStorageSync('userId'))
             creatorName: data.creatorName || data.creator_name || '',
             creatorAvatar: data.creatorAvatar || data.creator_avatar || '',
             members: data.members || [],
@@ -101,9 +104,29 @@ Page({
     }
   },
 
-  // 申请加入（占位，后续实现）
+  // 申请加入
   applyJoin: function() {
-    wx.showToast({ title: '申请功能开发中', icon: 'none' })
+    var that = this
+    var projectId = this.data.project.id
+    var toUserId = this.data.project.creatorId  // 项目队长
+    var fromUserId = parseInt(wx.getStorageSync('userId')) || 0
+    wx.showModal({
+      title: '申请加入',
+      content: '确定要申请加入「' + (this.data.project.title || '') + '」吗？',
+      success: function(res) {
+        if (!res.confirm) return
+        wx.showLoading({ title: '申请中' })
+        teamService.sendApplyRequest(projectId, fromUserId, toUserId, '我对这个项目很感兴趣，希望能加入团队').then(function() {
+          wx.hideLoading()
+          wx.showToast({ title: '申请已发送', icon: 'success' })
+        }).catch(function(err) {
+          wx.hideLoading()
+          var msg = (err && err.message) || '申请失败'
+          if (err && err.code === 'M1003') msg = '您已申请过该项目'
+          wx.showToast({ title: msg, icon: 'none' })
+        })
+      }
+    })
   },
 
   // 查看成员详情（占位，后续串通）
