@@ -28,6 +28,7 @@
     "pages/my-appeals/my-appeals",
     "pages/leaderboard/leaderboard",
     "pages/vote-management/vote-management",
+    "pages/initiate-vote/initiate-vote",
     "pages/my-center/my-center",
     "pages/logs/logs"
   ],

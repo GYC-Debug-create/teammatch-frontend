@@ -1,9 +1,12 @@
 // pages/profile-auth/profile-auth.js
+const { request } = require('../../utils/api-service.js')
+
 Page({
   data: {
     avatarUrl: '',
     nickName: '',
-    canSubmit: false
+    canSubmit: false,
+    submitting: false
   },
 
   onChooseAvatar: function(e) {
@@ -31,16 +34,32 @@ Page({
       return
     }
 
+    this.setData({ submitting: true })
+
+    // 1. 保存到本地缓存
     var userInfo = {
       avatarUrl: this.data.avatarUrl,
       nickName: nickName
     }
     wx.setStorageSync('userInfo', userInfo)
-    console.log('[profile-auth] 保存 userInfo:', userInfo)
 
-    wx.showToast({ title: '授权成功', icon: 'success' })
-    setTimeout(function() {
-      wx.navigateBack()
-    }, 800)
+    // 2. 同步写入后端
+    request({
+      url: '/profile/update',
+      method: 'PUT',
+      data: {
+        nickname: nickName,
+        avatarUrl: this.data.avatarUrl
+      }
+    }).then(function() {
+      that.setData({ submitting: false })
+      wx.showToast({ title: '授权成功', icon: 'success' })
+      setTimeout(function() { wx.navigateBack() }, 800)
+    }).catch(function() {
+      // 后端写入失败不影响本地授权
+      that.setData({ submitting: false })
+      wx.showToast({ title: '已授权（后台同步失败）', icon: 'none' })
+      setTimeout(function() { wx.navigateBack() }, 1200)
+    })
   }
 })

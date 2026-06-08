@@ -5,6 +5,14 @@
     <text class="hero-sub" wx:else>基于你创建的项目推荐合适队友</text>
   </view>
 
+  <!-- 首页进入：多项目选择栏 -->
+  <view class="project-bar" wx:if="{{showProjectBar}}">
+    <text class="project-bar-label">邀请到：</text>
+    <view class="project-bar-chip {{item.id === activeProjectId ? 'chip-active' : ''}}" wx:for="{{myProjects}}" wx:key="id" bindtap="switchActiveProject" data-project-id="{{item.id}}">
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
   <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input">
@@ -27,7 +35,8 @@
   <scroll-view class="user-scroll" scroll-y enhanced show-scrollbar="{{false}}" wx:else>
     <view class="user-card" wx:for="{{filteredUsers}}" wx:key="userId">
       <view class="user-left">
-        <view class="user-avatar">{{item.avatarText}}</view>
+        <image wx:if="{{item.avatarUrl}}" class="user-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="user-avatar">{{item.avatarText}}</view>
         <view class="user-info">
           <view class="user-name-row">
             <text class="user-name">{{item.nickname}}</text>

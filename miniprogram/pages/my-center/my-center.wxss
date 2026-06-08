@@ -78,6 +78,17 @@ page {
   border-radius: 50%;
   background-color: #ECEDF7;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-avatar-txt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 88, 187, 0.10);
+  color: #0058BB;
+  font-size: 36rpx;
+  font-weight: 700;
 }
 
 .user-info {

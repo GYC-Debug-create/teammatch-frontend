@@ -159,17 +159,17 @@
         <!-- 申诉原因 -->
         <div class="detail-section">
           <h4 class="section-title">申诉原因</h4>
-          <div class="reason-box">{{ currentAppeal.description }}</div>
+          <div class="reason-box">{{ currentAppeal.reason }}</div>
         </div>
 
         <!-- 关联对象详情 -->
         <div class="detail-section" v-if="currentAppeal.relatedDetail">
           <h4 class="section-title">
-            {{ currentAppeal.appealType === 'evaluation' ? '原评价详情' : '处罚详情' }}
+            {{ currentAppeal.targetType === 'evaluation' ? '原评价详情' : '处罚详情' }}
           </h4>
           <div class="related-card">
             <!-- 评价申诉 -->
-            <template v-if="currentAppeal.appealType === 'evaluation'">
+            <template v-if="currentAppeal.targetType === 'evaluation'">
               <div class="score-grid">
                 <div v-for="(score, key) in currentAppeal.relatedDetail.scores" :key="key" class="score-item">
                   <span class="score-label">{{ scoreLabels[key] }}</span>
@@ -213,7 +213,7 @@
         <div class="detail-section" v-if="currentAppeal.status !== 'pending'">
           <h4 class="section-title">处理记录</h4>
           <div class="record-box">
-            <span>处理人：{{ currentAppeal.handler }}</span>
+            <span>处理人：管理员#{{ currentAppeal.handlerId }}</span>
             <span class="record-sep">|</span>
             <span>时间：{{ currentAppeal.handledAt }}</span>
             <br />

@@ -1,5 +1,9 @@
+@import '../../utils/render-fix.wxss';
+
 page {
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   min-height: 100vh;
   background: #F8F9FC;
   color: #0D121C;
@@ -10,6 +14,7 @@ page {
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 100vw;
   height: 100vh;
   background: #F8F9FC;
   box-sizing: border-box;
@@ -54,8 +59,10 @@ page {
 .page-sticky {
   flex-shrink: 0;
   width: 100%;
+  max-width: 100vw;
   padding: 0 16rpx 0;
   box-sizing: border-box;
+  background: #F8F9FC;
 }
 
 .hd-sub {
@@ -130,6 +137,8 @@ page {
   overflow-y: auto;
   box-sizing: border-box;
   padding: 0 16rpx 32rpx;
+  background: #F8F9FC;
+  transform: translateZ(0);
 }
 .sv::-webkit-scrollbar {
   display: none;
@@ -203,7 +212,6 @@ page {
   border-radius: 24rpx;
   outline: 2rpx solid rgba(194, 198, 213, 0.30);
   outline-offset: -2rpx;
-  overflow: hidden;
 }
 
 .search-item {
@@ -229,6 +237,7 @@ page {
   font-weight: 700;
   flex-shrink: 0;
   margin-right: 20rpx;
+  overflow: hidden;
 }
 
 .search-item-info {
@@ -286,6 +295,7 @@ page {
   color: #0058BB;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .target-info {

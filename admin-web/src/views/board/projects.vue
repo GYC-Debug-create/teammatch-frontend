@@ -21,7 +21,7 @@
         </template>
         <el-table-column prop="name" label="项目名称" min-width="200" />
         <el-table-column prop="leader" label="队长" width="120" />
-        <el-table-column prop="memberCount" label="成员数" width="100" align="center" />
+        <el-table-column prop="memberCount" label="人数上限" width="100" align="center" />
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <span :class="['status-tag', row.status === 'active' ? 'status-active' : 'status-done']">
@@ -51,14 +51,15 @@ const rawProjects = ref([])
 const boardName = computed(() => route.query.name || '未知板块')
 const boardId = computed(() => parseInt(route.params.id) || 0)
 
+// BoardProjectSummaryVO: { id, creatorId, title, status, maxMembers, createdAt }
 const projectList = computed(() => {
   return rawProjects.value.map(p => ({
-    id: p.id || p.projectId,
-    name: p.name || p.title || ('项目#' + (p.id || p.projectId)),
-    leader: p.leader || p.creatorName || p.creator_name || '--',
-    memberCount: p.currentMembers || p.memberCount || p.members || '--',
+    id: p.id,
+    name: p.title || ('项目#' + p.id),
+    leader: p.creatorId ? ('用户#' + p.creatorId) : '--',
+    memberCount: p.maxMembers !== undefined ? p.maxMembers : '--',
     status: p.status || 'active',
-    createdDate: (p.createdAt || p.created_at || '').slice(0, 10)
+    createdDate: (p.createdAt || '').slice(0, 10)
   }))
 })
 
@@ -66,15 +67,7 @@ const fetchProjects = async () => {
   loading.value = true
   try {
     const data = await getBoardProjects(boardId.value)
-    let list = Array.isArray(data) ? data : (data.records || data.list || [])
-    // 按 boardId 过滤（兼容 boardId / board_id）
-    if (boardId.value > 0) {
-      list = list.filter(p => {
-        var bid = p.boardId !== undefined ? p.boardId : p.board_id
-        return bid === undefined || bid === boardId.value
-      })
-    }
-    rawProjects.value = list
+    rawProjects.value = Array.isArray(data) ? data : (data.records || data.list || [])
   } catch (e) {
     rawProjects.value = []
   } finally {

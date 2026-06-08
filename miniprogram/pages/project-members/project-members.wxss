@@ -143,6 +143,16 @@
   color: #727784;
 }
 
+.member-avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 4rpx solid #ffffff;
+  box-sizing: border-box;
+}
+
 /* ========== 信息区 ========== */
 .member-info {
   flex: 1;

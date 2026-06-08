@@ -105,7 +105,7 @@
     <view class="entry-card entry-card--blue" bindtap="goEmailVerify">
       <view class="entry-main">
         <text class="entry-title">邮箱认证</text>
-        <text class="entry-subtitle">绑定学校邮箱，完成身份认证</text>
+        <text class="entry-subtitle">绑定邮箱，完成身份认证</text>
       </view>
       <text class="entry-arrow">›</text>
     </view>

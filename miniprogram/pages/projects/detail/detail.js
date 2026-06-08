@@ -76,6 +76,21 @@ Page({
         }
 
         var data = res.data
+        var creatorId = data.creatorId || data.creator_id || 0
+        var creatorName = data.creatorName || data.creator_name || ''
+        var creatorAvatar = data.creatorAvatar || data.creator_avatar || ''
+
+        // 后端没返回创建者信息时，主动拉取用户详情
+        if (!creatorName && creatorId) {
+          try {
+            var profile = await teamService.getUserProfile(creatorId)
+            creatorName = profile.nickname || '未知用户'
+            creatorAvatar = profile.avatarUrl || profile.avatar || ''
+          } catch (e) {
+            creatorName = '未知用户'
+          }
+        }
+
         this.setData({
           project: {
             id: data.id || projectId,
@@ -88,10 +103,10 @@ Page({
             statusText: getStatusText(data.status),
             skills: data.skills || [],
             deadline: data.deadline || '',
-            creatorId: data.creatorId || data.creator_id || 0,
-            isCreator: parseInt(data.creatorId || data.creator_id || 0) === parseInt(wx.getStorageSync('userId'))
-            creatorName: data.creatorName || data.creator_name || '',
-            creatorAvatar: data.creatorAvatar || data.creator_avatar || '',
+            creatorId: creatorId,
+            isCreator: parseInt(creatorId) === parseInt(wx.getStorageSync('userId')),
+            creatorName: creatorName || '未知用户',
+            creatorAvatar: creatorAvatar || '',
             members: data.members || [],
             createdAt: data.createdAt || data.created_at || ''
           },
@@ -122,7 +137,7 @@ Page({
         }).catch(function(err) {
           wx.hideLoading()
           var msg = (err && err.message) || '申请失败'
-          if (err && err.code === 'M1003') msg = '您已申请过该项目'
+          if (err && err.code === 'M1003') msg = '项目已开始，无法申请加入'
           wx.showToast({ title: msg, icon: 'none' })
         })
       }

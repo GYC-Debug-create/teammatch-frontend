@@ -39,7 +39,7 @@ function mapItem(item, index) {
   return {
     rank: item.rank != null ? item.rank : (index + 1),
     userId: item.userId,
-    username: item.nickname || ('用户#' + (item.userId || '')),
+    username: item.nickname || '未知用户',
     avatarUrl: item.avatarUrl || '',
     githubUsername: item.githubUsername || '',
     skills: item.skills || parseLanguages(item.topLanguages),

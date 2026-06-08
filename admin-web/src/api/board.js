@@ -25,7 +25,7 @@ export function deleteBoard(id) {
   return request({ url: `/admin/boards/${id}`, method: 'delete' })
 }
 
-/** 获取板块下的项目列表（后端暂无管理端接口，用 m4 全量项目接口前端过滤） */
+/** 获取板块下的项目列表 GET /admin/boards/{id}/projects → List<BoardProjectSummaryVO> */
 export function getBoardProjects(boardId) {
-  return request({ url: '/m4/projects?pageNum=1&pageSize=999', method: 'get' })
+  return request({ url: `/admin/boards/${boardId}/projects`, method: 'get' })
 }

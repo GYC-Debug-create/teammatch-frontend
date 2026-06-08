@@ -25,11 +25,7 @@ Page({
   async sendCode() {
     const { email, countdown } = this.data;
     if (!email.trim()) {
-      this.setData({ errorMsg: '请先输入学校邮箱' });
-      return;
-    }
-    if (!email.endsWith('.edu.cn')) {
-      this.setData({ errorMsg: '请使用学校邮箱（.edu.cn）' });
+      this.setData({ errorMsg: '请先输入邮箱地址' });
       return;
     }
     if (countdown > 0) return;

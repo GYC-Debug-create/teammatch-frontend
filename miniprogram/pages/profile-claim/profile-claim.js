@@ -7,8 +7,8 @@ Page({
     steps: [
       {
         step: 1,
-        title: '绑定学校邮箱',
-        desc: '使用 .edu.cn 邮箱验证学生身份',
+        title: '绑定邮箱',
+        desc: '使用邮箱验证学生身份',
         btnText: '去认证',
         action: 'goEmailVerify'
       },

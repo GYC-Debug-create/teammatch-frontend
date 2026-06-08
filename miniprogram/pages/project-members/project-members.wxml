@@ -48,14 +48,14 @@
         wx:key="id"
       >
         <!-- 头像 -->
-        <view class="member-avatar-wrap {{item.role === 'leader' ? 'leader' : (item.status === 'active' ? 'active' : 'exited')}}">
+        <view class="member-avatar-wrap {{item.role === 'leader' ? 'leader' : (item.status === 'active' ? 'active' : 'exited')}}" wx:if="{{!item.avatarUrl}}">
           <text class="member-avatar-text">{{item.nickname ? item.nickname.slice(0, 1) : '?'}}</text>
         </view>
+        <image wx:else class="member-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
 
         <!-- 信息区 -->
         <view class="member-info">
           <text class="member-name">{{item.nickname}}</text>
-          <text class="member-id">ID: {{item.userId}}</text>
           <text class="exit-reason" wx:if="{{item.status === 'exited'}}">
             {{item.exitMode === 'self_exit' ? '主动退出' : '被投票移除'}} · {{item.exitDate}}
           </text>
@@ -76,7 +76,7 @@
           </view>
         </view>
 
-        <!-- 更多图标 -->
+        <!-- 更多图标：队长可发起移除投票 -->
         <image
           wx:if="{{currentUserId && currentUserId !== item.userId && item.role !== 'leader' && item.status === 'active'}}"
           class="action-icon"
@@ -84,6 +84,9 @@
           mode="aspectFit"
           bindtap="handleMemberAction"
           data-id="{{item.id}}"
+          data-user-id="{{item.userId}}"
+          data-nickname="{{item.nickname}}"
+          data-credit-score="{{item.creditScore}}"
         />
       </view>
     </view>

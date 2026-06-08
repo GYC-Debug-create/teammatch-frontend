@@ -4,6 +4,12 @@ page{background:#F9F9FF;color:#191C22}
 .hero-title{display:block;font-size:18px;font-weight:700;color:#191C22}
 .hero-sub{display:block;font-size:13px;color:#424753;margin-top:2px}
 
+/* 项目选择栏 */
+.project-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-shrink:0;flex-wrap:wrap}
+.project-bar-label{font-size:13px;color:#727784;flex-shrink:0}
+.project-bar-chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;background:#EDEEF4;color:#424753;white-space:nowrap}
+.project-bar-chip.chip-active{background:#0058BB;color:#fff;font-weight:600}
+
 .search-bar{margin-bottom:14px;flex-shrink:0}
 .search-input{background:#fff;border-radius:10px;padding:10px 16px;display:flex;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
 .search-field{flex:1;font-size:15px;color:#191C22}
@@ -16,7 +22,7 @@ page{background:#F9F9FF;color:#191C22}
 .user-scroll{flex:1;overflow-y:auto}
 .user-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.03);padding:16px;margin-bottom:12px}
 .user-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
-.user-avatar{width:44px;height:44px;border-radius:50%;background:#D2E4FF;color:#0058BB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.user-avatar{width:44px;height:44px;border-radius:50%;background:#D2E4FF;color:#0058BB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden}
 .user-info{flex:1;min-width:0}
 .user-name-row{display:flex;align-items:center;gap:8px}
 .user-name{font-size:16px;font-weight:600;color:#191C22}

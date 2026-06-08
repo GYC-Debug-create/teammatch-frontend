@@ -67,10 +67,11 @@
 
       <!-- 成员行：头像 + 昵称 + 描述 -->
       <view class="member-row">
-        <view class="avatar">{{item.avatarText}}</view>
+        <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar">{{item.avatarText}}</view>
         <view class="member-info">
-          <text class="member-name">{{item.counterpart.nickname}}</text>
-          <text class="member-tag">{{item.counterpart.major}}</text>
+          <text class="member-name">{{item.counterpartLabel}} {{item.counterpartNickname}}</text>
+          <text class="member-tag" wx:if="{{item.major}}">{{item.major}}</text>
         </view>
       </view>
 
@@ -82,8 +83,8 @@
       <!-- 信息网格：角色 + 时间 -->
       <view class="meta-grid">
         <view class="meta-cell">
-          <text class="meta-label">{{item.requestType === 'invite' ? '邀请角色' : '申请角色'}}</text>
-          <text class="meta-value">{{item.displayRole || item.counterpart.major}}</text>
+          <text class="meta-label">专业</text>
+          <text class="meta-value">{{item.major || '--'}}</text>
         </view>
         <view class="meta-cell">
           <text class="meta-label">{{item.requestType === 'invite' ? '邀请时间' : '申请时间'}}</text>

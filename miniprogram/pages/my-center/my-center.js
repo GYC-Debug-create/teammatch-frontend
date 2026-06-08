@@ -41,7 +41,7 @@ Page({
         id: 'email',
         icon: '📧',
         title: '邮箱认证',
-        desc: '绑定学校邮箱完成身份验证',
+        desc: '绑定邮箱完成身份验证',
         action: 'goEmailVerify'
       }
     ]
@@ -60,9 +60,8 @@ Page({
 
   loadUserProfile: function() {
     var userInfo = wx.getStorageSync('userInfo')
-    var profile = wx.getStorageSync('profile')
 
-    // 清理无效的旧缓存（avatarUrl 不以 http 开头 或 nickName 只是 "微信用户"）
+    // 清理无效的旧缓存
     if (userInfo && typeof userInfo === 'object') {
       var avatarOk = userInfo.avatarUrl &&
                      typeof userInfo.avatarUrl === 'string' &&
@@ -82,15 +81,14 @@ Page({
         'userInfo.avatarUrl': userInfo.avatarUrl,
         'userInfo.nickname': userInfo.nickName
       })
-    } else {
-      this.setData({ hasUserProfile: false })
-      if (profile && profile.nickname) {
-        this.setData({ 'userInfo.nickname': profile.nickname })
-      }
+      return
     }
+
+    // 没有微信授权时，后端数据在 loadProfileDetail 中异步填充
+    this.setData({ hasUserProfile: false })
   },
 
-  // 静默拉取后端档案数据（不影响授权逻辑）
+  // 拉取后端档案数据（昵称、头像、信誉分等）
   async loadProfileDetail() {
     if (USE_MOCK) return
 
@@ -100,14 +98,25 @@ Page({
         method: 'GET'
       })
       var data = res.data || {}
-      this.setData({
+      var update = {
         'userInfo.creditScore': data.creditScore != null ? data.creditScore : this.data.userInfo.creditScore,
         'userInfo.emailVerified': data.emailVerified || false,
         'userInfo.email': data.email || '',
         'userInfo.school': data.school || ''
-      })
+      }
+
+      // 没有微信授权时，用后端档案的昵称和头像
+      if (!this.data.hasUserProfile) {
+        if (data.nickname && data.nickname !== 'TeamMatch User') {
+          update['userInfo.nickname'] = data.nickname
+        }
+        if (data.avatarUrl || data.avatar_url) {
+          update['userInfo.avatarUrl'] = data.avatarUrl || data.avatar_url
+        }
+      }
+
+      this.setData(update)
     } catch (err) {
-      // 静默失败，保留页面原有内容
       console.log('[my-center] 档案数据拉取失败，使用默认值')
     }
   },

@@ -80,19 +80,19 @@ Page({
     var keyword = e.detail.value
     this.setData({ searchKeyword: keyword })
     if (keyword.trim()) {
-      this.mockSearch(keyword)
+      this.doSearch(keyword)
     } else {
       this.setData({ searchResults: [] })
     }
   },
 
-  // 搜索（项目用真实API，用户暂Mock）
-  mockSearch(keyword) {
-    var results
+  // 搜索（项目用真实API，用户用新接口 GET /api/users?keyword=）
+  doSearch(keyword) {
+    var that = this
     if (this.data.reportType === 'project') {
-      // 真实项目搜索
+      // 真实项目搜索（本地过滤）
       var projects = this.data._allProjects
-      results = projects.filter(function(p) {
+      var results = projects.filter(function(p) {
         var name = p.name || p.title || ''
         return name.indexOf(keyword) > -1
       }).map(function(p) {
@@ -103,16 +103,24 @@ Page({
           desc: (p.description || '').slice(0, 30)
         }
       })
+      that.setData({ searchResults: results })
     } else {
-      // 用户搜索暂Mock（需后端提供用户搜索接口）
-      results = [
-        { id: 101, name: '林乔', avatarText: '林', desc: '软件工程 · 计算机学院' },
-        { id: 102, name: '周予安', avatarText: '周', desc: '计算机科学' }
-      ].filter(function(item) {
-        return item.name.indexOf(keyword) > -1
+      // 用户搜索：对接新接口 GET /api/users?keyword=xxx
+      teamService.searchUsers(keyword, 1, 20).then(function(users) {
+        var results = (users || []).map(function(u) {
+          return {
+            id: u.userId || u.id,
+            name: u.nickname || u.name || '未知用户',
+            avatarUrl: u.avatarUrl || u.avatar || u.avatar_url || '',
+            avatarText: (u.nickname || u.name || 'U').slice(0, 1),
+            desc: (u.school || u.department || u.bio || '').slice(0, 30)
+          }
+        })
+        that.setData({ searchResults: results })
+      }).catch(function() {
+        that.setData({ searchResults: [] })
       })
     }
-    this.setData({ searchResults: results })
   },
 
   // 选中搜索结果

@@ -26,9 +26,9 @@ Page({
         if ((item.targetType || item.target_type) === 'user' && targetId) {
           try {
             var profile = await teamService.getUserProfile(targetId)
-            report.targetName = profile.nickname || ('用户#' + targetId)
+            report.targetName = profile.nickname || '未知用户'
           } catch (e) {
-            report.targetName = '用户#' + targetId
+            report.targetName = '未知用户'
           }
         }
         reports.push(report)

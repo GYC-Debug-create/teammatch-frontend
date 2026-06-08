@@ -92,12 +92,12 @@ Page({
     return teamService.getUserProfile(userId).then(function(user) {
       return {
         id: user.id || user.userId || userId,
-        nickname: user.nickname || ('用户' + userId),
+        nickname: user.nickname || '未知用户',
         avatar: user.avatarUrl || user.avatar || '',
         trustScore: user.creditScore || user.trustScore || 0
       }
     }).catch(function() {
-      return { id: userId, nickname: '用户' + userId, avatar: '', trustScore: 0 }
+      return { id: userId, nickname: '未知用户', avatar: '', trustScore: 0 }
     })
   },
 
@@ -202,12 +202,9 @@ Page({
       wx.showToast({ title: '投票成功', icon: 'success' })
       this.loadVoteDetail()
     }).catch(err => {
-      const code = err && err.code
-      let msg = '投票失败'
-      if (code === 409) msg = '操作已失效，请刷新'
-      else if (code === 422) msg = '投票已关闭'
-      wx.showToast({ title: msg, icon: 'none' })
+      var msg = (err && err.message) || '操作失败'
       this.setData({ submitting: false })
+      wx.showToast({ title: msg, icon: 'none' })
     })
   },
 
@@ -222,8 +219,9 @@ Page({
           teamService.closeExitVote(this.data.projectId, this.data.voteId).then(() => {
             wx.showToast({ title: '投票已关闭', icon: 'success' })
             this.loadVoteDetail()
-          }).catch(() => {
-            wx.showToast({ title: '关闭失败', icon: 'none' })
+          }).catch(err => {
+            var msg = (err && err.message) || '操作失败'
+            wx.showToast({ title: msg, icon: 'none' })
           })
         }
       }

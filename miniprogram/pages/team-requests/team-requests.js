@@ -93,8 +93,9 @@ Page({
 
     this.setData({ loading: true, error: '' })
 
-    teamService.getRequests(activeTab).then(res => {
-      if (res.code !== 200) {
+    teamService.getRequests(activeTab).then(async res => {
+      var rawData = (res.data && res.data.list) || []
+      if (rawData.length === 0 && res.code !== 200 && res.code !== '00000') {
         this.setData({
           loading: false,
           error: res.message || '加载失败，请稍后重试'
@@ -102,56 +103,58 @@ Page({
         return
       }
 
-      var rawData = res.data.list || []
       var cancelledIds = wx.getStorageSync('cancelled_requests') || []
-      const list = rawData.map(item => {
-        // 用本地 storage 覆盖后端可能丢失的 cancelled 状态
-        if (cancelledIds.indexOf(item.id) !== -1) {
-          item.status = 'cancelled'
-        }
-        const meta = statusMetaMap[item.status] || statusMetaMap.pending
-        const isReceived = activeTab === 'received'
 
-        // 后端返回扁平字段，转换为前端所需格式
-        var transformed = {
-          requestId: item.id || item.requestId,
-          projectName: item.projectName || '项目 #' + item.projectId,
-          from_user: {
-            id: item.fromUserId || (item.from_user && item.from_user.id),
-            nickname: (item.from_user && item.from_user.nickname) || ('用户' + (item.fromUserId || '')),
-            major: (item.from_user && item.from_user.major) || ''
-          },
-          to_user: {
-            id: item.toUserId || (item.to_user && item.to_user.id),
-            nickname: (item.to_user && item.to_user.nickname) || ('用户' + (item.toUserId || '')),
-            major: (item.to_user && item.to_user.major) || ''
-          },
-          message: item.message || '',
-          requestType: item.requestType || '',
-          status: item.status || '',
-          createdAt: item.createdAt || item.created_at || '',
-          displayRole: item.displayRole || ''
-        }
+      // 收集所有需要查档案的 userId（去重）
+      var needProfile = []
+      rawData.forEach(function(item) {
+        var uid = activeTab === 'received' ? item.fromUserId : item.toUserId
+        if (uid && needProfile.indexOf(uid) === -1) needProfile.push(uid)
+      })
 
-        // received：我是 toUserId（接收方），对方是 fromUserId（发送方）
-        // sent：我是 fromUserId（发送方），对方是 toUserId（接收方）
-        const counterpart = isReceived ? transformed.from_user : transformed.to_user
-        const requestTypeLabel = item.requestType === 'invite' ? '邀请' : '申请'
-        const counterpartLabel = isReceived ? '发起者' : '接收者'
-        const hint =
-          item.status !== 'pending'
-            ? getResultHint(item.requestType, item.status)
-            : ''
+      // 批量拉取用户档案
+      var profileMap = {}
+      var profilePromises = needProfile.map(function(uid) {
+        return teamService.getUserProfile(uid).then(function(profile) {
+          profileMap[uid] = {
+            nickname: (profile && profile.nickname) || '未知用户',
+            avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
+            major: (profile && profile.major) || ''
+          }
+        }).catch(function() {
+          profileMap[uid] = { nickname: '未知用户', avatarUrl: '', major: '' }
+        })
+      })
+      await Promise.all(profilePromises)
+
+      var list = rawData.map(function(item) {
+        if (cancelledIds.indexOf(item.id) !== -1) item.status = 'cancelled'
+        var meta = statusMetaMap[item.status] || statusMetaMap.pending
+        var isReceived = activeTab === 'received'
+        var counterpartId = isReceived ? item.fromUserId : item.toUserId
+        var profile = profileMap[counterpartId] || { nickname: '未知用户', avatarUrl: '', major: '' }
+        var counterpartLabel = isReceived ? '来自' : '发送给'
+        var requestTypeLabel = item.requestType === 'invite' ? '邀请' : '申请'
+        var hint = item.status !== 'pending' ? getResultHint(item.requestType, item.status) : ''
 
         return {
-          ...transformed,
-          ...meta,
-          counterpart,
-          requestTypeLabel,
-          counterpartLabel,
-          hint,
-          isReceived,
-          avatarText: counterpart.nickname ? counterpart.nickname.slice(0, 1) : '?'
+          requestId: item.id,
+          projectName: item.projectName || ('项目#' + item.projectId),
+          counterpartId: counterpartId,
+          counterpartNickname: profile.nickname,
+          counterpartLabel: counterpartLabel,
+          avatarUrl: profile.avatarUrl,
+          avatarText: profile.nickname ? profile.nickname.slice(0, 1) : '?',
+          major: profile.major,
+          message: item.message || '',
+          requestType: item.requestType || '',
+          requestTypeLabel: requestTypeLabel,
+          status: item.status || '',
+          createdAt: item.createdAt || '',
+          isReceived: isReceived,
+          hint: hint,
+          label: meta.label,
+          class: meta.class
         }
       })
 

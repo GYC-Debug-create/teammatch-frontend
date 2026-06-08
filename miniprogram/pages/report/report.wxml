@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page page-safe">
   <!-- 吸顶头部区 -->
   <view class="page-sticky">
     <text class="hd-sub">TeamMatch · T-043</text>
@@ -17,7 +17,7 @@
     </view>
   </view>
 
-  <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="sv sv-safe" scroll-y enhanced show-scrollbar="{{false}}">
     <!-- 被举报对象 -->
     <view class="sec">
       <!-- 搜索框（分左右两段） -->
@@ -37,14 +37,15 @@
       </view>
 
       <!-- 搜索结果列表 -->
-      <view class="search-results" wx:if="{{searchResults.length > 0}}">
+      <view class="search-results no-flash" wx:if="{{searchResults.length > 0}}">
         <view
           class="search-item"
           wx:for="{{searchResults}}" wx:key="id"
           data-item="{{item}}"
           bindtap="selectTarget"
         >
-          <view class="search-item-avatar">{{item.avatarText || item.name[0]}}</view>
+          <image wx:if="{{item.avatarUrl}}" class="search-item-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+          <view wx:else class="search-item-avatar">{{item.avatarText || item.name[0]}}</view>
           <view class="search-item-info">
             <text class="search-item-name">{{item.name}}</text>
             <text class="search-item-desc">{{item.desc}}</text>
@@ -55,7 +56,8 @@
       <!-- 已选对象卡片 -->
       <view class="target-card" wx:if="{{selectedTarget}}">
         <view class="target-left">
-          <view class="target-avatar">{{selectedTarget.avatarText || selectedTarget.name[0]}}</view>
+          <image wx:if="{{selectedTarget.avatarUrl}}" class="target-avatar" src="{{selectedTarget.avatarUrl}}" mode="aspectFill" />
+          <view wx:else class="target-avatar">{{selectedTarget.avatarText || selectedTarget.name[0]}}</view>
           <view class="target-info">
             <view class="target-name-row">
               <text class="target-name">{{selectedTarget.name}}</text>

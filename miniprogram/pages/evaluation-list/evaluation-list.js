@@ -33,7 +33,7 @@ Page({
         var uid = m.userId || m.id
         return {
           userId: uid,
-          nickname: m.nickname || ('用户' + (m.userId || m.id)),
+          nickname: m.nickname || '未知用户',
           major: m.major || '',
           avatarText: (m.nickname || '?').slice(0, 1),
           creditScore: m.creditScore || m.trustScore || 0,

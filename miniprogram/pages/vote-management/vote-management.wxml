@@ -26,7 +26,7 @@
     <view class="vote-item" wx:for="{{votes}}" wx:key="id" bindtap="goVoteDetail" data-vote-id="{{item.id}}">
       <view class="vote-item-top">
         <view class="vote-item-left">
-          <text class="vote-target-id">目标用户 #{{item.targetUserId}}</text>
+          <text class="vote-target-id">目标成员</text>
           <view class="vote-tags">
             <text class="vtag vtag-status {{item.status==='voting'?'vtag-active':''}}">{{item.statusLabel}}</text>
             <text class="vtag vtag-penalty {{item.penaltyLevel==='malicious'?'vtag-red':''}}">{{item.penaltyLabel}}</text>

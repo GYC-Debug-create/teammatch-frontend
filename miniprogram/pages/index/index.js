@@ -25,10 +25,10 @@ Page({
     totalCommits: 0,
     topLanguages: [],
     boards: [
-      { name: 'GitHub 活跃', emoji: '🐙' },
-      { name: 'Java 技术分', emoji: '☕' },
-      { name: '前端技术分', emoji: '⚛️' },
-      { name: 'Python 分榜', emoji: '🐍' }
+      { name: '综合技术分', emoji: '🐙' },
+      { name: 'Stars 星标', emoji: '⭐' },
+      { name: '开源仓库', emoji: '📦' },
+      { name: '代码贡献', emoji: '💻' }
     ]
   },
 

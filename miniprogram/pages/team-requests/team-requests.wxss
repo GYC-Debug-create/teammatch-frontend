@@ -266,6 +266,7 @@ page {
   flex-shrink: 0;
   border: 2rpx solid rgba(194, 198, 213, 0.30);
   overflow: hidden;
+  overflow: hidden;
 }
 
 .member-info {

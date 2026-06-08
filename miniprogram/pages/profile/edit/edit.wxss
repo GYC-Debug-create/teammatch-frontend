@@ -193,3 +193,60 @@ page {
 .save-btn[disabled] {
   opacity: 0.6;
 }
+
+/* ========== 头像编辑区 ========== */
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+}
+
+.edit-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #ECEDF7;
+}
+
+.edit-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.edit-avatar-txt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 88, 187, 0.10);
+  color: #0058BB;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.avatar-actions {
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar-label {
+  display: block;
+  font-size: 26rpx;
+  color: #727784;
+  margin-bottom: 12rpx;
+}
+
+.btn-choose-avatar {
+  width: 100%;
+  height: 64rpx;
+  margin: 0;
+  padding: 0;
+  background: rgba(0, 88, 187, 0.08);
+  color: #0058BB;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 64rpx;
+}
+.btn-choose-avatar::after { border: 0; }

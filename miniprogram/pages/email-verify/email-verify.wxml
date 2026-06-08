@@ -4,7 +4,7 @@
   <view class="page-sticky">
     <view class="hd">
       <text class="hd-sub">TeamMatch · Auth</text>
-      <text class="hd-title">绑定学校邮箱</text>
+      <text class="hd-title">绑定邮箱</text>
       <text class="hd-desc">完成邮箱验证后方可解锁全部功能</text>
     </view>
   </view>
@@ -14,8 +14,8 @@
     <view class="card">
       <!-- 邮箱输入 -->
       <view class="form-item">
-        <text class="form-label">学校邮箱</text>
-        <input class="form-input" type="text" placeholder="请输入学校邮箱，如 user-86fc814a@example.invalid" placeholder-class="ph" value="{{email}}" bindinput="onEmailInput"/>
+        <text class="form-label">邮箱地址</text>
+        <input class="form-input" type="text" placeholder="请输入邮箱地址，如 example@domain.com" placeholder-class="ph" value="{{email}}" bindinput="onEmailInput"/>
       </view>
 
       <!-- 验证码区域 -->
@@ -27,7 +27,6 @@
             {{countdown > 0 ? countdown + 's' : '发送验证码'}}
           </button>
         </view>
-        <text class="code-hint">Mock 验证: 输入 654321 可验证成功</text>
       </view>
     </view>
 

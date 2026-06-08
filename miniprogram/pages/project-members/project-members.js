@@ -40,14 +40,31 @@ Page({
 
   async checkLeader(projectId, currentUserId) {
     try {
-      var project = await teamService.getProjectDetail(projectId)
-      var leaderId = project.creatorId || project.creator_id || 0
-      this.setData({ isLeader: parseInt(leaderId) === parseInt(currentUserId) })
+      var members = await teamService.getMembers(projectId)
+      var isLeader = false
+      if (members && members.length) {
+        for (var i = 0; i < members.length; i++) {
+          var m = members[i]
+          var muid = m.userId || m.id
+          if (parseInt(muid) === parseInt(currentUserId) && m.role === 'leader') {
+            isLeader = true
+            break
+          }
+        }
+      }
+      this.setData({ isLeader: isLeader })
     } catch (e) { this.setData({ isLeader: false }) }
   },
 
   onReady() {
     this.loadMembers()
+  },
+
+  onShow() {
+    // 从子页面（如发起投票）返回时，刷新成员列表
+    if (this.data.projectId && this.data.isAuthenticated) {
+      this.loadMembers()
+    }
   },
 
   async loadMembers() {
@@ -71,7 +88,8 @@ Page({
         enriched.push({
           id: member.id,
           userId: userId,
-          nickname: (profile && profile.nickname) || ('用户' + userId),
+          nickname: (profile && profile.nickname) || '未知用户',
+          avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
           creditScore: (profile && (profile.creditScore || profile.trustScore)) || 0,
           role: member.role || '',
           status: member.status || 'active',
@@ -89,8 +107,31 @@ Page({
   },
 
   handleMemberAction(e) {
-    const { id } = e.currentTarget.dataset
-    wx.showToast({ title: `成员操作: ${id}`, icon: 'none' })
+    var that = this
+    var dataset = e.currentTarget.dataset
+    var userId = dataset.userId
+    var nickname = dataset.nickname || '未知用户'
+    var creditScore = dataset.creditScore || 0
+
+    if (!that.data.isLeader) {
+      wx.showToast({ title: '仅队长可操作', icon: 'none' })
+      return
+    }
+
+    wx.showActionSheet({
+      itemList: ['发起移除投票'],
+      itemColor: '#EF4444',
+      success: function(res) {
+        if (res.tapIndex === 0) {
+          wx.navigateTo({
+            url: '/pages/initiate-vote/initiate-vote?projectId=' + that.data.projectId +
+                 '&targetUserId=' + userId +
+                 '&targetNickname=' + encodeURIComponent(nickname) +
+                 '&targetCreditScore=' + creditScore
+          })
+        }
+      }
+    })
   },
 
 

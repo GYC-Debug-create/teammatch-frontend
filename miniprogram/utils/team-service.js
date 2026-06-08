@@ -7,6 +7,19 @@
 var USE_MOCK = false
 var BASE_URL = 'http://localhost:8080/api'
 
+// ========== 用户档案内存缓存（5分钟有效）==========
+var profileCache = {}
+
+function getCachedProfile(userId) {
+  var entry = profileCache[userId]
+  if (entry && Date.now() - entry.time < 5 * 60 * 1000) return entry.data
+  return null
+}
+
+function setCachedProfile(userId, data) {
+  profileCache[userId] = { data: data, time: Date.now() }
+}
+
 // ========== 辅助函数 ==========
 
 var TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
@@ -233,6 +246,12 @@ function getProjectDetail(projectId) {
  */
 function getUserProfile(userId) {
   return new Promise(function(resolve, reject) {
+    // 内存缓存命中 → 直接返回
+    var cached = getCachedProfile(userId)
+    if (cached) {
+      resolve(cached)
+      return
+    }
     wx.request({
       url: BASE_URL + '/profile/detail/' + userId,
       method: 'GET',
@@ -240,8 +259,58 @@ function getUserProfile(userId) {
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
-          resolve(res.data.data || res.data)
+          var data = res.data.data || res.data
+          setCachedProfile(userId, data)
+          resolve(data)
         } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/** 清除用户档案缓存（例如用户修改资料后调用） */
+function clearProfileCache(userId) {
+  if (userId) delete profileCache[userId]
+  else profileCache = {}
+}
+
+// ========== 方法：项目状态流转（队长专属） ==========
+
+/**
+ * 开始项目：recruiting → in_progress
+ * POST /api/m4/projects/{id}/start?operatorId=队长ID
+ */
+function startProject(projectId, operatorId) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects/' + projectId + '/start?operatorId=' + operatorId,
+      method: 'POST',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 结束项目：in_progress → ended
+ * POST /api/m4/projects/{id}/end?operatorId=队长ID
+ */
+function endProject(projectId, operatorId) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects/' + projectId + '/end?operatorId=' + operatorId,
+      method: 'POST',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
       },
       fail: function(err) { reject(err) }
     })
@@ -300,6 +369,35 @@ function submitExitVote(projectId, voteId, choice) {
       method: 'POST',
       header: authHeader(),
       data: { voterId: getUserId(), choice: choice },
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 队长发起退出投票
+ * POST /api/m4/projects/{projectId}/exit/votes
+ * Body: { initiatorId, targetUserId, reason, penaltyLevel: "negotiated" | "malicious" }
+ * 校验：仅队长、项目 in_progress、目标为活跃成员、不对队长发起、无进行中投票
+ */
+function createExitVote(projectId, targetUserId, reason, penaltyLevel) {
+  var initiatorId = getUserId()
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects/' + projectId + '/exit/votes',
+      method: 'POST',
+      header: authHeader(),
+      data: {
+        initiatorId: initiatorId,
+        targetUserId: targetUserId,
+        reason: reason || '',
+        penaltyLevel: penaltyLevel || 'negotiated'
+      },
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
@@ -510,33 +608,47 @@ function getMyReports() {
 // ========== 方法 16-18：申诉 ==========
 
 /**
- * 获取可申诉对象列表
+ * 获取可申诉对象列表（对接新接口）
  * @param {'evaluation'|'penalty'} appealType
  */
 function getAppealTargets(appealType) {
   if (appealType === 'evaluation') {
-    return getMyReceivedEvaluations()
+    return getAppealableEvaluations()
   }
-  return getMyActivePenalties()
+  return getAppealablePenalties()
 }
 
 /**
- * 获取我收到的互评列表（用于申诉）
- * GET /api/m5/evaluations/received?status=normal
+ * 获取可申诉的评价列表
+ * GET /api/appeals/appealable/evaluations → List<AppealableEvaluationVO>
+ * AppealableEvaluationVO: { evaluationId, projectId, projectTitle, communicationScore, taskScore, skillScore, responsibilityScore, averageScore, comment, createdAt }
  */
-function getMyReceivedEvaluations() {
+function getAppealableEvaluations() {
   return new Promise(function(resolve, reject) {
     wx.request({
-      url: BASE_URL + '/m5/evaluations/received',
+      url: BASE_URL + '/appeals/appealable/evaluations',
       method: 'GET',
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data
+          // 统一转为 appeal.js 期望的格式（兼容新旧字段名）
           var list = Array.isArray(data) ? data : (data && data.list ? data.list : [])
-          // 只返回 normal 状态（可申诉）
-          resolve(list.filter(function(e) { return e.status === 'normal' }))
+          // AppealableEvaluationVO 字段映射到旧兼容格式
+          resolve(list.map(function(e) {
+            return {
+              id: e.evaluationId || e.id,
+              evaluationId: e.evaluationId || e.id,
+              comment: e.comment || '',
+              communicationScore: e.communicationScore || 0,
+              taskScore: e.taskScore || 0,
+              skillScore: e.skillScore || 0,
+              responsibilityScore: e.responsibilityScore || 0,
+              createdAt: e.createdAt || '',
+              projectTitle: e.projectTitle || ''
+            }
+          }))
         } else reject(res.data)
       },
       fail: function(err) { reject(err) }
@@ -545,20 +657,32 @@ function getMyReceivedEvaluations() {
 }
 
 /**
- * 获取我的活跃处罚列表（用于申诉）
- * GET /api/penalties/my/active
+ * 获取可申诉的处罚列表
+ * GET /api/appeals/appealable/penalties → List<AppealablePenaltyVO>
+ * AppealablePenaltyVO: { penaltyId, type, creditDeductValue, reason, status, createdAt }
  */
-function getMyActivePenalties() {
+function getAppealablePenalties() {
   return new Promise(function(resolve, reject) {
     wx.request({
-      url: BASE_URL + '/penalties/my/active',
+      url: BASE_URL + '/appeals/appealable/penalties',
       method: 'GET',
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data
-          resolve(Array.isArray(data) ? data : (data && data.list ? data.list : []))
+          var list = Array.isArray(data) ? data : (data && data.list ? data.list : [])
+          // AppealablePenaltyVO 字段映射到旧兼容格式
+          resolve(list.map(function(p) {
+            return {
+              id: p.penaltyId || p.id,
+              type: p.type || '',
+              creditDeductValue: p.creditDeductValue || 0,
+              reason: p.reason || '',
+              status: p.status || '',
+              createdAt: p.createdAt || ''
+            }
+          }))
         } else reject(res.data)
       },
       fail: function(err) { reject(err) }
@@ -739,7 +863,7 @@ function getMyJoinedProjects() {
 
 /**
  * 获取项目所有退出投票列表（用于投票管理页）
- * 注意：后端暂无 GET /exit/votes 列表接口（405），待后端提供后启用
+ * GET /api/m4/projects/{projectId}/exit/votes → List<ExitVoteVO>
  */
 function getProjectExitVotes(projectId) {
   return new Promise(function(resolve) {
@@ -767,6 +891,35 @@ function getProjectExitVotes(projectId) {
 function getProjectPendingVotes(projectId) {
   return getProjectExitVotes(projectId).then(function(votes) {
     return votes.filter(function(v) { return v.status === 'voting' })
+  })
+}
+
+// ========== 用户搜索（新接口） ==========
+
+/**
+ * 搜索用户（按昵称模糊匹配）
+ * GET /api/users?keyword=xxx&page=1&size=20 → Page<ProfileDetailVO>
+ */
+function searchUsers(keyword, page, size) {
+  return new Promise(function(resolve, reject) {
+    var query = '?keyword=' + encodeURIComponent(keyword || '') +
+                '&page=' + (page || 1) +
+                '&size=' + (size || 20)
+    wx.request({
+      url: BASE_URL + '/users' + query,
+      method: 'GET',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) {
+          var data = res.data.data
+          // Page 结构: { records/list, total, page, size }
+          var list = Array.isArray(data) ? data : (data.records || data.list || [])
+          resolve(list)
+        } else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
   })
 }
 
@@ -805,10 +958,14 @@ module.exports = {
   getMembers: getMembers,
   getProjectDetail: getProjectDetail,
   getUserProfile: getUserProfile,
+  clearProfileCache: clearProfileCache,
   selfExit: selfExit,
+  startProject: startProject,
+  endProject: endProject,
   getExitVoteDetail: getExitVoteDetail,
   submitExitVote: submitExitVote,
   closeExitVote: closeExitVote,
+  createExitVote: createExitVote,
   checkEvaluationEligibility: checkEvaluationEligibility,
   getEvaluatableMembers: getEvaluatableMembers,
   submitEvaluation: submitEvaluation,
@@ -817,12 +974,11 @@ module.exports = {
   submitReport: submitReport,
   getMyReports: getMyReports,
   getAppealTargets: getAppealTargets,
-  getMyReceivedEvaluations: getMyReceivedEvaluations,
-  getMyActivePenalties: getMyActivePenalties,
   submitAppeal: submitAppeal,
   getMyAppeals: getMyAppeals,
   getMyJoinedProjects: getMyJoinedProjects,
   getProjectPendingVotes: getProjectPendingVotes,
   getProjectExitVotes: getProjectExitVotes,
-  getAllProjects: getAllProjects
+  getAllProjects: getAllProjects,
+  searchUsers: searchUsers
 }

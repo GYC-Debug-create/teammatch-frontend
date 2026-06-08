@@ -50,7 +50,10 @@
         <text class="card-title">现有成员 ({{project.currentMembers}}/{{project.maxMembers}})</text>
         <view class="member-list">
           <view class="member-item" wx:for="{{project.members}}" wx:key="id" bindtap="viewMember" data-id="{{item.id}}">
-            <image class="member-avatar" src="{{item.avatar || '/assets/CodeBuddyAssets/114_182/2.svg'}}" mode="aspectFill" />
+            <view class="member-avatar">
+              <image wx:if="{{item.avatar && item.avatar.length > 10}}" class="member-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <text wx:else class="member-avatar-txt">{{item.name ? item.name.slice(0, 1) : '?'}}</text>
+            </view>
             <text class="member-name">{{item.name}}</text>
             <text class="member-role {{item.role === '队长' ? 'leader' : ''}}">{{item.role}}</text>
           </view>
@@ -61,9 +64,12 @@
       <view class="card">
         <text class="card-title">发布者</text>
         <view class="creator-info">
-          <image class="creator-avatar" src="{{project.creatorAvatar}}" mode="aspectFill" />
+          <view class="creator-avatar">
+            <image wx:if="{{project.creatorAvatar && project.creatorAvatar.length > 10}}" class="creator-avatar-img" src="{{project.creatorAvatar}}" mode="aspectFill" />
+            <view wx:else class="creator-avatar-txt">{{project.creatorName ? project.creatorName.slice(0, 1) : '?'}}</view>
+          </view>
           <view class="creator-detail">
-            <text class="creator-name">{{project.creatorName}}</text>
+            <text class="creator-name">{{project.creatorName || '未知用户'}}</text>
             <text class="creator-date">发布于 {{project.createdAt}}</text>
           </view>
         </view>

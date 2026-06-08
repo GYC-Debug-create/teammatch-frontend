@@ -10,13 +10,17 @@ Page({
     users: [],
     filteredUsers: [],
     loading: true,
+    isSearching: false,
     invitingId: null,
     inviteMsg: '',
     // 项目选择弹窗
     showProjectPicker: false,
     pickTargetUserId: null,
     pickTargetNickname: '',
-    myProjects: []
+    myProjects: [],
+    // 首页进入时选中的目标项目
+    activeProjectId: null,
+    showProjectBar: false
   },
 
   onLoad(options) {
@@ -78,7 +82,11 @@ Page({
             targetSkills = targetSkills.concat(skills)
           }
         }
-        that.setData({ myProjects: myCreatedProjects })
+        that.setData({
+          myProjects: myCreatedProjects,
+          activeProjectId: myCreatedProjects.length > 0 ? myCreatedProjects[0].id : null,
+          showProjectBar: myCreatedProjects.length > 1
+        })
       }
 
       // 场景1 也收集队长项目
@@ -98,7 +106,7 @@ Page({
         }
       }
 
-      // 收集所有项目的成员（去重）
+      // 收集所有项目的成员（去重），同时记录技能匹配度
       var userMap = {}
       var currentUserId = parseInt(wx.getStorageSync('userId')) || 0
 
@@ -109,7 +117,6 @@ Page({
           for (var k = 0; k < members.length; k++) {
             var muid = members[k].userId || members[k].id
             if (muid === currentUserId || userMap[muid]) continue
-            // 计算技能匹配度
             var userSkills = (members[k].skills || []).map(function(s) {
               return typeof s === 'string' ? s.toLowerCase() : (s.name || '').toLowerCase()
             })
@@ -121,10 +128,8 @@ Page({
             }
             userMap[muid] = {
               userId: muid,
-              nickname: members[k].nickname || ('用户' + muid),
-              avatarText: (members[k].nickname || 'U').slice(0, 1),
               major: members[k].major || '',
-              skills: userSkills.join('、') || '--',
+              userSkills: userSkills,
               matchScore: matchScore,
               projectName: allProjects[j].name || allProjects[j].title || ''
             }
@@ -132,8 +137,37 @@ Page({
         } catch (e) { /* skip */ }
       }
 
-      // 转数组并按匹配度排序
-      var userList = Object.values(userMap).sort(function(a, b) {
+      // 批量拉取用户档案（昵称 + 头像）
+      var userIds = Object.keys(userMap)
+      var profileMap = {}
+      var profilePromises = userIds.map(function(uid) {
+        return teamService.getUserProfile(uid).then(function(profile) {
+          profileMap[uid] = {
+            nickname: (profile && profile.nickname) || '未知用户',
+            avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
+            avatarText: ((profile && profile.nickname) || '?').slice(0, 1)
+          }
+        }).catch(function() {
+          profileMap[uid] = { nickname: '未知用户', avatarUrl: '', avatarText: '?' }
+        })
+      })
+      await Promise.all(profilePromises)
+
+      // 合并档案信息并按匹配度排序
+      var userList = userIds.map(function(uid) {
+        var u = userMap[uid]
+        var p = profileMap[uid] || {}
+        return {
+          userId: parseInt(uid),
+          nickname: p.nickname || '未知用户',
+          avatarUrl: p.avatarUrl || '',
+          avatarText: p.avatarText || '?',
+          major: u.major || '',
+          skills: u.userSkills.join('、') || '--',
+          matchScore: u.matchScore,
+          projectName: u.projectName || ''
+        }
+      }).sort(function(a, b) {
         return b.matchScore - a.matchScore
       })
 
@@ -144,19 +178,47 @@ Page({
     }
   },
 
-  // 搜索过滤
+  // 搜索过滤：优先调用后端 API，失败时回退本地过滤
   onSearchInput(e) {
-    var keyword = (e.detail.value || '').trim().toLowerCase()
+    var keyword = (e.detail.value || '').trim()
     this.setData({ searchKeyword: keyword })
     if (!keyword) {
-      this.setData({ filteredUsers: this.data.users })
+      this.setData({ filteredUsers: this.data.users, isSearching: false })
       return
     }
-    var filtered = this.data.users.filter(function(u) {
-      return u.nickname.toLowerCase().indexOf(keyword) > -1
-        || (u.skills || '').toLowerCase().indexOf(keyword) > -1
+    var that = this
+    this.setData({ isSearching: true })
+    teamService.searchUsers(keyword, 1, 20).then(function(results) {
+      var myId = parseInt(wx.getStorageSync('userId')) || 0
+      var mapped = (results || [])
+        .filter(function(u) { return (u.userId || u.id) !== myId })
+        .map(function(u) {
+          return {
+            userId: u.userId || u.id,
+            nickname: u.nickname || u.name || '未知用户',
+            avatarUrl: u.avatarUrl || u.avatar || u.avatar_url || '',
+            avatarText: (u.nickname || u.name || 'U').slice(0, 1),
+            major: u.major || u.department || '',
+            skills: (u.skills || []).join('、') || '--',
+            matchScore: 0
+          }
+        })
+      that.setData({ filteredUsers: mapped, isSearching: false })
+    }).catch(function() {
+      // API 失败，回退本地过滤
+      var kw = keyword.toLowerCase()
+      var filtered = that.data.users.filter(function(u) {
+        return u.nickname.toLowerCase().indexOf(kw) > -1
+          || (u.skills || '').toLowerCase().indexOf(kw) > -1
+      })
+      that.setData({ filteredUsers: filtered, isSearching: false })
     })
-    this.setData({ filteredUsers: filtered })
+  },
+
+  // 切换当前选中的项目（首页多项目栏）
+  switchActiveProject(e) {
+    var id = e.currentTarget.dataset.projectId
+    this.setData({ activeProjectId: id })
   },
 
   // 点击邀请 → 弹出项目选择器
@@ -164,6 +226,16 @@ Page({
     var targetUserId = e.currentTarget.dataset.userId
     var nickname = e.currentTarget.dataset.nickname || ''
 
+    var myId = parseInt(wx.getStorageSync('userId')) || 0
+    if (targetUserId === myId) {
+      wx.showToast({ title: '不能邀请自己', icon: 'none' })
+      return
+    }
+    // 首页项目栏已选中 → 直接用 activeProjectId
+    if (this.data.showProjectBar && this.data.activeProjectId) {
+      this.doInvite(this.data.activeProjectId, targetUserId, nickname)
+      return
+    }
     if (this.data.myProjects.length === 0) {
       wx.showToast({ title: '暂无可用的招募中项目', icon: 'none' })
       return
@@ -206,7 +278,7 @@ Page({
       wx.hideLoading()
       var code = err && err.code
       var msg = (err && err.message) || '邀请失败'
-      if (code === 'M1003') msg = '已邀请过或项目状态不允许'
+      if (code === 'M1003') msg = '项目已开始，无法再邀请成员'
       wx.showToast({ title: msg, icon: 'none' })
       that.setData({ invitingId: null })
     })

@@ -114,7 +114,7 @@ Page({
       if (member) {
         var targetUser = {
           id: member.userId || member.id,
-          nickname: member.nickname || ('用户' + this.data.targetUserId),
+          nickname: member.nickname || '未知用户',
           major: member.major || '',
           avatar: member.avatarUrl || '',
           avatarText: (member.nickname || '?').slice(0, 1)
@@ -124,7 +124,7 @@ Page({
         this.setData({
           targetUser: {
             id: this.data.targetUserId,
-            nickname: '用户' + this.data.targetUserId,
+            nickname: '未知用户',
             avatarText: '?',
             major: ''
           },
