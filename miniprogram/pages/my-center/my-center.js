@@ -128,9 +128,9 @@ Page({
   },
 
   goProjectList: function() {
-    wx.navigateTo({
-      url: '/pages/projects/list/list'
-    })
+    // 跳转组队中心的"已加入项目" Tab
+    wx.setStorageSync('teamTab', 'joined')
+    wx.switchTab({ url: '/pages/team-center/index' })
   },
 
   goProfileEdit: function() {

@@ -9,6 +9,8 @@
  */
 
 const teamService = require('../../utils/team-service')
+const apiService = require('../../utils/api-service.js')
+const USE_MOCK = apiService.USE_MOCK
 const LOGIN_PAGE_URL = '/pages/index/index'
 const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
 
@@ -33,6 +35,71 @@ const statusMetaMap = {
     label: 'EXPIRED',
     class: 'expired'
   }
+}
+
+// ========== Mock 请求数据 ==========
+function getMockRequests(tab) {
+  // 收到/发出两套数据
+  var allReceived = [
+    { requestId: 'REQ-001', projectName: '智能课表小程序', projectId: 1,
+      requestType: 'invite', status: 'pending', createdAt: '05-10 14:20',
+      fromUserId: 1, toUserId: 202, message: '你好，我们正在组建一个小程序开发团队，诚邀你加入！',
+      counterpart: { nickname: '江一舟', avatarUrl: '', major: '计算机科学 21级', creditScore: 98 } },
+    { requestId: 'REQ-002', projectName: '校园跑腿平台', projectId: 2,
+      requestType: 'invite', status: 'pending', createdAt: '05-09 09:30',
+      fromUserId: 3, toUserId: 202, message: '项目需要后端开发，看到你技能匹配',
+      counterpart: { nickname: '周予安', avatarUrl: '', major: '计算机科学 21级', creditScore: 91 } },
+    { requestId: 'REQ-003', projectName: '二手交易市场', projectId: 3,
+      requestType: 'apply', status: 'accepted', createdAt: '05-08 16:00',
+      fromUserId: 4, toUserId: 202, message: '我对机器学习方向很感兴趣，希望能加入',
+      counterpart: { nickname: '陈知远', avatarUrl: '', major: '软件工程 22级', creditScore: 85 } },
+    { requestId: 'REQ-004', projectName: '图书漂流平台', projectId: 4,
+      requestType: 'invite', status: 'rejected', createdAt: '05-06 10:00',
+      fromUserId: 5, toUserId: 202,
+      counterpart: { nickname: '许之恒', avatarUrl: '', major: '软件工程 21级', creditScore: 72 } }
+  ]
+  var allSent = [
+    { requestId: 'REQ-S01', projectName: '智能课表小程序', projectId: 1,
+      requestType: 'apply', status: 'pending', createdAt: '05-11 08:00',
+      fromUserId: 202, toUserId: 2, message: '希望能加入项目，贡献前端经验',
+      counterpart: { nickname: '林乔', avatarUrl: '', major: '软件工程 22级', creditScore: 96 } },
+    { requestId: 'REQ-S02', projectName: '机器学习实践', projectId: 5,
+      requestType: 'apply', status: 'rejected', createdAt: '05-07 12:18',
+      fromUserId: 202, toUserId: 1,
+      counterpart: { nickname: '江一舟', avatarUrl: '', major: '计算机科学 21级', creditScore: 98 } },
+    { requestId: 'REQ-S03', projectName: '校园跑腿平台', projectId: 2,
+      requestType: 'apply', status: 'expired', createdAt: '05-04 08:15',
+      fromUserId: 202, toUserId: 3,
+      counterpart: { nickname: '周予安', avatarUrl: '', major: '计算机科学 21级', creditScore: 91 } }
+  ]
+
+  var raw = tab === 'received' ? allReceived : allSent
+
+  return raw.map(function(item) {
+    var meta = statusMetaMap[item.status] || statusMetaMap.pending
+    var isReceived = tab === 'received'
+    var cp = item.counterpart
+    return {
+      requestId: item.requestId,
+      projectName: item.projectName,
+      counterpartId: isReceived ? item.fromUserId : item.toUserId,
+      counterpartNickname: cp.nickname,
+      counterpartLabel: isReceived ? '来自' : '发送给',
+      avatarUrl: cp.avatarUrl,
+      avatarText: cp.nickname.slice(0, 1),
+      major: cp.major,
+      creditScore: cp.creditScore,
+      message: item.message || '',
+      requestType: item.requestType,
+      requestTypeLabel: item.requestType === 'invite' ? '邀请' : '申请',
+      status: item.status,
+      createdAt: item.createdAt,
+      isReceived: isReceived,
+      hint: item.status !== 'pending' ? (item.requestType === 'invite' ? (item.status === 'accepted' ? '已接受' : '已拒绝') : (item.status === 'accepted' ? '已通过' : (item.status === 'rejected' ? '已拒绝' : '已过期'))) : '',
+      label: meta.label,
+      class: meta.class
+    }
+  })
 }
 
 /**
@@ -93,6 +160,17 @@ Page({
 
     this.setData({ loading: true, error: '' })
 
+    // Mock 模式：直接返回本地数据
+    if (USE_MOCK) {
+      var that = this
+      var mockList = getMockRequests(activeTab)
+      setTimeout(function() {
+        that.setData({ requests: mockList, loading: false })
+        console.log('[T-034] loadRequests Mock', { tab: activeTab, count: mockList.length })
+      }, 400)
+      return
+    }
+
     teamService.getRequests(activeTab).then(async res => {
       var rawData = (res.data && res.data.list) || []
       if (rawData.length === 0 && res.code !== 200 && res.code !== '00000') {
@@ -119,7 +197,8 @@ Page({
           profileMap[uid] = {
             nickname: (profile && profile.nickname) || '未知用户',
             avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
-            major: (profile && profile.major) || ''
+            major: (profile && profile.major) || '',
+            creditScore: (profile && (profile.creditScore || profile.trustScore)) || 0
           }
         }).catch(function() {
           profileMap[uid] = { nickname: '未知用户', avatarUrl: '', major: '' }
@@ -132,7 +211,7 @@ Page({
         var meta = statusMetaMap[item.status] || statusMetaMap.pending
         var isReceived = activeTab === 'received'
         var counterpartId = isReceived ? item.fromUserId : item.toUserId
-        var profile = profileMap[counterpartId] || { nickname: '未知用户', avatarUrl: '', major: '' }
+        var profile = profileMap[counterpartId] || { nickname: '未知用户', avatarUrl: '', major: '', creditScore: 0 }
         var counterpartLabel = isReceived ? '来自' : '发送给'
         var requestTypeLabel = item.requestType === 'invite' ? '邀请' : '申请'
         var hint = item.status !== 'pending' ? getResultHint(item.requestType, item.status) : ''
@@ -146,6 +225,7 @@ Page({
           avatarUrl: profile.avatarUrl,
           avatarText: profile.nickname ? profile.nickname.slice(0, 1) : '?',
           major: profile.major,
+          creditScore: profile.creditScore,
           message: item.message || '',
           requestType: item.requestType || '',
           requestTypeLabel: requestTypeLabel,

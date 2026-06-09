@@ -72,6 +72,7 @@
         <view class="member-info">
           <text class="member-name">{{item.counterpartLabel}} {{item.counterpartNickname}}</text>
           <text class="member-tag" wx:if="{{item.major}}">{{item.major}}</text>
+          <text class="member-credit" wx:if="{{item.creditScore > 0}}">信誉 {{item.creditScore}}</text>
         </view>
       </view>
 

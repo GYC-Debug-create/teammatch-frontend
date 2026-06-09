@@ -144,9 +144,9 @@ Page({
     })
   },
 
-  // 查看成员详情（占位，后续串通）
+  // 查看成员详情
   viewMember: function(e) {
-    var memberId = e.currentTarget.dataset.id
-    wx.showToast({ title: '查看成员 ' + memberId, icon: 'none' })
+    var userId = e.currentTarget.dataset.id
+    wx.navigateTo({ url: '/pages/profile/profile?userId=' + userId })
   }
 })

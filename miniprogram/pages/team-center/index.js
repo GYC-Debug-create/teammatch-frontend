@@ -42,6 +42,12 @@ Page({
   },
 
   onShow() {
+    // 从个人中心跳转时自动切换到"已加入项目"
+    var teamTab = wx.getStorageSync('teamTab')
+    if (teamTab === 'joined') {
+      wx.removeStorageSync('teamTab')
+      this.setData({ activeTab: 'joined' })
+    }
     this.loadData()
   },
 

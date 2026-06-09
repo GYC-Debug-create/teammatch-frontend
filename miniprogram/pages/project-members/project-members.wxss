@@ -183,6 +183,23 @@
   color: #727784;
 }
 
+.member-major {
+  font-size: 26rpx;
+  color: #424753;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.member-bio {
+  font-size: 24rpx;
+  color: #727784;
+  display: block;
+  margin-top: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 退出原因小字 */
 .exit-reason {
   font-size: 22rpx;

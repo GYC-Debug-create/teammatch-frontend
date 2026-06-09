@@ -1,11 +1,47 @@
 <view class="profile-page">
-  <view class="profile-card">
-    <view class="avatar-placeholder">{{avatarText}}</view>
-    <text class="title">成员资料</text>
-    <text class="desc">这是用于 T-032 卡片点击跳转验收的占位 Profile 页面。</text>
+  <!-- 加载态 -->
+  <view class="profile-card" wx:if="{{loading}}">
+    <text class="title">加载中...</text>
+  </view>
+
+  <!-- 用户详情 -->
+  <view class="profile-card" wx:elif="{{user}}">
+    <!-- 头像 -->
+    <image wx:if="{{user.avatarUrl}}" class="avatar-placeholder" src="{{user.avatarUrl}}" mode="aspectFill" />
+    <view wx:else class="avatar-placeholder">{{user.nickname ? user.nickname.slice(0, 1) : '?'}}</view>
+
+    <!-- 昵称 -->
+    <text class="title">{{user.nickname}}</text>
+    <text class="desc">{{user.school}}{{user.major ? ' · ' + user.major : ''}}</text>
+
+    <!-- 年级 -->
+    <view class="info-row" wx:if="{{user.grade}}">
+      <text class="label">年级</text>
+      <text class="value">{{user.grade}}</text>
+    </view>
+
+    <!-- 个人简介 -->
+    <view class="info-row" wx:if="{{user.bio}}">
+      <text class="label">简介</text>
+      <text class="value">{{user.bio}}</text>
+    </view>
+
+    <!-- 信誉分 -->
     <view class="info-row">
-      <text class="label">用户 ID</text>
-      <text class="value">{{userId}}</text>
+      <text class="label">信誉分</text>
+      <text class="value">{{user.creditScore}}</text>
+    </view>
+
+    <!-- GitHub -->
+    <view class="info-row" wx:if="{{user.githubUsername}}">
+      <text class="label">GitHub</text>
+      <text class="value">@{{user.githubUsername}}</text>
+    </view>
+
+    <!-- 邮箱 -->
+    <view class="info-row" wx:if="{{user.email}}">
+      <text class="label">邮箱</text>
+      <text class="value">{{user.email}}</text>
     </view>
   </view>
 </view>

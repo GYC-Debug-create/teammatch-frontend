@@ -10,8 +10,19 @@
  */
 
 const teamService = require('../../utils/team-service')
+const apiService = require('../../utils/api-service.js')
+const USE_MOCK = apiService.USE_MOCK
 const LOGIN_PAGE_URL = '/pages/index/index'
 const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
+
+// ========== Mock 成员数据 ==========
+var MOCK_MEMBERS = [
+  { id: 1, userId: 1, nickname: '江一舟', avatarUrl: '', creditScore: 98, major: '计算机科学 21级', school: '元宇宙大学', bio: '全栈开发者，热爱开源项目', role: 'leader', status: 'active', exitMode: null, exitDate: null },
+  { id: 2, userId: 2, nickname: '林乔', avatarUrl: '', creditScore: 96, major: '软件工程 22级', school: '元宇宙大学', bio: 'Vue.js 重度用户，追求代码优雅', role: 'member', status: 'active', exitMode: null, exitDate: null },
+  { id: 3, userId: 3, nickname: '周予安', avatarUrl: '', creditScore: 91, major: '计算机科学 21级', school: '元宇宙大学', bio: '喜欢研究分布式系统', role: 'member', status: 'active', exitMode: null, exitDate: null },
+  { id: 4, userId: 4, nickname: '陈知远', avatarUrl: '', creditScore: 85, major: '软件工程 22级', school: '元宇宙大学', bio: '前端初学者，勤奋好学', role: 'member', status: 'exited', exitMode: 'self_exit', exitDate: '05-02' },
+  { id: 5, userId: 5, nickname: '许之恒', avatarUrl: '', creditScore: 72, major: '软件工程 21级', school: '元宇宙大学', bio: '', role: 'member', status: 'exited', exitMode: 'exit_vote', exitDate: '04-28' }
+]
 
 Page({
   data: {
@@ -70,6 +81,16 @@ Page({
   async loadMembers() {
     this.setData({ loading: true, error: null })
 
+    // Mock 模式：直接返回本地数据
+    if (USE_MOCK) {
+      var that = this
+      setTimeout(function() {
+        that.setData({ members: MOCK_MEMBERS, loading: false })
+        console.log('[T-035] loadMembers Mock', { count: MOCK_MEMBERS.length })
+      }, 400)
+      return
+    }
+
     try {
       var list = await teamService.getMembers(this.data.projectId)
       console.log('[T-035] loadMembers success', { count: list.length })
@@ -91,6 +112,9 @@ Page({
           nickname: (profile && profile.nickname) || '未知用户',
           avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
           creditScore: (profile && (profile.creditScore || profile.trustScore)) || 0,
+          major: (profile && profile.major) || '',
+          school: (profile && profile.school) || '',
+          bio: (profile && profile.bio) || '',
           role: member.role || '',
           status: member.status || 'active',
           exitMode: member.exitMode || '',
@@ -135,6 +159,11 @@ Page({
   },
 
 
+
+  viewMember: function(e) {
+    var userId = e.currentTarget.dataset.userId
+    wx.navigateTo({ url: '/pages/profile/profile?userId=' + userId })
+  },
 
   goInviteMember() {
     var name = this.data.projectTitle || ''

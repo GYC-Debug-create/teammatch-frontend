@@ -44,7 +44,7 @@
           </view>
           <view class="extra-row">
             <text class="extra-icon">✉️</text>
-            <text class="extra-text">{{userInfo.emailVerified ? '邮箱已认证' : '邮箱未认证'}}</text>
+            <text class="extra-text">{{userInfo.emailVerified ? '邮箱已认证 ' + userInfo.email : '邮箱未认证'}}</text>
           </view>
         </view>
       </view>

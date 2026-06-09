@@ -13,14 +13,20 @@ Page({
     hasMore: true
   },
 
-  onLoad: function() {
-    this.loadProjects()
+  onLoad: function(options) {
+    var myProjects = (options && options.myProjects === '1')
+    this.loadProjects(myProjects)
   },
 
-  loadProjects: function() {
+  loadProjects: function(myProjects) {
     var that = this
     this.setData({ loading: true })
-    teamService.getAllProjects().then(function(list) {
+
+    var request = myProjects
+      ? teamService.getMyJoinedProjects()
+      : teamService.getAllProjects()
+
+    request.then(function(list) {
       var mapped = (list || []).map(function(p) {
         return {
           id: p.id || p.projectId,

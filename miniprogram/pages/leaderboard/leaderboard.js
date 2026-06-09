@@ -89,11 +89,9 @@ Page({
   },
 
   viewProfile: function(e) {
-    wx.showToast({
-      title: '查看画像功能开发中',
-      icon: 'none',
-      duration: 1500
-    })
+    var item = e.currentTarget.dataset.item
+    var userId = (item && item.userId) || ''
+    wx.navigateTo({ url: '/pages/profile/profile?userId=' + userId })
   },
 
   goGitHubBind: function() {

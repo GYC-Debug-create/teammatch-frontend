@@ -28,6 +28,10 @@ Page({
       this.setData({ errorMsg: '请先输入邮箱地址' });
       return;
     }
+    if (!email.endsWith('.edu.cn')) {
+      this.setData({ errorMsg: '请使用学校邮箱（.edu.cn）' });
+      return;
+    }
     if (countdown > 0) return;
 
     this.setData({ sendingCode: true, errorMsg: '' });
