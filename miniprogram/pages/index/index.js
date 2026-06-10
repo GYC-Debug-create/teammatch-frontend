@@ -4,12 +4,8 @@ var request = require('../../utils/api-service.js').request
 function parseTopLanguages(val) {
   if (!val) return []
   if (Array.isArray(val)) return val
-  try {
-    var arr = JSON.parse(val)
-    return Array.isArray(arr) ? arr : []
-  } catch (e) {
-    return []
-  }
+  try { var arr = JSON.parse(val); return Array.isArray(arr) ? arr : [] }
+  catch (e) { return [] }
 }
 
 Page({
@@ -17,18 +13,20 @@ Page({
     isLoggedIn: false,
     isEmailVerified: false,
     githubUsername: '',
+    showUpdateInput: false,
+    bindPlatform: '',
+    updatePlatform: '',
+    boundGithub: '',
+    boundGitee: '',
+    boundPlatform: '',
     hasTechProfile: false,
-    techScore: 0,
-    totalRepos: 0,
-    totalStars: 0,
-    totalPrs: 0,
-    totalCommits: 0,
+    techScore: 0, totalRepos: 0, totalStars: 0, totalPrs: 0, totalCommits: 0,
     topLanguages: [],
     boards: [
-      { name: '综合技术分', emoji: '🐙' },
-      { name: 'Stars 星标', emoji: '⭐' },
-      { name: '开源仓库', emoji: '📦' },
-      { name: '代码贡献', emoji: '💻' }
+      { name: '综合技术分', emoji: '🐙', sort: 'techScore' },
+      { name: 'Stars 星标', emoji: '⭐', sort: 'totalStars' },
+      { name: '开源仓库', emoji: '📦', sort: 'totalRepos' },
+      { name: '代码贡献', emoji: '💻', sort: 'totalCommits' }
     ]
   },
 
@@ -36,22 +34,19 @@ Page({
     var token = wx.getStorageSync('token')
     var emailVerified = wx.getStorageSync('emailVerified') || false
     this.setData({ isLoggedIn: !!token, isEmailVerified: !!emailVerified })
-    // 已登录时尝试拉取技术画像
     if (token) this.fetchTechProfile()
   },
 
-  // ===== 技术画像 =====
-
-  // 静默拉取技术画像
   async fetchTechProfile() {
     try {
-      var res = await request({
-        url: '/profile/tech-profile',
-        method: 'GET'
-      })
+      var res = await request({ url: '/profile/tech-profile', method: 'GET' })
       var data = res.data || {}
+      var platform = data.githubUsername ? 'github' : data.giteeUsername ? 'gitee' : ''
       this.setData({
         hasTechProfile: true,
+        boundGithub: data.githubUsername || '',
+        boundGitee: data.giteeUsername || '',
+        boundPlatform: platform,
         techScore: data.techScore || 0,
         totalRepos: data.totalRepos || 0,
         totalStars: data.totalStars || 0,
@@ -60,83 +55,129 @@ Page({
         topLanguages: parseTopLanguages(data.topLanguages)
       })
     } catch (err) {
-      // 静默失败，用户尚未生成画像
       this.setData({ hasTechProfile: false })
     }
   },
 
-  // GitHub 输入框
   onGitHubInput: function(e) {
     this.setData({ githubUsername: e.detail.value })
   },
 
-  // 生成技术画像 → 绑定 GitHub → 拉取画像
-  async generateProfile() {
+  // ===== 首次绑定 =====
+
+  // 点击"生成" → 选择平台
+  startBind: function() {
+    var that = this
+    wx.showActionSheet({
+      itemList: ['GitHub', 'Gitee'],
+      success: function(res) {
+        var platform = res.tapIndex === 0 ? 'github' : 'gitee'
+        that.setData({ bindPlatform: platform, showUpdateInput: false })
+      }
+    })
+  },
+
+  // 确认绑定
+  async doBind() {
     var username = this.data.githubUsername.trim()
+    var platform = this.data.bindPlatform
     if (!username) {
-      wx.showToast({ title: '请输入 GitHub 用户名', icon: 'none' })
+      wx.showToast({ title: '请输入用户名', icon: 'none' })
       return
     }
-
     wx.showLoading({ title: '生成中...' })
-
     try {
-      await request({
-        url: '/profile/github/bind',
-        method: 'POST',
-        data: { githubUsername: username }
-      })
-
-      // 绑定成功，立即拉取技术画像
+      console.log('[bind] 请求:', platform, '/profile/' + platform + '/bind', { githubUsername: username, giteeUsername: username })
       var res = await request({
-        url: '/profile/tech-profile',
-        method: 'GET'
+        url: '/profile/' + platform + '/bind',
+        method: 'POST',
+        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
       })
-      var data = res.data || {}
-      this.setData({
-        hasTechProfile: true,
-        githubUsername: '',
-        techScore: data.techScore || 0,
-        totalRepos: data.totalRepos || 0,
-        totalStars: data.totalStars || 0,
-        totalPrs: data.totalPrs || 0,
-        totalCommits: data.totalCommits || 0,
-        topLanguages: parseTopLanguages(data.topLanguages)
-      })
-
+      console.log('[bind] 成功:', res)
       wx.hideLoading()
-      wx.showToast({ title: 'GitHub 技术画像已生成', icon: 'success' })
+      wx.showToast({ title: (platform === 'github' ? 'GitHub' : 'Gitee') + ' 技术画像已生成', icon: 'success' })
+      this.setData({
+        bindPlatform: '', githubUsername: '',
+        hasTechProfile: true,
+        boundPlatform: platform,
+        boundGithub: platform === 'github' ? username : '',
+        boundGitee: platform === 'gitee' ? username : ''
+      })
+      this.fetchTechProfile()
     } catch (err) {
       wx.hideLoading()
-      var msg = (err && err.message) ? err.message : '生成失败，请重试'
-      if (err && err.code === 'M3027') {
-        msg = '该 GitHub 账号已被其他用户认领'
-      } else if (err && err.code === 'M3000') {
-        msg = '登录已过期，请重新登录'
-      }
+      console.error('[bind] 失败:', JSON.stringify(err), 'code:', err && err.code, 'message:', err && err.message)
+      // 用 raw wx.request 再调一次，看后端原始返回
+      wx.request({
+        url: 'http://localhost:8080/api/profile/' + platform + '/bind',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + wx.getStorageSync('token') },
+        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username },
+        success: function(r) { console.log('[bind-raw] statusCode:', r.statusCode, 'body:', JSON.stringify(r.data)) },
+        fail: function(r) { console.error('[bind-raw] 网络失败:', r) }
+      })
+      var msg = (err && err.message) || '生成失败'
       wx.showToast({ title: msg, icon: 'none', duration: 2000 })
+    }
+  },
+
+  // ===== 换绑 =====
+
+  startRebind: function() {
+    var that = this
+    wx.showActionSheet({
+      itemList: ['GitHub', 'Gitee'],
+      success: function(res) {
+        var platform = res.tapIndex === 0 ? 'github' : 'gitee'
+        that.setData({ updatePlatform: platform, showUpdateInput: true, bindPlatform: '' })
+      }
+    })
+  },
+
+  // 取消换绑
+  cancelUpdate: function() {
+    this.setData({ showUpdateInput: false, updatePlatform: '', githubUsername: '' })
+  },
+
+  // 提交换绑
+  async doUpdate() {
+    var username = this.data.githubUsername.trim()
+    var platform = this.data.updatePlatform
+    if (!username) {
+      wx.showToast({ title: '请输入用户名', icon: 'none' })
+      return
+    }
+    wx.showLoading({ title: '更新中...' })
+    try {
+      var samePlatform = platform === this.data.boundPlatform
+      var apiPath = samePlatform ? '/profile/' + platform + '/update' : '/profile/' + platform + '/bind'
+      var apiMethod = samePlatform ? 'PUT' : 'POST'
+      console.log('[update] 请求:', platform, apiPath, { githubUsername: username, giteeUsername: username })
+      await request({
+        url: apiPath,
+        method: apiMethod,
+        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
+      })
+      wx.hideLoading()
+      wx.showToast({ title: '已更新，同步中...', icon: 'success' })
+      this.setData({ showUpdateInput: false, updatePlatform: '', githubUsername: '' })
+      this.fetchTechProfile()
+    } catch (err) {
+      wx.hideLoading()
+      console.error('[update] 失败:', JSON.stringify(err), 'code:', err && err.code)
+      var msg = (err && err.message) || '更新失败'
+      wx.showToast({ title: msg, icon: 'none' })
     }
   },
 
   // ===== 页面跳转 =====
 
-  goProjectList: function() {
-    wx.navigateTo({ url: '/pages/projects/list/list' })
-  },
-
-  goCreateProject: function() {
-    wx.navigateTo({ url: '/pages/projects/create/create' })
-  },
-
-  goMemberMatch: function() {
-    wx.navigateTo({ url: '/pages/member-match/member-match' })
-  },
-
-  goEmailVerify: function() {
-    wx.navigateTo({ url: '/pages/email-verify/email-verify' })
-  },
-
-  goLeaderboard: function() {
-    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' })
+  goProjectList: function() { wx.navigateTo({ url: '/pages/projects/list/list' }) },
+  goCreateProject: function() { wx.navigateTo({ url: '/pages/projects/create/create' }) },
+  goMemberMatch: function() { wx.navigateTo({ url: '/pages/member-match/member-match' }) },
+  goEmailVerify: function() { wx.navigateTo({ url: '/pages/email-verify/email-verify' }) },
+  goLeaderboard: function(e) {
+    var sort = e.currentTarget.dataset.sort || ''
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard?sort=' + sort })
   }
 })

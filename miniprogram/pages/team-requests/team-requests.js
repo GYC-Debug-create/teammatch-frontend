@@ -16,23 +16,23 @@ const TOKEN_KEYS = ['token', 'accessToken', 'userToken', 'sessionToken']
 
 const statusMetaMap = {
   pending: {
-    label: 'PENDING',
+    label: '待处理',
     class: 'pending'
   },
   accepted: {
-    label: 'ACCEPTED',
+    label: '已通过',
     class: 'accepted'
   },
   rejected: {
-    label: 'REJECTED',
+    label: '已拒绝',
     class: 'rejected'
   },
   cancelled: {
-    label: 'CANCELLED',
+    label: '已取消',
     class: 'cancelled'
   },
   expired: {
-    label: 'EXPIRED',
+    label: '已过期',
     class: 'expired'
   }
 }

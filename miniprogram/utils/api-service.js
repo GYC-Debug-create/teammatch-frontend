@@ -11,6 +11,7 @@
 
 var BASE_URL = 'http://localhost:8080/api'
 //var BASE_URL = 'http://39.106.226.151/api'
+//var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 全局 Mock 开关 ==========
 var USE_MOCK = false

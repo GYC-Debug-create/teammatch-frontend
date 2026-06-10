@@ -69,8 +69,8 @@
         <view class="member-right">
           <!-- 标签行 -->
           <view class="tag-row">
-            <text class="tag tag-leader" wx:if="{{item.role === 'leader'}}">LEADER</text>
-            <text class="tag tag-{{item.status}}">{{item.status === 'active' ? 'ACTIVE' : 'EXITED'}}</text>
+            <text class="tag tag-leader" wx:if="{{item.role === 'leader'}}">队长</text>
+            <text class="tag tag-{{item.status}}">{{item.status === 'active' ? '活跃' : '已退出'}}</text>
           </view>
 
           <!-- 信誉分 -->

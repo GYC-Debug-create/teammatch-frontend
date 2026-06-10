@@ -12,7 +12,7 @@
       <!-- Hero 区域 -->
       <view class="hero">
         <text class="eyebrow">TeamMatch · 技术榜</text>
-        <text class="title">技术排行榜</text>
+        <text class="title">{{sortType === 'totalStars' ? 'Stars 星标榜' : sortType === 'totalRepos' ? '开源仓库榜' : sortType === 'totalCommits' ? '代码贡献榜' : '技术排行榜'}}</text>
         <text class="desc">看看身边的开发者都在用什么技术</text>
       </view>
 
@@ -22,6 +22,7 @@
               wx:for="{{leaderboardData}}"
               wx:key="rank"
               data-item="{{item}}"
+              data-user-id="{{item.userId}}"
               bindtap="viewProfile">
           <!-- 排名区 -->
           <view class="rank-col">
@@ -34,7 +35,7 @@
           <!-- 用户信息 -->
           <view class="info-col">
             <text class="user-name">{{item.username}}</text>
-            <text class="github-name">@{{item.githubUsername}}</text>
+            <text class="github-name">{{item.source === 'gitee' ? ('[Gitee] ' + item.giteeUsername) : ('[GitHub] ' + item.githubUsername)}}</text>
           </view>
 
           <!-- 数据区 -->
@@ -43,8 +44,23 @@
               <text class="skill-chip" wx:for="{{item.skills}}" wx:key="*this" wx:for-item="sk">{{sk}}</text>
             </view>
             <view class="stat-row">
-              <text class="stat-item">📦 {{item.repoCount}} 仓库</text>
-              <text class="stat-score">{{item.score}} 分</text>
+              <!-- Stars 榜 -->
+              <block wx:if="{{sortType === 'totalStars'}}">
+                <text class="stat-score">⭐ {{item.totalStars}} Stars</text>
+              </block>
+              <!-- 仓库榜 -->
+              <block wx:elif="{{sortType === 'totalRepos'}}">
+                <text class="stat-score">📦 {{item.repoCount}} 仓库</text>
+              </block>
+              <!-- 贡献榜 -->
+              <block wx:elif="{{sortType === 'totalCommits'}}">
+                <text class="stat-score">💻 {{item.totalCommits}} 提交</text>
+              </block>
+              <!-- 综合/默认 -->
+              <block wx:else>
+                <text class="stat-item">📦 {{item.repoCount}} 仓库</text>
+                <text class="stat-score">{{item.score}} 分</text>
+              </block>
             </view>
           </view>
         </view>
@@ -52,7 +68,7 @@
 
       <!-- 底部操作区 -->
       <view class="bottom-actions">
-        <button class="btn-primary" bindtap="goGitHubBind">绑定 GitHub 账号</button>
+        <button class="btn-primary" wx:if="{{!hasGithub}}" bindtap="goGitHubBind">绑定 GitHub / Gitee</button>
         <button class="btn-secondary" bindtap="goProjectList">浏览所有项目</button>
       </view>
     </scroll-view>

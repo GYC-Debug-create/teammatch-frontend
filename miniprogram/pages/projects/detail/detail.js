@@ -136,8 +136,7 @@ Page({
           wx.showToast({ title: '申请已发送', icon: 'success' })
         }).catch(function(err) {
           wx.hideLoading()
-          var msg = (err && err.message) || '申请失败'
-          if (err && err.code === 'M1003') msg = '项目已开始，无法申请加入'
+          var msg = (err && err.message) || '无法申请'
           wx.showToast({ title: msg, icon: 'none' })
         })
       }

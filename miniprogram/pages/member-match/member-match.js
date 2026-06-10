@@ -276,9 +276,7 @@ Page({
       that.setData({ invitingId: null })
     }).catch(function(err) {
       wx.hideLoading()
-      var code = err && err.code
-      var msg = (err && err.message) || '邀请失败'
-      if (code === 'M1003') msg = '项目已开始，无法再邀请成员'
+      var msg = (err && err.message) || '无法邀请'
       wx.showToast({ title: msg, icon: 'none' })
       that.setData({ invitingId: null })
     })

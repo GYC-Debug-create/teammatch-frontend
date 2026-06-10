@@ -104,63 +104,27 @@
         <block wx:elif="{{item.status === 'pending'}}">
           <!-- 收到的邀请：接受 + 拒绝 -->
           <block wx:if="{{item.isReceived && item.requestType === 'invite'}}">
-            <button
-              class="action-btn btn-reject"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="reject"
-              disabled="{{operatingId !== null}}"
-            >婉言拒绝</button>
-            <button
-              class="action-btn btn-accept"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="accept"
-              disabled="{{operatingId !== null}}"
-            >接受邀请</button>
+            <button class="action-btn btn-reject" bindtap="handleAction" data-id="{{item.requestId}}" data-action="reject" disabled="{{operatingId !== null}}">婉言拒绝</button>
+            <button class="action-btn btn-accept" bindtap="handleAction" data-id="{{item.requestId}}" data-action="accept" disabled="{{operatingId !== null}}">接受邀请</button>
           </block>
 
-          <!-- 发出的 pending 请求：取消 -->
-          <block wx:elif="{{!item.isReceived && item.requestType === 'apply'}}">
-            <button
-              class="action-btn btn-cancel"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="cancel"
-              disabled="{{operatingId !== null}}"
-            >取消</button>
-          </block>
-
-          <!-- 队长收到申请：同意/拒绝 -->
+          <!-- 收到的申请：接受 + 拒绝（项目发布者收到别人的申请） -->
           <block wx:elif="{{item.isReceived && item.requestType === 'apply'}}">
-            <button
-              class="action-btn btn-reject"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="reject"
-              disabled="{{operatingId !== null}}"
-            >拒绝申请</button>
-            <button
-              class="action-btn btn-accept"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="accept"
-              disabled="{{operatingId !== null}}"
-            >同意加入</button>
+            <button class="action-btn btn-reject" bindtap="handleAction" data-id="{{item.requestId}}" data-action="reject" disabled="{{operatingId !== null}}">拒绝</button>
+            <button class="action-btn btn-accept" bindtap="handleAction" data-id="{{item.requestId}}" data-action="accept" disabled="{{operatingId !== null}}">同意申请</button>
           </block>
 
-          <!-- 队长发出的邀请：取消 -->
+          <!-- 发出的邀请：取消 -->
           <block wx:elif="{{!item.isReceived && item.requestType === 'invite'}}">
-            <button
-              class="action-btn btn-cancel"
-              bindtap="handleAction"
-              data-id="{{item.requestId}}"
-              data-action="cancel"
-              disabled="{{operatingId !== null}}"
-            >取消邀请</button>
+            <button class="action-btn btn-cancel" bindtap="handleAction" data-id="{{item.requestId}}" data-action="cancel" disabled="{{operatingId !== null}}">取消</button>
           </block>
 
-          <!-- 其他 pending 组合，fallback 无按钮 -->
+          <!-- 发出的申请：取消 -->
+          <block wx:elif="{{!item.isReceived && item.requestType === 'apply'}}">
+            <button class="action-btn btn-cancel" bindtap="handleAction" data-id="{{item.requestId}}" data-action="cancel" disabled="{{operatingId !== null}}">取消</button>
+          </block>
+
+          <!-- 未知组合 fallback -->
           <block wx:else>
             <text class="result-hint">请等待对方处理</text>
           </block>
