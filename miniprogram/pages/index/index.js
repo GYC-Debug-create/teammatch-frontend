@@ -10,15 +10,15 @@ function parseTopLanguages(val) {
 
 Page({
   data: {
-    isLoggedIn: false,
-    isEmailVerified: false,
-    githubUsername: '',
+    isLoggedIn: false, isEmailVerified: false,
+    inputUsername: '',
+    bindPlatform: '',          // 首次绑定: 'github' | 'gitee' | ''
+    updatePlatform: '',        // 换绑: 'github' | 'gitee' | ''
+    showBindInput: false,
     showUpdateInput: false,
-    bindPlatform: '',
-    updatePlatform: '',
-    boundGithub: '',
-    boundGitee: '',
-    boundPlatform: '',
+    showOauthModal: false,     // OAuth 弹窗
+    oauthChecking: false,
+    boundGithub: '', boundGitee: '', boundPlatform: '',
     hasTechProfile: false,
     techScore: 0, totalRepos: 0, totalStars: 0, totalPrs: 0, totalCommits: 0,
     topLanguages: [],
@@ -41,17 +41,18 @@ Page({
     try {
       var res = await request({ url: '/profile/tech-profile', method: 'GET' })
       var data = res.data || {}
-      var platform = data.githubUsername ? 'github' : data.giteeUsername ? 'gitee' : ''
+      var platform = data.source || ''
+      if (!platform && data.giteeUsername) platform = 'gitee'
+      if (!platform && data.githubUsername) platform = 'github'
+      if (!platform) platform = this.data.boundPlatform
       this.setData({
         hasTechProfile: true,
         boundGithub: data.githubUsername || '',
         boundGitee: data.giteeUsername || '',
         boundPlatform: platform,
         techScore: data.techScore || 0,
-        totalRepos: data.totalRepos || 0,
-        totalStars: data.totalStars || 0,
-        totalPrs: data.totalPrs || 0,
-        totalCommits: data.totalCommits || 0,
+        totalRepos: data.totalRepos || 0, totalStars: data.totalStars || 0,
+        totalPrs: data.totalPrs || 0, totalCommits: data.totalCommits || 0,
         topLanguages: parseTopLanguages(data.topLanguages)
       })
     } catch (err) {
@@ -59,119 +60,141 @@ Page({
     }
   },
 
-  onGitHubInput: function(e) {
-    this.setData({ githubUsername: e.detail.value })
-  },
+  onInput: function(e) { this.setData({ inputUsername: e.detail.value }) },
 
-  // ===== 首次绑定 =====
+  // ===== 平台选择（首次绑定 & 换绑共用） =====
 
-  // 点击"生成" → 选择平台
-  startBind: function() {
+  choosePlatform: function(e) {
+    var type = e.currentTarget.dataset.type // 'bind' | 'update'
     var that = this
     wx.showActionSheet({
-      itemList: ['GitHub', 'Gitee'],
+      itemList: ['GitHub 用户名', 'Gitee 用户名', 'Gitee OAuth 一键绑定'],
       success: function(res) {
-        var platform = res.tapIndex === 0 ? 'github' : 'gitee'
-        that.setData({ bindPlatform: platform, showUpdateInput: false })
+        if (res.tapIndex === 0) {
+          // GitHub 手动
+          if (type === 'bind') that.setData({ bindPlatform: 'github', showBindInput: true, showUpdateInput: false, updatePlatform: '' })
+          else that.setData({ updatePlatform: 'github', showUpdateInput: true, showBindInput: false, bindPlatform: '' })
+        } else if (res.tapIndex === 1) {
+          // Gitee 手动
+          if (type === 'bind') that.setData({ bindPlatform: 'gitee', showBindInput: true, showUpdateInput: false, updatePlatform: '' })
+          else that.setData({ updatePlatform: 'gitee', showUpdateInput: true, showBindInput: false, bindPlatform: '' })
+        } else {
+          // Gitee OAuth
+          that.startGiteeOauth()
+        }
       }
     })
   },
 
-  // 确认绑定
+  cancelBind: function() {
+    this.setData({ bindPlatform: '', showBindInput: false, inputUsername: '' })
+  },
+
+  cancelUpdate: function() {
+    this.setData({ updatePlatform: '', showUpdateInput: false, inputUsername: '' })
+  },
+
+  // ===== 手动绑定/换绑 =====
+
   async doBind() {
-    var username = this.data.githubUsername.trim()
+    var username = this.data.inputUsername.trim()
     var platform = this.data.bindPlatform
-    if (!username) {
-      wx.showToast({ title: '请输入用户名', icon: 'none' })
-      return
-    }
-    wx.showLoading({ title: '生成中...' })
+    if (!username) { wx.showToast({ title: '请输入用户名', icon: 'none' }); return }
+    wx.showLoading({ title: '绑定中...' })
     try {
-      console.log('[bind] 请求:', platform, '/profile/' + platform + '/bind', { githubUsername: username, giteeUsername: username })
-      var res = await request({
-        url: '/profile/' + platform + '/bind',
-        method: 'POST',
-        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
-      })
-      console.log('[bind] 成功:', res)
+      var reqData = platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
+      await request({ url: '/profile/' + platform + '/bind', method: 'POST', data: reqData })
       wx.hideLoading()
-      wx.showToast({ title: (platform === 'github' ? 'GitHub' : 'Gitee') + ' 技术画像已生成', icon: 'success' })
+      wx.showToast({ title: '绑定成功', icon: 'success' })
       this.setData({
-        bindPlatform: '', githubUsername: '',
-        hasTechProfile: true,
-        boundPlatform: platform,
+        bindPlatform: '', showBindInput: false, inputUsername: '',
+        hasTechProfile: true, boundPlatform: platform,
         boundGithub: platform === 'github' ? username : '',
         boundGitee: platform === 'gitee' ? username : ''
       })
-      this.fetchTechProfile()
     } catch (err) {
       wx.hideLoading()
-      console.error('[bind] 失败:', JSON.stringify(err), 'code:', err && err.code, 'message:', err && err.message)
-      // 用 raw wx.request 再调一次，看后端原始返回
-      wx.request({
-        url: 'http://localhost:8080/api/profile/' + platform + '/bind',
-        method: 'POST',
-        header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + wx.getStorageSync('token') },
-        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username },
-        success: function(r) { console.log('[bind-raw] statusCode:', r.statusCode, 'body:', JSON.stringify(r.data)) },
-        fail: function(r) { console.error('[bind-raw] 网络失败:', r) }
-      })
-      var msg = (err && err.message) || '生成失败'
-      wx.showToast({ title: msg, icon: 'none', duration: 2000 })
+      var msg = (err && err.message) || '绑定失败'
+      wx.showToast({ title: msg, icon: 'none' })
     }
   },
 
-  // ===== 换绑 =====
-
-  startRebind: function() {
-    var that = this
-    wx.showActionSheet({
-      itemList: ['GitHub', 'Gitee'],
-      success: function(res) {
-        var platform = res.tapIndex === 0 ? 'github' : 'gitee'
-        that.setData({ updatePlatform: platform, showUpdateInput: true, bindPlatform: '' })
-      }
-    })
-  },
-
-  // 取消换绑
-  cancelUpdate: function() {
-    this.setData({ showUpdateInput: false, updatePlatform: '', githubUsername: '' })
-  },
-
-  // 提交换绑
   async doUpdate() {
-    var username = this.data.githubUsername.trim()
+    var username = this.data.inputUsername.trim()
     var platform = this.data.updatePlatform
-    if (!username) {
-      wx.showToast({ title: '请输入用户名', icon: 'none' })
-      return
-    }
+    if (!username) { wx.showToast({ title: '请输入用户名', icon: 'none' }); return }
     wx.showLoading({ title: '更新中...' })
     try {
       var samePlatform = platform === this.data.boundPlatform
       var apiPath = samePlatform ? '/profile/' + platform + '/update' : '/profile/' + platform + '/bind'
       var apiMethod = samePlatform ? 'PUT' : 'POST'
-      console.log('[update] 请求:', platform, apiPath, { githubUsername: username, giteeUsername: username })
-      await request({
-        url: apiPath,
-        method: apiMethod,
-        data: platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
-      })
+      var reqData = platform === 'github' ? { githubUsername: username } : { giteeUsername: username }
+      await request({ url: apiPath, method: apiMethod, data: reqData })
       wx.hideLoading()
-      wx.showToast({ title: '已更新，同步中...', icon: 'success' })
-      this.setData({ showUpdateInput: false, updatePlatform: '', githubUsername: '' })
-      this.fetchTechProfile()
+      wx.showToast({ title: '更新成功', icon: 'success' })
+      this.setData({
+        updatePlatform: '', showUpdateInput: false, inputUsername: '',
+        hasTechProfile: true, boundPlatform: platform,
+        boundGithub: platform === 'github' ? username : '',
+        boundGitee: platform === 'gitee' ? username : ''
+      })
     } catch (err) {
       wx.hideLoading()
-      console.error('[update] 失败:', JSON.stringify(err), 'code:', err && err.code)
       var msg = (err && err.message) || '更新失败'
       wx.showToast({ title: msg, icon: 'none' })
     }
   },
 
-  // ===== 页面跳转 =====
+  // ===== Gitee OAuth 一键绑定 =====
 
+  async startGiteeOauth() {
+    wx.showLoading({ title: '获取授权链接...' })
+    try {
+      var res = await request({ url: '/profile/gitee/auth-url', method: 'GET' })
+      wx.hideLoading()
+      var authUrl = (res.data && res.data.authUrl) || ''
+      if (!authUrl) { wx.showToast({ title: '获取授权链接失败', icon: 'none' }); return }
+      wx.setClipboardData({
+        data: authUrl,
+        success: function() {
+          // 打开弹窗，用户操作完成后在里面检查
+          this.setData({ showOauthModal: true, oauthChecking: false })
+        }.bind(this)
+      })
+    } catch (err) {
+      wx.hideLoading()
+      var msg = (err && err.message) || '获取失败'
+      wx.showToast({ title: msg, icon: 'none' })
+    }
+  },
+
+  closeOauthModal: function() {
+    this.setData({ showOauthModal: false, oauthChecking: false })
+  },
+
+  async checkOauthStatus() {
+    this.setData({ oauthChecking: true })
+    try {
+      var res = await request({ url: '/profile/detail', method: 'GET' })
+      var data = res.data || {}
+      if (data.giteeClaimed) {
+        this.setData({ showOauthModal: false, oauthChecking: false })
+        wx.showToast({ title: 'Gitee 授权成功', icon: 'success' })
+        this.setData({
+          hasTechProfile: true, boundPlatform: 'gitee',
+          boundGitee: data.giteeUsername || ''
+        })
+      } else {
+        this.setData({ oauthChecking: false })
+        wx.showToast({ title: '尚未完成授权，请先在浏览器中完成', icon: 'none' })
+      }
+    } catch (err) {
+      this.setData({ oauthChecking: false })
+      wx.showToast({ title: '检查失败，请重试', icon: 'none' })
+    }
+  },
+
+  // ===== 页面跳转 =====
   goProjectList: function() { wx.navigateTo({ url: '/pages/projects/list/list' }) },
   goCreateProject: function() { wx.navigateTo({ url: '/pages/projects/create/create' }) },
   goMemberMatch: function() { wx.navigateTo({ url: '/pages/member-match/member-match' }) },

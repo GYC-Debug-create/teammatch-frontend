@@ -2,6 +2,7 @@
 var api = require('../../utils/api-service.js')
 var request = api.request
 var USE_MOCK = api.USE_MOCK
+var BASE_URL = api.BASE_URL
 
 Page({
   data: {
@@ -119,6 +120,48 @@ Page({
     } catch (err) {
       console.log('[my-center] 档案数据拉取失败，使用默认值')
     }
+  },
+
+  changeAvatar: function() {
+    var that = this
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var tempFilePath = res.tempFiles[0].tempFilePath
+        wx.showLoading({ title: '上传中...' })
+        var token = wx.getStorageSync('token') || ''
+        wx.uploadFile({
+          url: BASE_URL + '/profile/avatar',
+          filePath: tempFilePath,
+          name: 'file',
+          header: { 'Authorization': 'Bearer ' + token },
+          success: function(uploadRes) {
+            wx.hideLoading()
+            try {
+              var data = JSON.parse(uploadRes.data)
+              if (data.code === '00000' && data.data && data.data.accessUrl) {
+                var newUrl = data.data.accessUrl
+                that.setData({ 'userInfo.avatarUrl': newUrl })
+                var userInfo = wx.getStorageSync('userInfo') || {}
+                userInfo.avatarUrl = newUrl
+                wx.setStorageSync('userInfo', userInfo)
+                wx.showToast({ title: '头像更新成功', icon: 'success' })
+              } else {
+                wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
+              }
+            } catch (e) {
+              wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
+            }
+          },
+          fail: function() {
+            wx.hideLoading()
+            wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
+          }
+        })
+      }
+    })
   },
 
   goProfileAuth: function() {

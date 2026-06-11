@@ -14,7 +14,7 @@
         <!-- 已授权：显示头像和昵称 -->
         <block wx:if="{{hasUserProfile}}">
           <view class="user-top">
-            <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+            <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" bindtap="changeAvatar"/>
             <view class="user-info">
               <text class="user-nickname">{{userInfo.nickname}}</text>
             </view>
@@ -23,7 +23,7 @@
 
         <!-- 未授权：显示后端数据或默认 -->
         <view class="user-top" wx:else>
-          <image wx:if="{{userInfo.avatarUrl && userInfo.avatarUrl.length > 10}}" class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+          <image wx:if="{{userInfo.avatarUrl && userInfo.avatarUrl.length > 10}}" class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" bindtap="changeAvatar"/>
           <view wx:else class="user-avatar user-avatar-txt">{{userInfo.nickname ? userInfo.nickname.slice(0, 1) : '?'}}</view>
           <view class="user-info">
             <text class="user-nickname">{{userInfo.nickname}}</text>
