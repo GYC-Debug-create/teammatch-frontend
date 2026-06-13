@@ -20,7 +20,6 @@
         </view>
         <view class="edit-avatar edit-avatar-txt" wx:else>{{form.nickname ? form.nickname.slice(0, 1) : '?'}}</view>
         <view class="avatar-actions">
-          <text class="avatar-label">当前头像</text>
           <button class="btn-choose-avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">更换头像</button>
         </view>
       </view>
@@ -32,29 +31,47 @@
 
       <view class="form-item">
         <text class="label">昵称</text>
-        <input class="input" placeholder="请输入昵称" placeholder-class="ph" value="{{form.nickname}}" bindinput="onFieldChange" data-field="nickname"/>
+        <input class="input" placeholder="请输入昵称" placeholder-class="ph" maxlength="15" value="{{form.nickname}}" bindinput="onFieldChange" data-field="nickname"/>
       </view>
 
       <view class="form-item">
         <text class="label">学校</text>
-        <input class="input" placeholder="请输入学校" placeholder-class="ph" value="{{form.school}}" bindinput="onFieldChange" data-field="school"/>
+        <view class="picker-row">
+          <picker wx:if="{{!showSchoolOther}}" mode="selector" range="{{schoolList}}" bindchange="onSchoolChange" style="flex:1;">
+            <view class="input">{{form.school || '请选择学校'}}</view>
+          </picker>
+          <input wx:else class="input" style="flex:1;" placeholder="请填写学校名称" placeholder-class="ph" maxlength="15" value="{{form.school}}" bindinput="onFieldChange" data-field="school"/>
+          <text class="picker-custom" bindtap="toggleSchoolCustom">{{showSchoolOther ? '取消' : '填写'}}</text>
+        </view>
       </view>
 
       <view class="form-item">
         <text class="label">专业</text>
-        <input class="input" placeholder="请输入专业" placeholder-class="ph" value="{{form.major}}" bindinput="onFieldChange" data-field="major"/>
+        <view class="picker-row">
+          <picker wx:if="{{!showMajorOther}}" mode="selector" range="{{majorList}}" bindchange="onMajorChange" style="flex:1;">
+            <view class="input">{{form.major || '请选择专业'}}</view>
+          </picker>
+          <input wx:else class="input" style="flex:1;" placeholder="请填写专业名称" placeholder-class="ph" maxlength="15" value="{{form.major}}" bindinput="onFieldChange" data-field="major"/>
+          <text class="picker-custom" bindtap="toggleMajorCustom">{{showMajorOther ? '取消' : '填写'}}</text>
+        </view>
       </view>
 
       <view class="form-item form-item-last">
         <text class="label">年级</text>
-        <input class="input" placeholder="请输入年级" placeholder-class="ph" value="{{form.grade}}" bindinput="onFieldChange" data-field="grade"/>
+        <view class="picker-row">
+          <picker wx:if="{{!showGradeOther}}" mode="selector" range="{{gradeList}}" bindchange="onGradeChange" style="flex:1;">
+            <view class="input">{{form.grade || '请选择年级'}}</view>
+          </picker>
+          <input wx:else class="input" style="flex:1;" placeholder="请填写年级" placeholder-class="ph" maxlength="10" value="{{form.grade}}" bindinput="onFieldChange" data-field="grade"/>
+          <text class="picker-custom" bindtap="toggleGradeCustom">{{showGradeOther ? '取消' : '填写'}}</text>
+        </view>
       </view>
     </view>
 
     <!-- 个人简介卡片 -->
     <view class="card">
       <text class="card-title">个人简介</text>
-      <textarea class="textarea" placeholder="介绍一下自己，寻找志同道合的队友..." placeholder-class="ph" value="{{form.bio}}" bindinput="onFieldChange" data-field="bio"/>
+      <textarea class="textarea" placeholder="介绍一下自己，寻找志同道合的队友..." placeholder-class="ph" maxlength="200" value="{{form.bio}}" bindinput="onFieldChange" data-field="bio"/>
     </view>
 
     <!-- 错误提示 -->

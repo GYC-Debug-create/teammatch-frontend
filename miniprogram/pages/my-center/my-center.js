@@ -64,9 +64,8 @@ Page({
 
     // 清理无效的旧缓存
     if (userInfo && typeof userInfo === 'object') {
-      var avatarOk = userInfo.avatarUrl &&
-                     typeof userInfo.avatarUrl === 'string' &&
-                     userInfo.avatarUrl.indexOf('http') === 0
+      var raw = userInfo.avatarUrl || ''
+      var avatarOk = raw.length > 10 && raw.indexOf('http') === 0
       var nickOk = userInfo.nickName &&
                    typeof userInfo.nickName === 'string' &&
                    userInfo.nickName !== '微信用户'
@@ -116,6 +115,8 @@ Page({
         }
       }
 
+      // 同步 emailVerified 到 storage
+      if (data.emailVerified) wx.setStorageSync('emailVerified', true)
       this.setData(update)
     } catch (err) {
       console.log('[my-center] 档案数据拉取失败，使用默认值')

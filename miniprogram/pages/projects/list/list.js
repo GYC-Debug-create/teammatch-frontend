@@ -1,12 +1,25 @@
 // pages/projects/list/list.js
 var teamService = require('../../../utils/team-service.js')
+var api = require('../../../utils/api-service.js')
+var request = api.request
 
 var PAGE_SIZE = 12
+
+var STATUS_MAP = {
+  'recruiting': '招募中',
+  'in_progress': '进行中',
+  'ended': '已结束',
+  'eval_closed': '已关闭'
+}
+function getStatusText(status) {
+  return STATUS_MAP[status] || status || ''
+}
 
 Page({
   data: {
     projects: [],
     allProjects: [],
+    boardMap: {},
     searchKeyword: '',
     loading: false,
     displayCount: PAGE_SIZE,
@@ -15,33 +28,52 @@ Page({
 
   onLoad: function(options) {
     var myProjects = (options && options.myProjects === '1')
-    this.loadProjects(myProjects)
+    this.loadBoards().then(() => this.loadProjects(myProjects))
+  },
+
+  async loadBoards() {
+    try {
+      var res = await request({ url: '/boards', method: 'GET' })
+      var map = {}
+      ;(res.data || []).forEach(function(b) { map[b.id] = b.name })
+      this.setData({ boardMap: map })
+    } catch (e) {}
   },
 
   loadProjects: function(myProjects) {
     var that = this
     this.setData({ loading: true })
 
-    var request = myProjects
+    var req = myProjects
       ? teamService.getMyJoinedProjects()
       : teamService.getAllProjects()
 
-    request.then(function(list) {
+    req.then(async function(list) {
       var mapped = (list || []).map(function(p) {
+        var pid = p.id || p.projectId
+        var status = p.status || 'recruiting'
         return {
-          id: p.id || p.projectId,
-          title: p.name || p.title || '项目#' + (p.id || p.projectId),
+          id: pid,
+          title: p.name || p.title || ('项目#' + pid),
           description: p.description || '',
-          boardName: p.boardName || '',
+          boardName: that.data.boardMap[p.boardId] || p.boardName || '',
           maxMembers: p.maxMembers || 0,
           currentMembers: p.currentMembers || p.memberCount || 0,
-          status: p.status || 'recruiting',
-          statusText: p.statusText || p.status || '',
+          status: status,
+          statusText: getStatusText(status),
           skills: p.skills || [],
           deadline: p.deadline || '',
           creatorName: p.creatorName || p.leader || ''
         }
       })
+
+      // 并发拉取每个项目的成员数
+      await Promise.all(mapped.map(function(proj) {
+        return teamService.getMembers(proj.id).then(function(members) {
+          proj.currentMembers = (members && members.length) || 0
+        }).catch(function() {})
+      }))
+
       that.setData({ allProjects: mapped, loading: false, displayCount: PAGE_SIZE })
       that.renderPage()
     }).catch(function() {

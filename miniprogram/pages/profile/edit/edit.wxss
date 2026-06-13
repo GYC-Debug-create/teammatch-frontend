@@ -100,6 +100,18 @@ page {
   margin-bottom: 0;
 }
 
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.picker-custom {
+  font-size: 28rpx;
+  color: #0058BB;
+  padding: 0 16rpx;
+  flex-shrink: 0;
+}
+
 .label {
   display: block;
   font-size: 32rpx;
@@ -228,6 +240,8 @@ page {
 .avatar-actions {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .avatar-label {

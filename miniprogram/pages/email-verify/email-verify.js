@@ -79,6 +79,7 @@ Page({
       })
 
       this.setData({ verifying: false });
+      wx.setStorageSync('emailVerified', true);
       wx.showToast({ title: '邮箱验证成功', icon: 'success' });
       setTimeout(() => {
         wx.navigateBack();

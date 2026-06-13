@@ -88,7 +88,7 @@
       </view>
       <view wx:if="{{showUpdateInput}}" style="margin-top:12rpx;">
         <view class="profile-input-row">
-          <input class="profile-input" placeholder="{{updatePlatform === 'gitee' ? '输入 Gitee 用户名' : '输入 GitHub 用户名'}}" placeholder-class="ph" value="{{inputUsername}}" bindinput="onInput"/>
+          <input class="profile-input" maxlength="30" placeholder="{{updatePlatform === 'gitee' ? '输入 Gitee 用户名' : '输入 GitHub 用户名'}}" placeholder-class="ph" value="{{inputUsername}}" bindinput="onInput"/>
           <view class="btn-gen" bindtap="doUpdate"><text>确认</text></view>
           <view class="btn-gen" bindtap="cancelUpdate" style="background:#ccc;width:80px;flex-shrink:0;"><text>取消</text></view>
         </view>
@@ -102,7 +102,7 @@
       </view>
       <view wx:if="{{showBindInput}}" style="margin-top:12rpx;">
         <view class="profile-input-row">
-          <input class="profile-input" placeholder="{{bindPlatform === 'gitee' ? '输入 Gitee 用户名' : '输入 GitHub 用户名'}}" placeholder-class="ph" value="{{inputUsername}}" bindinput="onInput"/>
+          <input class="profile-input" maxlength="30" placeholder="{{bindPlatform === 'gitee' ? '输入 Gitee 用户名' : '输入 GitHub 用户名'}}" placeholder-class="ph" value="{{inputUsername}}" bindinput="onInput"/>
           <view class="btn-gen" bindtap="doBind"><text>确认</text></view>
           <view class="btn-gen" bindtap="cancelBind" style="background:#ccc;width:80px;flex-shrink:0;"><text>取消</text></view>
         </view>

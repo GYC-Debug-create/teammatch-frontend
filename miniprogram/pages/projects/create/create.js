@@ -24,34 +24,40 @@ Page({
       deadline: '',
       deadlineTime: '23:59'
     },
-    boardList: [
-      { id: 1, name: '小程序开发' },
-      { id: 2, name: 'Web应用' },
-      { id: 3, name: 'AI应用' },
-      { id: 4, name: '校园工具' }
-    ],
+    boardList: [],
+    boardIndex: -1,
     skillTagList: [],
     submitting: false,
     errorMsg: ''
   },
 
   async onLoad() {
+    // 加载板块列表
     if (USE_MOCK) {
-      // Mock 模式：使用本地技能标签
-      this.setData({ skillTagList: MOCK_SKILL_TAGS })
+      this.setData({
+        boardList: [
+          { id: 1, name: '小程序开发' },
+          { id: 2, name: 'Web应用' },
+          { id: 3, name: 'AI应用' },
+          { id: 4, name: '校园工具' }
+        ],
+        skillTagList: MOCK_SKILL_TAGS
+      })
     } else {
-      // 真实模式：从后端获取技能标签列表
       try {
-        var res = await request({
-          url: '/profile/skills/tags',
-          method: 'GET'
+        var boardRes = await request({ url: '/boards', method: 'GET' })
+        var boards = (boardRes.data || []).filter(function(b) { return b.status === 'active' })
+        this.setData({ boardList: boards })
+      } catch (err) {
+        this.setData({
+          boardList: [{ id: 1, name: '小程序开发' }, { id: 2, name: 'Web应用' }]
         })
-        var tags = (res.data || []).filter(function(t) {
-          return t.status === 'active'
-        })
+      }
+      try {
+        var tagRes = await request({ url: '/profile/skills/tags', method: 'GET' })
+        var tags = (tagRes.data || []).filter(function(t) { return t.status === 'active' })
         this.setData({ skillTagList: tags })
       } catch (err) {
-        // 加载失败时回退到 Mock 数据
         this.setData({ skillTagList: MOCK_SKILL_TAGS })
       }
     }
@@ -65,9 +71,9 @@ Page({
 
   // 板块选择
   onBoardChange: function(e) {
-    var index = e.detail.value
+    var index = parseInt(e.detail.value)
     var board = this.data.boardList[index]
-    this.setData({ 'form.boardId': board.id, errorMsg: '' })
+    this.setData({ boardIndex: index, 'form.boardId': board.id, errorMsg: '' })
   },
 
   // 技能选择（多选）
@@ -115,6 +121,10 @@ Page({
       this.setData({ errorMsg: '请输入项目标题' })
       return
     }
+    if (title.length > 30) {
+      this.setData({ errorMsg: '项目标题不能超过30个字符' })
+      return
+    }
     if (!description.trim()) {
       this.setData({ errorMsg: '请输入项目描述' })
       return
@@ -143,21 +153,20 @@ Page({
     var creatorId = wx.getStorageSync('userId') || 0
 
     try {
-      await request({
-        url: '/m4/projects',
-        method: 'POST',
-        data: {
-          title: title.trim(),
-          description: description.trim(),
-          boardId: boardId,
-          maxMembers: maxMembers,
-          skills: skills,
-          deadline: deadline + 'T' + deadlineTime + ':00',
-          creatorId: creatorId
-        }
-      })
+      var postData = {
+        title: title.trim(),
+        description: description.trim(),
+        boardId: boardId,
+        maxMembers: maxMembers,
+        skillTagIds: skills,
+        deadline: deadline + 'T' + deadlineTime + ':00',
+        creatorId: creatorId
+      }
+      console.log('[create] 请求体:', JSON.stringify(postData))
+      await request({ url: '/m4/projects', method: 'POST', data: postData })
 
       this.setData({ submitting: false })
+      console.log('[create] 发布成功')
       wx.showToast({ title: '项目发布成功', icon: 'success' })
       setTimeout(function() {
         wx.redirectTo({ url: '/pages/projects/list/list' })

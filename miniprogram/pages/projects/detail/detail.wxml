@@ -40,9 +40,10 @@
       <!-- 技能需求卡片 -->
       <view class="card">
         <text class="card-title">技能需求</text>
-        <view class="skill-tags">
+        <view class="skill-tags" wx:if="{{project.skills && project.skills.length > 0}}">
           <text class="skill-tag" wx:for="{{project.skills}}" wx:key="*this" wx:for-item="skill">{{skill}}</text>
         </view>
+        <text wx:else class="card-content" style="color:#999;font-size:26rpx;">暂无</text>
       </view>
 
       <!-- 现有成员卡片 -->

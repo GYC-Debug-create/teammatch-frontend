@@ -21,7 +21,7 @@ Page({
         that.setData({
           user: {
             nickname: '林乔',
-            avatarUrl: '',
+            avatarUrl: '/assets/CodeBuddyAssets/114_182/2.svg',
             school: '元宇宙大学',
             major: '软件工程 22级',
             grade: '2022级',

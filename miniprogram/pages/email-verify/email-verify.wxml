@@ -15,7 +15,7 @@
       <!-- 邮箱输入 -->
       <view class="form-item">
         <text class="form-label">邮箱地址</text>
-        <input class="form-input" type="text" placeholder="请输入邮箱地址，如 example@domain.com" placeholder-class="ph" value="{{email}}" bindinput="onEmailInput"/>
+        <input class="form-input" type="text" maxlength="30" placeholder="请输入邮箱地址" placeholder-class="ph" value="{{email}}" bindinput="onEmailInput"/>
       </view>
 
       <!-- 验证码区域 -->

@@ -34,7 +34,22 @@ Page({
     var token = wx.getStorageSync('token')
     var emailVerified = wx.getStorageSync('emailVerified') || false
     this.setData({ isLoggedIn: !!token, isEmailVerified: !!emailVerified })
-    if (token) this.fetchTechProfile()
+    if (token) {
+      this.fetchTechProfile()
+      // 从 detail API 同步 emailVerified
+      this.syncEmailStatus()
+    }
+  },
+
+  async syncEmailStatus() {
+    try {
+      var res = await request({ url: '/profile/detail', method: 'GET' })
+      var data = res.data || {}
+      if (data.emailVerified) {
+        wx.setStorageSync('emailVerified', true)
+        this.setData({ isEmailVerified: true })
+      }
+    } catch (e) {}
   },
 
   async fetchTechProfile() {

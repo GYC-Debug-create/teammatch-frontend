@@ -26,7 +26,7 @@ module.exports = { hasSkill: hasSkill }
       <!-- 项目标题 -->
       <view class="form-item">
         <text class="form-label">项目标题</text>
-        <input class="form-input" placeholder="请输入项目标题" placeholder-class="ph" value="{{form.title}}" bindinput="onInputChange" data-field="title"/>
+        <input class="form-input" placeholder="请输入项目标题" placeholder-class="ph" maxlength="30" value="{{form.title}}" bindinput="onInputChange" data-field="title"/>
       </view>
 
       <!-- 项目描述 -->
@@ -39,9 +39,9 @@ module.exports = { hasSkill: hasSkill }
       <!-- 所属板块 -->
       <view class="form-item">
         <text class="form-label">所属板块</text>
-        <picker mode="selector" range="{{boardList}}" range-key="name" bindchange="onBoardChange">
+        <picker mode="selector" range="{{boardList}}" range-key="name" value="{{boardIndex}}" bindchange="onBoardChange">
           <view class="picker-view">
-            {{form.boardId ? boardList[form.boardId-1].name : '请选择板块'}}
+            {{boardIndex !== -1 ? boardList[boardIndex].name : '请选择板块'}}
           </view>
         </picker>
       </view>

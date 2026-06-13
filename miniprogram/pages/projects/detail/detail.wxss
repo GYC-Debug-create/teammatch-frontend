@@ -99,7 +99,7 @@ page {
 .sv {
   flex: 1;
   width: 100%;
-  padding-bottom: 140rpx;
+  padding-bottom: 16rpx;
   overflow-y: auto;
   box-sizing: border-box;
 }

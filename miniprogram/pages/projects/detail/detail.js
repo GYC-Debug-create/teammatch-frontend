@@ -19,9 +19,9 @@ var MOCK_DETAIL = {
   creatorName: '张三',
   creatorAvatar: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
   members: [
-    { id: 1, name: '张三', role: '队长', avatar: '' },
-    { id: 2, name: '李四', role: '成员', avatar: '' },
-    { id: 3, name: '王五', role: '成员', avatar: '' }
+    { id: 1, name: '张三', role: '队长', avatar: '/assets/CodeBuddyAssets/114_182/2.svg' },
+    { id: 2, name: '李四', role: '成员', avatar: '/assets/CodeBuddyAssets/114_182/2.svg' },
+    { id: 3, name: '王五', role: '成员', avatar: '/assets/CodeBuddyAssets/114_182/2.svg' }
   ],
   createdAt: '2026-04-01'
 }
@@ -80,6 +80,43 @@ Page({
         var creatorName = data.creatorName || data.creator_name || ''
         var creatorAvatar = data.creatorAvatar || data.creator_avatar || ''
 
+        // 获取真实成员列表，并拉取每个用户的头像
+        var memberList = data.members || []
+        var memberCount = data.currentMembers || data.current_members || 0
+        try {
+          var memberRes = await request({
+            url: '/m4/projects/' + projectId + '/members',
+            method: 'GET'
+          })
+          var rawMembers = memberRes.data || []
+
+          // 并发获取每个成员的详细信息（头像等）
+          var enrichedMembers = await Promise.all(rawMembers.map(async function(m) {
+            var uid = m.userId || m.id
+            var avatar = ''
+            var name = m.nickname || m.name || ''
+            try {
+              var profile = await teamService.getUserProfile(uid)
+              avatar = profile.avatarUrl || profile.avatar || ''
+              name = profile.nickname || name || ''
+            } catch (e) {
+              // 获取失败，使用默认值
+            }
+            return {
+              id: uid,
+              name: name || ('用户#' + uid),
+              role: m.role === 'leader' ? '队长' : '成员',
+              avatar: avatar,
+              userId: uid
+            }
+          }))
+
+          memberList = enrichedMembers
+          memberCount = memberList.length
+        } catch (e) {
+          // 获取成员列表失败，使用项目详情中的 members 数据
+        }
+
         // 后端没返回创建者信息时，主动拉取用户详情
         if (!creatorName && creatorId) {
           try {
@@ -98,7 +135,7 @@ Page({
             description: data.description || '',
             boardName: data.boardName || data.board_name || '',
             maxMembers: data.maxMembers || data.max_members || 0,
-            currentMembers: data.currentMembers || data.current_members || 0,
+            currentMembers: memberCount,
             status: data.status || '',
             statusText: getStatusText(data.status),
             skills: data.skills || [],
@@ -107,7 +144,7 @@ Page({
             isCreator: parseInt(creatorId) === parseInt(wx.getStorageSync('userId')),
             creatorName: creatorName || '未知用户',
             creatorAvatar: creatorAvatar || '',
-            members: data.members || [],
+            members: memberList,
             createdAt: data.createdAt || data.created_at || ''
           },
           loading: false

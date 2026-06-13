@@ -74,6 +74,6 @@ page{background:#F9F9FF;color:#191C22}
 .oauth-desc{display:block;font-size:28rpx;color:#424753;margin-bottom:32rpx;line-height:44rpx}
 .oauth-steps{margin-bottom:32rpx}
 .oauth-step{display:block;font-size:26rpx;color:#727784;line-height:44rpx}
-.oauth-btn{width:100%;height:88rpx;line-height:88rpx;background:#07c160;color:#fff;font-size:30rpx;font-weight:600;border-radius:16rpx;margin-bottom:20rpx}
+.oauth-btn{width:100%;height:88rpx;line-height:88rpx;background:#07c160;color:#fff;font-size:30rpx;font-weight:600;border-radius:16rpx;margin-bottom:20rpx;display:flex;align-items:center;justify-content:center}
 .oauth-btn::after{border:0}
 .oauth-close{font-size:26rpx;color:#999;padding:8rpx}
