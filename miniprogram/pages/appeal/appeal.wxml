@@ -92,7 +92,7 @@
               class="upload-area {{upIdx < images.length ? 'filled' : ''}}"
               wx:if="{{upIdx < images.length}}"
             >
-              <image class="upload-img" src="{{images[upIdx]}}" mode="aspectFill" />
+              <image class="upload-img" src="{{images[upIdx].tempPath || images[upIdx]}}" mode="aspectFill" />
               <view class="upload-del" data-index="{{upIdx}}" bindtap="deleteImage">
                 <text class="upload-del-icon">✕</text>
               </view>

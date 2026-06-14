@@ -162,6 +162,21 @@
           <div class="reason-box">{{ currentAppeal.reason }}</div>
         </div>
 
+        <!-- 证据截图 -->
+        <div class="detail-section" v-if="currentAppeal.evidenceUrls && currentAppeal.evidenceUrls.length">
+          <h4 class="section-title">证据截图</h4>
+          <div class="evidence-grid">
+            <div
+              v-for="(img, idx) in currentAppeal.evidenceUrls"
+              :key="idx"
+              class="evidence-img"
+              @click="previewImg = img"
+            >
+              <img :src="img" />
+            </div>
+          </div>
+        </div>
+
         <!-- 关联对象详情 -->
         <div class="detail-section" v-if="currentAppeal.relatedDetail">
           <h4 class="section-title">
@@ -233,6 +248,11 @@
         </template>
       </template>
     </el-dialog>
+
+    <!-- 图片放大预览 -->
+    <div v-if="previewImg" class="img-preview-mask" @click="previewImg = null">
+      <img :src="previewImg" class="img-preview-full" @click.stop />
+    </div>
   </div>
 </template>
 
@@ -294,6 +314,7 @@ const handleSearch = () => { currentPage.value = 1 }
 // ===== 详情弹窗 + 处理操作 =====
 const dialogVisible = ref(false)
 const currentAppeal = ref(null)
+const previewImg = ref(null)
 
 const handleViewDetail = (row) => { currentAppeal.value = { ...row }; dialogVisible.value = true }
 
@@ -407,4 +428,14 @@ const handleApprove = () => {
 .btn-cancel { height: 42px !important; background: #fff !important; border: 1px solid #C0C7D4 !important; border-radius: 4px !important; color: #4F6076 !important; font-size: 14px !important; }
 .btn-reject { height: 42px !important; background: #37485D !important; border: none !important; border-radius: 4px !important; color: #fff !important; font-size: 14px !important; }
 .btn-approve { height: 42px !important; background: #409EFF !important; border: none !important; border-radius: 4px !important; box-shadow: 0px 2px 4px rgba(0,0,0,0.1) !important; color: #fff !important; font-size: 14px !important; }
+
+/* 证据截图 */
+.evidence-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+.evidence-img { width: 120px; height: 120px; border-radius: 4px; overflow: hidden; border: 1px solid #C0C7D4; cursor: pointer; }
+.evidence-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.evidence-img:hover img { transform: scale(1.05); }
+
+/* 图片放大预览 */
+.img-preview-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.img-preview-full { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
 </style>

@@ -110,7 +110,7 @@ Page({
           id: member.id,
           userId: userId,
           nickname: (profile && profile.nickname) || '未知用户',
-          avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
+          avatarUrl: (profile && (profile.avatarUrl || profile.avatar || profile.avatar_url)) || '',
           creditScore: (profile && (profile.creditScore || profile.trustScore)) || 0,
           major: (profile && profile.major) || '',
           school: (profile && profile.school) || '',

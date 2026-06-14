@@ -162,7 +162,7 @@
             <span>举报理由</span>
           </div>
           <div class="reason-box">
-            <span>"{{ currentReport.description }}"</span>
+            <span>"{{ currentReport.reason }}"</span>
           </div>
         </div>
 
@@ -174,13 +174,14 @@
           </div>
           <div class="evidence-grid">
             <div
-              v-for="(img, idx) in (currentReport.evidence || [])"
+              v-for="(img, idx) in (currentReport.evidenceUrls || [])"
               :key="idx"
               class="evidence-img"
+              @click="previewImg = img"
             >
               <img :src="img" />
             </div>
-            <div class="evidence-empty" v-if="!currentReport.evidence || currentReport.evidence.length === 0">
+            <div class="evidence-empty" v-if="!currentReport.evidenceUrls || currentReport.evidenceUrls.length === 0">
               <img src="/assets/CodeBuddyAssets/131_2/18.svg" class="empty-icon" />
               <span>暂无证据</span>
             </div>
@@ -220,6 +221,11 @@
         </template>
       </template>
     </el-dialog>
+
+    <!-- 图片放大预览 -->
+    <div v-if="previewImg" class="img-preview-mask" @click="previewImg = null">
+      <img :src="previewImg" class="img-preview-full" @click.stop />
+    </div>
   </div>
 </template>
 
@@ -266,6 +272,7 @@ const pageSize = ref(10)
 // ===== 详情弹窗 =====
 const dialogVisible = ref(false)
 const currentReport = ref(null)
+const previewImg = ref(null) // 点击放大
 
 const handleViewDetail = (row) => {
   currentReport.value = { ...row }
@@ -670,5 +677,17 @@ const handleResolve = async () => {
 .btn-dismiss:hover,
 .btn-resolve:hover {
   opacity: 0.9;
+}
+
+/* 图片放大预览 */
+.img-preview-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.img-preview-full {
+  max-width: 90vw; max-height: 90vh;
+  object-fit: contain; border-radius: 8px;
 }
 </style>

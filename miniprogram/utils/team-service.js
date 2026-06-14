@@ -13,7 +13,13 @@ var profileCache = {}
 
 function getCachedProfile(userId) {
   var entry = profileCache[userId]
-  if (entry && Date.now() - entry.time < 5 * 60 * 1000) return entry.data
+  if (entry && Date.now() - entry.time < 5 * 60 * 1000) {
+    // 补齐归一化（兼容修复前的旧缓存）
+    var d = entry.data
+    d.avatarUrl = d.avatarUrl || d.avatar || d.avatar_url || ''
+    d.nickname = d.nickname || d.nickName || ''
+    return d
+  }
   return null
 }
 
@@ -261,6 +267,9 @@ function getUserProfile(userId) {
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data || res.data
+          // 归一化：后端可能返回下划线或驼峰
+          data.avatarUrl = data.avatarUrl || data.avatar || data.avatar_url || ''
+          data.nickname = data.nickname || data.nickName || ''
           setCachedProfile(userId, data)
           resolve(data)
         } else reject(res.data)
@@ -559,7 +568,39 @@ function getCreditHistory() {
 // ========== 方法 14-15：举报 ==========
 
 /**
- * 提交举报（reasons 数组转为字符串）
+ * 上传图片到 OSS（举报/申诉证据、头像）
+ * @param {string} filePath - 本地临时路径
+ * @param {string} category - 'report_evidence' | 'appeal_evidence' | 'avatar'
+ * @returns {Promise<string>} - storedUrl（用于提交业务接口）
+ */
+function uploadFile(filePath, category) {
+  return new Promise(function(resolve, reject) {
+    var token = getToken()
+    wx.uploadFile({
+      url: BASE_URL + '/files/upload?category=' + encodeURIComponent(category),
+      filePath: filePath,
+      name: 'file',
+      header: { 'Authorization': 'Bearer ' + token },
+      timeout: 30000,
+      success: function(res) {
+        try {
+          var body = JSON.parse(res.data)
+          if (body && isSuccessCode(body.code)) {
+            resolve(body.data.storedUrl)
+          } else {
+            reject(body)
+          }
+        } catch (e) {
+          reject({ message: '上传响应解析失败' })
+        }
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+/**
+ * 提交举报（标签+描述拼接为 reason，支持 evidenceUrls）
  */
 function submitReport(params) {
   return new Promise(function(resolve, reject) {
@@ -570,7 +611,15 @@ function submitReport(params) {
       data: {
         targetType: params.targetType,
         targetId: params.targetId,
-        reason: (params.reasons || []).join('、') || params.reason || ''
+        reason: (function() {
+          var p = params
+          var parts = []
+          var tags = (p.reasons || []).join('、')
+          if (tags) parts.push('[' + tags + ']')
+          if (p.description && p.description.trim()) parts.push(p.description.trim())
+          return parts.join(' ') || p.reason || ''
+        })(),
+        evidenceUrls: params.evidenceUrls || undefined
       },
       timeout: 10000,
       success: function(res) {
@@ -703,7 +752,8 @@ function submitAppeal(params) {
       data: {
         targetType: params.appealType,
         targetId: params.targetId,
-        reason: params.reason || ''
+        reason: params.reason || '',
+        evidenceUrls: params.evidenceUrls || undefined
       },
       timeout: 10000,
       success: function(res) {
@@ -972,6 +1022,7 @@ module.exports = {
   submitEvaluation: submitEvaluation,
   getCurrentCreditScore: getCurrentCreditScore,
   getCreditHistory: getCreditHistory,
+  uploadFile: uploadFile,
   submitReport: submitReport,
   getMyReports: getMyReports,
   getAppealTargets: getAppealTargets,

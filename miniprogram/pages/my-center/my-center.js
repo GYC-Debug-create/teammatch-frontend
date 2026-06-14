@@ -3,6 +3,7 @@ var api = require('../../utils/api-service.js')
 var request = api.request
 var USE_MOCK = api.USE_MOCK
 var BASE_URL = api.BASE_URL
+var teamService = require('../../utils/team-service.js')
 
 Page({
   data: {
@@ -93,11 +94,13 @@ Page({
     if (USE_MOCK) return
 
     try {
-      var res = await request({
-        url: '/profile/detail',
-        method: 'GET'
-      })
-      var data = res.data || {}
+      // 通过 teamService 获取档案（统一归一化 avatar_url → avatarUrl）
+      var userId = wx.getStorageSync('userId')
+      var data = await teamService.getUserProfile(userId)
+      if (!data) return
+
+      var backendAvatar = data.avatarUrl || data.avatar || ''
+      var backendNick = data.nickname || ''
       var update = {
         'userInfo.creditScore': data.creditScore != null ? data.creditScore : this.data.userInfo.creditScore,
         'userInfo.emailVerified': data.emailVerified || false,
@@ -105,17 +108,20 @@ Page({
         'userInfo.school': data.school || ''
       }
 
-      // 没有微信授权时，用后端档案的昵称和头像
-      if (!this.data.hasUserProfile) {
-        if (data.nickname && data.nickname !== 'TeamMatch User') {
-          update['userInfo.nickname'] = data.nickname
+      // 微信授权优先，后端数据兜底
+      if (this.data.hasUserProfile) {
+        if (this.data.userInfo.nickname === 'TeamMatch 用户' && backendNick) {
+          update['userInfo.nickname'] = backendNick
         }
-        if (data.avatarUrl || data.avatar_url) {
-          update['userInfo.avatarUrl'] = data.avatarUrl || data.avatar_url
+      } else {
+        if (backendNick && backendNick !== 'TeamMatch User') {
+          update['userInfo.nickname'] = backendNick
+        }
+        if (backendAvatar) {
+          update['userInfo.avatarUrl'] = backendAvatar
         }
       }
 
-      // 同步 emailVerified 到 storage
       if (data.emailVerified) wx.setStorageSync('emailVerified', true)
       this.setData(update)
     } catch (err) {

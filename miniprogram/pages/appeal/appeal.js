@@ -21,7 +21,9 @@ Page({
     maxReasonLength: 500,
 
     images: [],
-    maxImages: 3,
+    storedUrls: [],
+    maxImages: 5,
+    uploading: false,
 
     loading: true,
     error: null,
@@ -98,18 +100,48 @@ Page({
   },
 
   chooseImage() {
-    if (this.data.images.length >= this.data.maxImages) {
-      wx.showToast({ title: '最多上传3张', icon: 'none' })
+    var that = this
+    var remaining = this.data.maxImages - this.data.images.length
+    if (remaining <= 0) {
+      wx.showToast({ title: '最多上传' + this.data.maxImages + '张', icon: 'none' })
       return
     }
-    wx.showToast({ title: '选择图片（Mock）', icon: 'none' })
+    wx.chooseMedia({
+      count: remaining,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var files = res.tempFiles || []
+        if (files.length === 0) return
+        that.setData({ uploading: true })
+        wx.showLoading({ title: '上传中...' })
+        var uploads = files.map(function(f) {
+          return teamService.uploadFile(f.tempFilePath, 'appeal_evidence').then(function(storedUrl) {
+            return { tempPath: f.tempFilePath, storedUrl: storedUrl }
+          })
+        })
+        Promise.all(uploads).then(function(results) {
+          wx.hideLoading()
+          var images = that.data.images.concat(results)
+          var storedUrls = images.map(function(img) { return img.storedUrl })
+          that.setData({ images: images, storedUrls: storedUrls, uploading: false })
+        }).catch(function(err) {
+          wx.hideLoading()
+          var msg = (err && err.message) || '上传失败'
+          if (err && err.code === 'M6024') msg = 'OSS 未配置，请联系后端'
+          wx.showToast({ title: msg, icon: 'none' })
+          that.setData({ uploading: false })
+        })
+      }
+    })
   },
 
   deleteImage(e) {
     var index = e.currentTarget.dataset.index
     var images = this.data.images.slice()
     images.splice(index, 1)
-    this.setData({ images: images })
+    var storedUrls = images.map(function(img) { return img.storedUrl })
+    this.setData({ images: images, storedUrls: storedUrls })
   },
 
   checkCanSubmit() {
@@ -125,7 +157,7 @@ Page({
         appealType: this.data.appealType,
         targetId: this.data.selectedTargetId,
         reason: this.data.reason,
-        images: this.data.images
+        evidenceUrls: this.data.storedUrls.length > 0 ? this.data.storedUrls : undefined
       })
       wx.showToast({ title: '申诉已提交', icon: 'success' })
       setTimeout(function() { wx.navigateBack() }, 1500)

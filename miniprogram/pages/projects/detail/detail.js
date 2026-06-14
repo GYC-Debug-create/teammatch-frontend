@@ -97,14 +97,14 @@ Page({
             var name = m.nickname || m.name || ''
             try {
               var profile = await teamService.getUserProfile(uid)
-              avatar = profile.avatarUrl || profile.avatar || ''
-              name = profile.nickname || name || ''
+              avatar = profile.avatarUrl || profile.avatar || profile.avatar_url || ''
+              name = profile.nickname || profile.nickName || name || ''
             } catch (e) {
               // 获取失败，使用默认值
             }
             return {
               id: uid,
-              name: name || ('用户#' + uid),
+              name: name || '未知用户',
               role: m.role === 'leader' ? '队长' : '成员',
               avatar: avatar,
               userId: uid
@@ -138,7 +138,7 @@ Page({
             currentMembers: memberCount,
             status: data.status || '',
             statusText: getStatusText(data.status),
-            skills: data.skills || [],
+            skills: (data.skills || []).map(function(s) { return typeof s === 'object' ? (s.name || '') : s }),
             deadline: data.deadline || '',
             creatorId: creatorId,
             isCreator: parseInt(creatorId) === parseInt(wx.getStorageSync('userId')),

@@ -86,10 +86,21 @@ Page({
     this.setData({ form: form, loadingData: false })
   },
 
-  // 选择头像
+  // 选择头像 → 上传 OSS → 用 storedUrl
   onChooseAvatar(e) {
-    var avatarUrl = e.detail.avatarUrl
-    this.setData({ ['form.avatarUrl']: avatarUrl })
+    var that = this
+    var tempPath = e.detail.avatarUrl
+    wx.showLoading({ title: '上传头像...' })
+    teamService.uploadFile(tempPath, 'avatar').then(function(ossUrl) {
+      wx.hideLoading()
+      that.setData({ ['form.avatarUrl']: ossUrl })
+      wx.showToast({ title: '头像已上传', icon: 'success', duration: 1000 })
+    }).catch(function(err) {
+      wx.hideLoading()
+      var msg = (err && err.message) || '上传失败'
+      if (err && err.code === 'M6024') msg = 'OSS 未配置'
+      wx.showToast({ title: msg, icon: 'none' })
+    })
   },
 
   // 学校 picker

@@ -112,7 +112,7 @@
       <!-- 已上传图片缩略图 -->
       <view class="thumb-list" wx:if="{{images.length > 0}}">
         <view class="thumb-item" wx:for="{{images}}" wx:for-index="imgIdx" wx:key="*this">
-          <image class="thumb-img" src="{{item}}" mode="aspectFill" />
+          <image class="thumb-img" src="{{item.tempPath || item}}" mode="aspectFill" />
           <view class="thumb-del" data-index="{{imgIdx}}" bindtap="deleteImage">
             <text class="thumb-del-icon">✕</text>
           </view>
