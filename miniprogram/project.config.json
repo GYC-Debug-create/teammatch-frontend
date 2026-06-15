@@ -7,10 +7,10 @@
   },
   "setting": {
     "coverView": true,
-    "es6": false,
+    "es6": true,
     "postcss": true,
     "minified": true,
-    "enhance": false,
+    "enhance": true,
     "showShadowRootInWxmlPanel": true,
     "packNpmRelationList": [],
     "babelSetting": {
@@ -36,6 +36,6 @@
     "tabIndent": "auto",
     "tabSize": 2
   },
-  "appid": "wx26256dc91ac10029",
+  "appid": "wx1ed2ab8f71795843",
   "simulatorPluginLibVersion": {}
 }

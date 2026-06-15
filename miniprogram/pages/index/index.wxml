@@ -64,7 +64,7 @@
       <text class="profile-icon">📊</text>
       <view class="profile-info">
         <text class="profile-title">技术画像</text>
-        <text class="profile-desc" wx:if="{{hasTechProfile}}">技术评分 {{techScore}} 分{{boundPlatform === 'github' ? ' · [GitHub] ' + boundGithub : boundPlatform === 'gitee' ? ' · [Gitee] ' + boundGitee : ''}}</text>
+        <text class="profile-desc" wx:if="{{hasTechProfile}}">技术评分 {{techScore}} 分{{boundPlatform === 'github' ? ' · [GitHub] ' + (boundGithub || boundGitee) : boundPlatform === 'gitee' ? ' · [Gitee] ' + (boundGitee || boundGithub) : ''}}</text>
         <text class="profile-desc" wx:else>绑定 GitHub 或 Gitee，查看技术排名</text>
       </view>
     </view>

@@ -36,9 +36,10 @@ Page({
         method: 'GET'
       })
       var data = res.data || {}
+      var rawAv = data.avatarUrl || data.avatar_url || ''
       var form = {
         nickname: data.nickname || '',
-        avatarUrl: data.avatarUrl || data.avatar_url || '',
+        avatarUrl: rawAv.replace('http://', 'https://'),
         school: data.school || '',
         major: data.major || '',
         grade: data.grade || '',

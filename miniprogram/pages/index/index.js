@@ -62,8 +62,8 @@ Page({
       if (!platform) platform = this.data.boundPlatform
       this.setData({
         hasTechProfile: true,
-        boundGithub: data.githubUsername || '',
-        boundGitee: data.giteeUsername || '',
+        boundGithub: data.githubUsername || this.data.boundGithub,
+        boundGitee: data.giteeUsername || this.data.boundGitee,
         boundPlatform: platform,
         techScore: data.techScore || 0,
         totalRepos: data.totalRepos || 0, totalStars: data.totalStars || 0,
