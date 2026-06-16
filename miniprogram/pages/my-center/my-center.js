@@ -63,26 +63,28 @@ Page({
   loadUserProfile: function() {
     var userInfo = wx.getStorageSync('userInfo')
 
-    // 清理无效的旧缓存
+    // 清理无效的旧缓存（昵称无效才清）
     if (userInfo && typeof userInfo === 'object') {
-      var raw = userInfo.avatarUrl || ''
-      var avatarOk = raw.length > 10 && raw.indexOf('http') === 0
       var nickOk = userInfo.nickName &&
                    typeof userInfo.nickName === 'string' &&
                    userInfo.nickName !== '微信用户'
-      if (!avatarOk || !nickOk) {
+      if (!nickOk) {
         wx.removeStorageSync('userInfo')
         userInfo = null
       }
     }
 
+    // 头像和昵称都是 http 有效才视为已授权
     if (userInfo && userInfo.avatarUrl && userInfo.nickName) {
-      this.setData({
-        hasUserProfile: true,
-        'userInfo.avatarUrl': userInfo.avatarUrl,
-        'userInfo.nickname': userInfo.nickName
-      })
-      return
+      var raw = userInfo.avatarUrl
+      if (raw.length > 10 && raw.indexOf('http') === 0) {
+        this.setData({
+          hasUserProfile: true,
+          'userInfo.avatarUrl': raw,
+          'userInfo.nickname': userInfo.nickName
+        })
+        return
+      }
     }
 
     // 没有微信授权时，后端数据在 loadProfileDetail 中异步填充
@@ -116,6 +118,7 @@ Page({
       } else {
         if (backendNick && backendNick !== 'TeamMatch User') {
           update['userInfo.nickname'] = backendNick
+          update['hasUserProfile'] = true
         }
         if (backendAvatar) {
           update['userInfo.avatarUrl'] = backendAvatar
@@ -149,7 +152,7 @@ Page({
             try {
               var data = JSON.parse(uploadRes.data)
               if (data.code === '00000' && data.data && data.data.accessUrl) {
-                var newUrl = data.data.accessUrl
+                var newUrl = data.data.accessUrl.replace('http://', 'https://')
                 that.setData({ 'userInfo.avatarUrl': newUrl })
                 var userInfo = wx.getStorageSync('userInfo') || {}
                 userInfo.avatarUrl = newUrl

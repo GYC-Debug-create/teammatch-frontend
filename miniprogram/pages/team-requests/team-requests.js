@@ -306,7 +306,7 @@ Page({
         return
       }
       var msg = (err && err.message) || '操作失败'
-      console.log('[T-034] doAction failed', { requestId, action, err })
+      console.log('[T-034] doAction failed', { requestId, action, code: err && err.code, message: err && err.message })
       wx.showToast({ title: msg, icon: 'none' })
     }
   },

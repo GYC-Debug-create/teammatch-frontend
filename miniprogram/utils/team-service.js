@@ -5,8 +5,8 @@
  */
 
 var USE_MOCK = false
-var BASE_URL = 'http://localhost:8080/api'
-//var BASE_URL = 'https://api.teammatch.top/api'
+//var BASE_URL = 'http://localhost:8080/api'
+var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 用户档案内存缓存（5分钟有效）==========
 var profileCache = {}
@@ -154,9 +154,9 @@ function acceptRequest(requestId) {
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data)
+        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
       },
-      fail: function(err) { reject(err) }
+      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
     })
   })
 }
@@ -173,9 +173,9 @@ function rejectRequest(requestId) {
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data)
+        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
       },
-      fail: function(err) { reject(err) }
+      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
     })
   })
 }
@@ -192,9 +192,9 @@ function cancelRequest(requestId) {
       timeout: 10000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data)
+        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
       },
-      fail: function(err) { reject(err) }
+      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
     })
   })
 }
@@ -267,8 +267,9 @@ function getUserProfile(userId) {
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data || res.data
-          // 归一化：后端可能返回下划线或驼峰
-          data.avatarUrl = data.avatarUrl || data.avatar || data.avatar_url || ''
+          // 归一化：后端可能返回下划线或驼峰，且统一转 https
+          var rawAv = data.avatarUrl || data.avatar || data.avatar_url || ''
+          data.avatarUrl = rawAv.replace('http://', 'https://')
           data.nickname = data.nickname || data.nickName || ''
           setCachedProfile(userId, data)
           resolve(data)
