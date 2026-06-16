@@ -306,7 +306,12 @@ Page({
         return
       }
       var msg = (err && err.message) || '操作失败'
-      console.log('[T-034] doAction failed', { requestId, action, code: err && err.code, message: err && err.message })
+      // 映射新后端错误码
+      if (code === 'M4007') msg = '项目已满员'
+      else if (code === 'M4003') msg = '项目不在招募中'
+      else if (code === 'M4006') msg = '已有待处理的请求'
+      else if (err && err.message === 'request:fail') msg = '网络异常，请重试'
+      console.log('[T-034] doAction failed', { requestId, action, err })
       wx.showToast({ title: msg, icon: 'none' })
     }
   },

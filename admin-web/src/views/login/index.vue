@@ -72,21 +72,6 @@
           </el-form>
         </div>
 
-        <!-- ===== 第三方登录分隔线（Figma: left:41px, top:512px） ===== -->
-        <div class="divider-area">
-          <div class="divider-line"></div>
-          <span class="divider-text">或者通过以下方式</span>
-        </div>
-
-        <!-- ===== 社交登录图标（Figma: left:41px, top:576px） ===== -->
-        <div class="social-area">
-          <button class="social-btn">
-            <img src="/assets/CodeBuddyAssets/2_2/6.svg" alt="微信" />
-          </button>
-          <button class="social-btn">
-            <img src="/assets/CodeBuddyAssets/2_2/7.svg" alt="其他" />
-          </button>
-        </div>
       </div>
 
       <!-- ===== 底部链接 + 版权（Figma: top:705px） ===== -->
@@ -99,7 +84,7 @@
           <a href="#">联系支持</a>
         </div>
         <p class="footer-copyright">
-          TeamMatch&nbsp;&copy;&nbsp;2026&nbsp;版权所有&nbsp;·&nbsp;浙ICP备xxxxxxxx号
+          TeamMatch&nbsp;&copy;&nbsp;2026&nbsp;版权所有&nbsp;·&nbsp;<a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">粤ICP备2026073756号</a>
         </p>
       </div>
     </div>

@@ -89,6 +89,11 @@
       <el-main class="layout-content">
         <router-view />
       </el-main>
+
+      <!-- 底部备案号 -->
+      <div class="layout-footer">
+        <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">粤ICP备2026073756号</a>
+      </div>
     </el-container>
   </el-container>
 </template>
@@ -528,4 +533,21 @@ const handleLogout = () => {
 
 /* 标签页 */
 :root.dark .el-tag { border-color: transparent; }
+
+/* ========== 底部备案 ========== */
+.layout-footer {
+  text-align: center;
+  padding: 10px 0;
+  background: #F5F7FA;
+  border-top: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+.layout-footer a {
+  font-size: 12px;
+  color: #9CA3AF;
+  text-decoration: none;
+}
+.layout-footer a:hover {
+  color: #6B7280;
+}
 </style>

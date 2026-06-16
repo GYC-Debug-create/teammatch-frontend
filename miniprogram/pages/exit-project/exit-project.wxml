@@ -18,7 +18,7 @@
           <text class="project-name">{{projectTitle}}</text>
           <text class="project-subtitle">{{projectSubtitle}}</text>
         </view>
-        <view class="project-status-tag">IN PROGRESS</view>
+        <view class="project-status-tag {{projectStatus}}">{{projectStatusText}}</view>
       </view>
     </view>
 
@@ -52,10 +52,10 @@
   <view class="bottom-actions">
     <button
       class="btn-confirm"
-      disabled="{{submitting}}"
+      disabled="{{submitting || projectStatus === 'ended'}}"
       loading="{{submitting}}"
       bindtap="onConfirmTap"
-    >{{submitting ? '处理中...' : '确认退出'}}</button>
+    >{{submitting ? '处理中...' : (projectStatus === 'ended' ? '项目已结束' : '确认退出')}}</button>
   </view>
 
   <!-- 二次确认弹窗 -->

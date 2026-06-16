@@ -22,6 +22,7 @@ Page({
     projectTitle: '',
     projectSubtitle: '',
     projectStatus: '',
+    projectStatusText: '',
     reason: '',
     maxLength: 200,
     submitting: false,
@@ -43,10 +44,12 @@ Page({
     try {
       const project = await teamService.getProjectDetail(this.data.projectId)
       console.log('[T-037] project detail', project)
+      var statusMap = { recruiting: '招募中', in_progress: '进行中', ended: '已结束' }
       this.setData({
         projectTitle: project.name || project.title || '未知项目',
         projectSubtitle: project.description || project.subtitle || '',
         projectStatus: project.status || '',
+        projectStatusText: statusMap[project.status] || project.status || '',
         loading: false
       })
     } catch (err) {
@@ -65,7 +68,7 @@ Page({
   },
 
   onConfirmTap() {
-    if (this.data.submitting || this.data.isLeader) return
+    if (this.data.submitting || this.data.isLeader || this.data.projectStatus === 'ended') return
     this.setData({ showConfirm: true })
   },
 

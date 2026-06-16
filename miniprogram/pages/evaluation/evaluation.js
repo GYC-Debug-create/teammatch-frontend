@@ -218,18 +218,23 @@ Page({
     const dims = this.data.dims
     const posLen = this.data.selectedPositiveTags.length
     const negLen = this.data.selectedNegativeTags.length
+    const commentOk = this.data.comment.length >= 20
 
     let hasZero = false
     let hasLowWithNoNeg = false
+    let hasLowWithNoComment = false
     let hasHighWithNoPos = false
 
     dims.forEach(d => {
       if (d.score === 0) hasZero = true
-      if (d.score <= 2 && d.score > 0 && negLen === 0) hasLowWithNoNeg = true
+      if (d.score <= 2 && d.score > 0) {
+        if (negLen === 0) hasLowWithNoNeg = true
+        if (!commentOk) hasLowWithNoComment = true
+      }
       if (d.score === 5 && posLen === 0) hasHighWithNoPos = true
     })
 
-    this.setData({ canSubmit: !hasZero && !hasLowWithNoNeg && !hasHighWithNoPos })
+    this.setData({ canSubmit: !hasZero && !hasLowWithNoNeg && !hasLowWithNoComment && !hasHighWithNoPos })
   },
 
   async handleSubmit() {

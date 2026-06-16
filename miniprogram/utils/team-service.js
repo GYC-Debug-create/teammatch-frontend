@@ -5,7 +5,7 @@
  */
 
 var USE_MOCK = false
-//var BASE_URL = 'http://localhost:8080/api'
+// var BASE_URL = 'http://localhost:8080/api'
 var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 用户档案内存缓存（5分钟有效）==========
@@ -74,7 +74,7 @@ function sendApplyRequest(projectId, fromUserId, toUserId, message) {
       method: 'POST',
       header: authHeader(),
       data: { projectId: projectId, fromUserId: fromUserId, toUserId: toUserId, message: message || '' },
-      timeout: 10000,
+      timeout: 15000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
         else reject(res.data)
@@ -95,7 +95,7 @@ function sendInviteRequest(projectId, targetUserId, message) {
       method: 'POST',
       header: authHeader(),
       data: { projectId: projectId, fromUserId: getUserId(), toUserId: targetUserId, message: message || '' },
-      timeout: 10000,
+      timeout: 15000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
         else reject(res.data)
@@ -151,12 +151,12 @@ function acceptRequest(requestId) {
       url: BASE_URL + '/m4/team-requests/' + requestId + '/accept?operatorId=' + getUserId(),
       method: 'POST',
       header: authHeader(),
-      timeout: 10000,
+      timeout: 15000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
+        else reject(res.data)
       },
-      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
+      fail: function(err) { reject(err) }
     })
   })
 }
@@ -170,12 +170,12 @@ function rejectRequest(requestId) {
       url: BASE_URL + '/m4/team-requests/' + requestId + '/reject?operatorId=' + getUserId(),
       method: 'POST',
       header: authHeader(),
-      timeout: 10000,
+      timeout: 15000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
+        else reject(res.data)
       },
-      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
+      fail: function(err) { reject(err) }
     })
   })
 }
@@ -189,12 +189,12 @@ function cancelRequest(requestId) {
       url: BASE_URL + '/m4/team-requests/' + requestId + '/cancel?operatorId=' + getUserId(),
       method: 'POST',
       header: authHeader(),
-      timeout: 10000,
+      timeout: 15000,
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
-        else reject(res.data || { code: 'M' + (res.statusCode || '500'), message: (res.data && res.data.message) || '服务器错误' })
+        else reject(res.data)
       },
-      fail: function(err) { reject({ code: 'NET_ERR', message: err.errMsg || '网络异常' }) }
+      fail: function(err) { reject(err) }
     })
   })
 }
@@ -267,9 +267,8 @@ function getUserProfile(userId) {
       success: function(res) {
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data || res.data
-          // 归一化：后端可能返回下划线或驼峰，且统一转 https
-          var rawAv = data.avatarUrl || data.avatar || data.avatar_url || ''
-          data.avatarUrl = rawAv.replace('http://', 'https://')
+          // 归一化：后端可能返回下划线或驼峰
+          data.avatarUrl = data.avatarUrl || data.avatar || data.avatar_url || ''
           data.nickname = data.nickname || data.nickName || ''
           setCachedProfile(userId, data)
           resolve(data)
