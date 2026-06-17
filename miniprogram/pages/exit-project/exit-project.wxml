@@ -3,7 +3,7 @@
   <view class="content">
     <!-- 头部标题 -->
     <view class="header">
-      <text class="header-eyebrow">TEAMMATCH · T-037</text>
+      <text class="header-eyebrow">TEAMMATCH</text>
       <text class="header-title">退出项目</text>
       <text class="header-desc">请确认你要退出该项目</text>
     </view>

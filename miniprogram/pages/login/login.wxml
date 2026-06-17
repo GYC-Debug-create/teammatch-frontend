@@ -28,8 +28,11 @@
     微信一键登录
   </button>
 
-  <!-- 协议说明 -->
-  <view class="agreement">
-    <text class="agreement-text">登录即同意《用户协议》和《隐私政策》</text>
+  <!-- 协议勾选 -->
+  <view class="agreement" bindtap="toggleAgreed">
+    <view class="checkbox {{agreed ? 'checked' : ''}}">
+      <text wx:if="{{agreed}}" class="check-icon">✓</text>
+    </view>
+    <text class="agreement-text">已阅读并同意《用户协议》和《隐私政策》</text>
   </view>
 </view>

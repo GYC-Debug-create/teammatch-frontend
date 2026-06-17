@@ -2,10 +2,18 @@
 var apiService = require('../../utils/api-service.js')
 
 Page({
-  data: {},
+  data: { agreed: false },
 
   // 微信一键登录
+  toggleAgreed: function() {
+    this.setData({ agreed: !this.data.agreed })
+  },
+
   goToLogin: function() {
+    if (!this.data.agreed) {
+      wx.showToast({ title: '请先勾选同意用户协议和隐私政策', icon: 'none' })
+      return
+    }
     var that = this
 
     // Step 1: 获取微信用户头像和昵称

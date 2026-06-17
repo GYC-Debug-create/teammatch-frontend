@@ -1,7 +1,7 @@
 <view class="page page-safe">
   <!-- 吸顶头部区 -->
   <view class="page-sticky">
-    <text class="hd-sub">TeamMatch · T-043</text>
+    <text class="hd-sub">TeamMatch</text>
     <text class="hd-desc">提交举报信息，维护平台秩序</text>
 
     <!-- 举报类型选择 -->

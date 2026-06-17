@@ -1,8 +1,8 @@
 <view class="eval-page">
-  <!-- 固定头部区（与 T-031 一致，吸顶不跟随滑动） -->
+  <!-- 固定头部区（吸顶不跟随滑动） -->
   <view class="page-sticky">
     <view class="hd">
-      <text class="hd-sub">TEAMMATCH · T-040</text>
+      <text class="hd-sub">TEAMMATCH</text>
       <text class="hd-title">互评</text>
       <text class="hd-desc">对项目成员进行协作评价</text>
     </view>

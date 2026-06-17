@@ -3,7 +3,7 @@
   <view class="page-sticky">
     <view class="hero">
       <view class="hero-copy">
-        <text class="eyebrow">TeamMatch · T-033</text>
+        <text class="eyebrow">TeamMatch</text>
         <text class="page-title">组队请求</text>
         <text class="page-subtitle">集中处理收到与发出的组队申请</text>
       </view>

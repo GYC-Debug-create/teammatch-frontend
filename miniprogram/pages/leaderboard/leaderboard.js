@@ -102,8 +102,8 @@ Page({
     var that = this
     this.setData({ loading: true })
 
-    // Mock 数据永驻
-    var data = MOCK_DATA.slice()
+    // Mock 数据永驻，标记 isMock 方便前端过滤点击
+    var data = MOCK_DATA.map(function(d) { d.isMock = true; return d })
 
     // 尝试拉取真实 API 数据并合并
     try {
@@ -115,7 +115,6 @@ Page({
       for (var i = 0; i < apiList.length; i++) {
         var item = apiList[i]
         if (item) {
-          item.userId = (item.userId || 0) + 1000
           data.push(item)
         }
       }
@@ -135,7 +134,8 @@ Page({
 
   viewProfile: function(e) {
     var item = e.currentTarget.dataset.item
-    var userId = (item && item.userId) || ''
+    if (!item || item.isMock) return
+    var userId = item.userId || ''
     wx.navigateTo({ url: '/pages/profile/profile?userId=' + userId })
   },
 

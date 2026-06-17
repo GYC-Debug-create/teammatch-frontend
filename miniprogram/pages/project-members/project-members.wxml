@@ -5,7 +5,7 @@
     <view class="page-header">
       <view class="page-header-top">
         <view class="page-header-top-left">
-          <text class="page-header-sub">TeamMatch · T-032</text>
+          <text class="page-header-sub">TeamMatch</text>
           <text class="page-header-title">项目成员</text>
           <text class="page-header-desc">管理你的团队</text>
         </view>

@@ -2,7 +2,7 @@
   <!-- 吸顶固定头部区 -->
   <view class="page-sticky">
     <view class="hd">
-      <text class="hd-sub">TeamMatch · T-044</text>
+      <text class="hd-sub">TeamMatch</text>
       <text class="hd-title">申诉</text>
       <text class="hd-desc">对评价或处罚结果提出申诉，我们将在24小时内人工审核并回复。</text>
     </view>

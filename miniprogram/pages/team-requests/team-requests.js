@@ -271,6 +271,19 @@ Page({
   },
 
   async doAction(requestId, action) {
+    // Mock 模式：直接模拟操作
+    if (USE_MOCK) {
+      var status = action === 'accept' ? 'accepted' : (action === 'reject' ? 'rejected' : 'cancelled')
+      this.updateRequestStatus(requestId, status)
+      if (action === 'cancel') {
+        var cancelledIds = wx.getStorageSync('cancelled_requests') || []
+        if (cancelledIds.indexOf(requestId) === -1) cancelledIds.push(requestId)
+        wx.setStorageSync('cancelled_requests', cancelledIds)
+      }
+      wx.showToast({ title: action === 'accept' ? '已接受' : (action === 'reject' ? '已拒绝' : '已取消'), icon: 'success' })
+      return
+    }
+
     try {
       let result
       if (action === 'accept') {

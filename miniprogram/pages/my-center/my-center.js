@@ -120,7 +120,8 @@ Page({
           update['userInfo.nickname'] = backendNick
           update['hasUserProfile'] = true
         }
-        if (backendAvatar) {
+        // 不用后端裸链接覆盖已有的本地头像（签名 URL 存在时后端返回的是无签名链接会 403）
+        if (backendAvatar && !this.data.userInfo.avatarUrl) {
           update['userInfo.avatarUrl'] = backendAvatar
         }
       }

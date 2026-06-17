@@ -8,7 +8,7 @@
   <view class="card-list">
     <view class="entry-card entry-card--blue" bindtap="goTeamRequests">
       <view class="entry-main">
-        <text class="entry-title">组队管理（T-031）</text>
+        <text class="entry-title">组队管理</text>
         <text class="entry-subtitle">收到/发出申请，支持接受、拒绝、撤回</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -16,7 +16,7 @@
 
     <view class="entry-card entry-card--green" bindtap="goProjectMembers">
       <view class="entry-main">
-        <text class="entry-title">项目成员列表（T-032）</text>
+        <text class="entry-title">项目成员列表</text>
         <text class="entry-subtitle">成员查看、队长移除与退出项目流程</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -24,7 +24,7 @@
 
     <view class="entry-card entry-card--orange" bindtap="goExitProject">
       <view class="entry-main">
-        <text class="entry-title">退出项目（T-037）</text>
+        <text class="entry-title">退出项目</text>
         <text class="entry-subtitle">成员主动退出，确认扣分与二次弹窗</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -32,7 +32,7 @@
 
     <view class="entry-card entry-card--red" bindtap="goExitVoteDetail">
       <view class="entry-main">
-        <text class="entry-title">退出投票详情（T-038）</text>
+        <text class="entry-title">退出投票详情</text>
         <text class="entry-subtitle">投票表决、倒计时、统计与关闭</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -40,7 +40,7 @@
 
     <view class="entry-card entry-card--purple" bindtap="goEvaluation">
       <view class="entry-main">
-        <text class="entry-title">互评（T-040）</text>
+        <text class="entry-title">互评</text>
         <text class="entry-subtitle">四维评分、标签选择、技能点赞与提交</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -48,7 +48,7 @@
 
     <view class="entry-card entry-card--cyan" bindtap="goCreditHistory">
       <view class="entry-main">
-        <text class="entry-title">信誉分变化（T-042）</text>
+        <text class="entry-title">信誉分变化</text>
         <text class="entry-subtitle">查看信誉分当前分数与历史变化记录</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -56,7 +56,7 @@
 
     <view class="entry-card entry-card--pink" bindtap="goReport">
       <view class="entry-main">
-        <text class="entry-title">举报（T-043）</text>
+        <text class="entry-title">举报</text>
         <text class="entry-subtitle">举报用户或项目，维护平台秩序</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -64,7 +64,7 @@
 
     <view class="entry-card entry-card--indigo" bindtap="goAppeal">
       <view class="entry-main">
-        <text class="entry-title">申诉（T-044）</text>
+        <text class="entry-title">申诉</text>
         <text class="entry-subtitle">对评价或处罚结果提出申诉</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -136,7 +136,7 @@
 
     <view class="entry-card entry-card--orange" bindtap="goLeaderboard">
       <view class="entry-main">
-        <text class="entry-title">技术排行榜（T-018）</text>
+        <text class="entry-title">技术排行榜</text>
         <text class="entry-subtitle">查看技术榜单，发现身边的优秀开发者</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -144,7 +144,7 @@
 
     <view class="entry-card entry-card--red" bindtap="goProfileClaim">
       <view class="entry-main">
-        <text class="entry-title">认领技术画像（T-020）</text>
+        <text class="entry-title">认领技术画像</text>
         <text class="entry-subtitle">完成认证，让你的技术实力被更多人看到</text>
       </view>
       <text class="entry-arrow">›</text>
@@ -152,7 +152,7 @@
 
     <view class="entry-card entry-card--purple" bindtap="goMyCenter">
       <view class="entry-main">
-        <text class="entry-title">个人中心（T-021）</text>
+        <text class="entry-title">个人中心</text>
         <text class="entry-subtitle">查看档案、信誉分、项目与技能管理</text>
       </view>
       <text class="entry-arrow">›</text>

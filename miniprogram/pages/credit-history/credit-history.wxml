@@ -2,7 +2,7 @@
   <!-- 吸顶固定头部区 -->
   <view class="page-sticky">
     <view class="hd">
-      <text class="hd-sub">TEAMMATCH · T-042</text>
+      <text class="hd-sub">TEAMMATCH</text>
       <text class="hd-title">信誉分变化</text>
       <text class="hd-desc">记录每一次信誉变化</text>
     </view>

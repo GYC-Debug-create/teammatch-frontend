@@ -5,7 +5,7 @@
  */
 
 var USE_MOCK = false
-// var BASE_URL = 'http://localhost:8080/api'
+//var BASE_URL = 'http://localhost:8080/api'
 var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 用户档案内存缓存（5分钟有效）==========
