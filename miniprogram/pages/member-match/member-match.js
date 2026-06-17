@@ -6,6 +6,7 @@ Page({
     projectId: null,
     projectName: '',
     projectStatus: '',
+    isProjectEnded: false,
     isProjectLeader: false,
     searchKeyword: '',
     users: [],
@@ -52,9 +53,11 @@ Page({
           var projStatus = (project.status || '').toUpperCase()
           var leaderId = project.creatorId || project.creator_id || 0
           var myId = parseInt(wx.getStorageSync('userId')) || 0
+          var ended = projStatus === 'ENDED' || projStatus === 'COMPLETED' || projStatus === 'FINISHED' || project.status === 'ended'
           that.setData({
             projectName: project.name || project.title || that.data.projectName,
             projectStatus: projStatus,
+            isProjectEnded: ended,
             isProjectLeader: leaderId === myId
           })
         } catch (e) { /* 非关键 */ }
@@ -69,7 +72,7 @@ Page({
           var p = allProjects[i]
           if (p.creatorId === userId || p.creator_id === userId) {
             var pStatus = (p.status || '').toUpperCase()
-            if (pStatus !== 'ENDED' && pStatus !== 'COMPLETED' && pStatus !== 'FINISHED') {
+            if (pStatus === 'RECRUITING') {
               myCreatedProjects.push({
                 id: p.id,
                 name: p.name || p.title || '',
@@ -170,6 +173,10 @@ Page({
   },
 
   inviteUser(e) {
+    if (this.data.isProjectEnded) {
+      wx.showToast({ title: '项目已结束，无法邀请新成员', icon: 'none' })
+      return
+    }
     var targetUserId = e.currentTarget.dataset.userId
     var nickname = e.currentTarget.dataset.nickname || ''
     var myId = parseInt(wx.getStorageSync('userId')) || 0

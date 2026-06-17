@@ -98,6 +98,6 @@
 
   <!-- 底部邀请成员按钮（仅队长可见） -->
   <view class="invite-bar" wx:if="{{isLeader}}">
-    <button class="invite-btn" bindtap="goInviteMember">+ 邀请成员</button>
+    <button class="invite-btn {{!canInvite ? 'invite-btn-disabled' : ''}}" bindtap="goInviteMember" disabled="{{!canInvite}}">+ 邀请成员</button>
   </view>
 </view>

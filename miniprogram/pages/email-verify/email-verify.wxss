@@ -214,3 +214,80 @@ page {
   color: #727784;
   opacity: 1;
 }
+
+/* ========== 已认证卡片 ========== */
+.verified-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56rpx 34rpx;
+  margin-top: 40rpx;
+}
+
+.verified-icon {
+  font-size: 72rpx;
+  margin-bottom: 24rpx;
+}
+
+.verified-email {
+  font-size: 34rpx;
+  color: #191C22;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.verified-status {
+  font-size: 26rpx;
+  color: #07c160;
+  margin-bottom: 40rpx;
+}
+
+.rebind-btn {
+  width: 360rpx;
+  height: 80rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 40rpx;
+  background: #ECEDF7;
+  color: #0058BB;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid transparent;
+}
+
+.rebind-btn::after {
+  border: 0;
+}
+
+/* ========== 换绑提示 ========== */
+.rebind-tip {
+  display: block;
+  text-align: center;
+  font-size: 28rpx;
+  color: #424753;
+  margin-bottom: 24rpx;
+}
+
+/* ========== 取消按钮 ========== */
+.cancel-btn {
+  width: 100%;
+  height: 80rpx;
+  margin: 20rpx 0 0;
+  padding: 0;
+  border-radius: 24rpx;
+  background: #F9F9FF;
+  color: #727784;
+  font-size: 28rpx;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid #F2F3FC;
+}
+
+.cancel-btn::after {
+  border: 0;
+}

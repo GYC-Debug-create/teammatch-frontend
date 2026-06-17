@@ -4,6 +4,10 @@ page{background:#F9F9FF;color:#191C22}
 .hero-title{display:block;font-size:18px;font-weight:700;color:#191C22}
 .hero-sub{display:block;font-size:13px;color:#424753;margin-top:2px}
 
+/* 项目已结束提示 */
+.ended-banner{margin-bottom:14px;padding:12px 16px;background:#FFF3E0;border-radius:10px}
+.ended-banner-text{font-size:13px;color:#E65100}
+
 /* 项目选择栏 */
 .project-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-shrink:0;flex-wrap:wrap}
 .project-bar-label{font-size:13px;color:#727784;flex-shrink:0}

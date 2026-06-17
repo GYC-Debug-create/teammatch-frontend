@@ -5,6 +5,10 @@
     <text class="hero-sub" wx:else>基于你创建的项目推荐合适队友</text>
   </view>
 
+  <view class="ended-banner" wx:if="{{isProjectEnded}}">
+    <text class="ended-banner-text">⚠ 项目已结束，无法邀请新成员</text>
+  </view>
+
   <view class="project-bar" wx:if="{{showProjectBar}}">
     <text class="project-bar-label">邀请到：</text>
     <view class="project-bar-chip {{item.id === activeProjectId ? 'chip-active' : ''}}" wx:for="{{myProjects}}" wx:key="id" bindtap="switchActiveProject" data-project-id="{{item.id}}">

@@ -10,7 +10,7 @@ function parseTopLanguages(val) {
 
 Page({
   data: {
-    isLoggedIn: false, isEmailVerified: false,
+    isLoggedIn: false, isEmailVerified: false, userEmail: '',
     inputUsername: '',
     bindPlatform: '',          // 首次绑定: 'github' | 'gitee' | ''
     updatePlatform: '',        // 换绑: 'github' | 'gitee' | ''
@@ -47,7 +47,7 @@ Page({
       var data = res.data || {}
       if (data.emailVerified) {
         wx.setStorageSync('emailVerified', true)
-        this.setData({ isEmailVerified: true })
+        this.setData({ isEmailVerified: true, userEmail: data.email || '' })
       }
     } catch (e) {}
   },

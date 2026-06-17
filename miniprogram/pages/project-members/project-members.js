@@ -33,6 +33,9 @@ Page({
     members: [],
     currentUserId: null,
     isLeader: false,
+    projectStatus: '',
+    canInvite: true,
+    inviteDisabledReason: '',
 
     // 新增：页面状态
     loading: false,
@@ -46,7 +49,20 @@ Page({
     var currentUserId = (app && app.globalData && app.globalData.userId) || parseInt(wx.getStorageSync('userId')) || null
     const projectId = Number(options.projectId) || 0
     this.setData({ projectId, currentUserId })
+    this.checkProjectStatus(projectId)
     this.checkLeader(projectId, currentUserId)
+  },
+
+  async checkProjectStatus(projectId) {
+    try {
+      var project = await teamService.getProjectDetail(projectId)
+      var status = (project.status || '').toLowerCase()
+      var canInvite = status === 'recruiting'
+      var reason = status === 'in_progress' ? '项目已开始' : (status === 'ended' ? '项目已结束' : '项目状态不支持邀请')
+      this.setData({ projectStatus: status, canInvite: canInvite, inviteDisabledReason: reason })
+    } catch (e) {
+      this.setData({ canInvite: true })
+    }
   },
 
   async checkLeader(projectId, currentUserId) {
@@ -166,6 +182,10 @@ Page({
   },
 
   goInviteMember() {
+    if (!this.data.canInvite) {
+      wx.showToast({ title: this.data.inviteDisabledReason || '无法邀请', icon: 'none' })
+      return
+    }
     var name = this.data.projectTitle || ''
     wx.navigateTo({
       url: '/pages/member-match/member-match?projectId=' + this.data.projectId + '&projectName=' + name

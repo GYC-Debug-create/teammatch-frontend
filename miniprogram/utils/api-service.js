@@ -179,6 +179,16 @@ function request(options) {
         if (res.statusCode === 200 && res.data && res.data.code === '00000') {
           resolve(res.data)
         } else {
+          // 账号被封禁/认证失效/未登录，清除登录态并跳转
+          var code = res.data && res.data.code
+          if (code === 'M3017' || code === 'M3000' || code === 'A0401' || code === 'A0403' || res.statusCode === 401 || res.statusCode === 403) {
+            wx.removeStorageSync('token')
+            wx.removeStorageSync('userId')
+            wx.removeStorageSync('userInfo')
+            wx.removeStorageSync('emailVerified')
+            wx.showToast({ title: '账号异常，请重新登录', icon: 'none', duration: 2000 })
+            setTimeout(function() { wx.reLaunch({ url: '/pages/login/login' }) }, 1500)
+          }
           reject(res.data || { code: 'M9999', message: '未知错误' })
         }
       },

@@ -61,6 +61,19 @@ function isSuccessCode(code) {
   return code === 200 || code === '00000' || code === 0
 }
 
+// 检测是否为封禁/认证失效响应，是则清登录态并跳转
+function handleBanResponse(resData) {
+  var code = resData && resData.code
+  if (code === 'M3017' || code === 'M3000') {
+    wx.removeStorageSync('token')
+    wx.removeStorageSync('userId')
+    wx.removeStorageSync('userInfo')
+    wx.removeStorageSync('emailVerified')
+    wx.showToast({ title: '账号异常，请重新登录', icon: 'none', duration: 2000 })
+    setTimeout(function() { wx.reLaunch({ url: '/pages/login/login' }) }, 1500)
+  }
+}
+
 // ========== 方法 0：发起组队请求 ==========
 
 /**
@@ -212,6 +225,7 @@ function getMembers(projectId) {
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
+        handleBanResponse(res.data)
         if (res.data && isSuccessCode(res.data.code)) {
           // 兼容 data 为数组格式
           if (Array.isArray(res.data.data)) {
@@ -238,6 +252,7 @@ function getProjectDetail(projectId) {
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
+        handleBanResponse(res.data)
         if (res.data && isSuccessCode(res.data.code)) {
           resolve(res.data.data || res.data)
         } else reject(res.data)
@@ -265,6 +280,7 @@ function getUserProfile(userId) {
       header: authHeader(),
       timeout: 10000,
       success: function(res) {
+        handleBanResponse(res.data)
         if (res.data && isSuccessCode(res.data.code)) {
           var data = res.data.data || res.data
           // 归一化：后端可能返回下划线或驼峰

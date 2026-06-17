@@ -28,11 +28,23 @@ Page({
     boardIndex: -1,
     skillTagList: [],
     submitting: false,
-    errorMsg: ''
+    errorMsg: '',
+    minDate: '',
+    minTime: '00:00'
   },
 
-  async onLoad() {
-    // 加载板块列表
+  async onLoad(options) {
+    // 计算最早可选日期和最早可选时间
+    var now = new Date()
+    var y = now.getFullYear()
+    var m = String(now.getMonth() + 1).padStart(2, '0')
+    var d = String(now.getDate()).padStart(2, '0')
+    // 最早时间是当前小时+1 的整点，23点之后推到次日
+    var nextHour = now.getHours() + 1
+    if (nextHour >= 24) nextHour = 0
+    var minTime = String(nextHour).padStart(2, '0') + ':00'
+    this.setData({ minDate: y + '-' + m + '-' + d, minTime: minTime })
+
     if (USE_MOCK) {
       this.setData({
         boardList: [
@@ -99,12 +111,27 @@ Page({
 
   // 截止日期选择
   onDateChange: function(e) {
-    this.setData({ 'form.deadline': e.detail.value, errorMsg: '' })
+    var date = e.detail.value
+    // 选了今天就把时间也校准到最早可选项
+    if (date === this.data.minDate) {
+      var form = this.data.form
+      if (form.deadlineTime < this.data.minTime) {
+        this.setData({ 'form.deadline': date, 'form.deadlineTime': this.data.minTime, errorMsg: '' })
+        return
+      }
+    }
+    this.setData({ 'form.deadline': date, errorMsg: '' })
   },
 
   // 截止时间选择
   onTimeChange: function(e) {
-    this.setData({ 'form.deadlineTime': e.detail.value, errorMsg: '' })
+    var time = e.detail.value
+    // 选了今天则时间不得早于 minTime
+    if (this.data.form.deadline === this.data.minDate && time < this.data.minTime) {
+      this.setData({ 'form.deadlineTime': this.data.minTime, errorMsg: '' })
+      return
+    }
+    this.setData({ 'form.deadlineTime': time, errorMsg: '' })
   },
 
   // 表单提交
@@ -141,6 +168,13 @@ Page({
       this.setData({ errorMsg: '请选择截止日期' })
       return
     }
+    // 截止时间不能早于当前时间
+    var deadlineStr = deadline + 'T' + deadlineTime + ':00'
+    var dl = new Date(deadlineStr).getTime()
+    if (dl < Date.now()) {
+      this.setData({ errorMsg: '截止时间不能早于当前时间，请重新选择' })
+      return
+    }
     if (maxMembers < 2) {
       this.setData({ errorMsg: '项目人数至少为 2 人' })
       return
@@ -159,7 +193,7 @@ Page({
         boardId: boardId,
         maxMembers: maxMembers,
         skillTagIds: skills,
-        deadline: deadline + 'T' + deadlineTime + ':00',
+        deadline: deadlineStr,
         creatorId: creatorId
       }
       console.log('[create] 请求体:', JSON.stringify(postData))
