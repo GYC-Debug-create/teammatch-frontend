@@ -35,9 +35,15 @@
         <template #empty><el-empty description="暂无处罚记录" :image-size="80" /></template>
 
         <el-table-column label="处罚ID" width="120"><template #default="{ row }"><span class="cell-id">{{ row.penaltyNo }}</span></template></el-table-column>
-        <el-table-column label="处罚用户" width="150"><template #default="{ row }"><div class="cell-user"><span class="user-avatar">{{ row.username[4]||row.username[0] }}</span><span>{{ row.username }}</span></div></template></el-table-column>
-        <el-table-column label="处罚类型" width="120"><template #default="{ row }"><span :class="['type-tag', row.penaltyType==='credit_deduct'?'type-deduct':'type-limit']">{{ row.penaltyType==='credit_deduct'?'扣分':'功能限制' }}</span></template></el-table-column>
-        <el-table-column label="处罚详情" width="170"><template #default="{ row }"><span :class="['cell-detail', row.penaltyType==='credit_deduct'?'detail-deduct':'detail-limit']">{{ row.detail }}</span></template></el-table-column>
+        <el-table-column label="处罚用户" width="180">
+          <template #default="{ row }">
+            <div class="cell-user">
+              <UserLabel :user-id="row.userId" />
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="处罚类型" width="120"><template #default="{ row }"><span :class="['type-tag', row.penaltyType==='credit_deduct'?'type-deduct':'type-ban']">{{ row.penaltyType==='credit_deduct'?'扣分':'封禁' }}</span></template></el-table-column>
+        <el-table-column label="处罚详情" width="170"><template #default="{ row }"><span :class="['cell-detail', row.penaltyType==='credit_deduct'?'detail-deduct':'detail-ban']">{{ row.detail }}</span></template></el-table-column>
         <el-table-column prop="reason" label="处罚原因" width="110" />
         <el-table-column label="处罚时间" width="130"><template #default="{ row }"><span class="cell-time">{{ row.createdAt?.slice(5) }}</span></template></el-table-column>
         <el-table-column label="当前状态" width="110"><template #default="{ row }"><span :class="['status-tag', row.status==='active'?'status-active':'status-revoked']">{{ row.status==='active'?'已生效':'已撤销' }}</span></template></el-table-column>
@@ -55,31 +61,33 @@
     <el-dialog v-model="dlg" title="执行处罚" width="520px" :close-on-click-modal="false" destroy-on-close class="execute-dialog">
       <el-form :model="form" label-position="top">
         <el-form-item label="被处罚用户" required>
-          <el-select v-model="form.userId" filterable placeholder="请选择用户" style="width:100%">
-            <el-option v-for="u in userOptions" :key="u.id" :label="u.name" :value="u.id" />
+          <el-select
+            v-model="form.userId"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchUserOptions"
+            :loading="userSearchLoading"
+            placeholder="输入用户 ID 或昵称搜索"
+            style="width:100%"
+          >
+            <el-option
+              v-for="u in userOptions"
+              :key="u.id"
+              :label="formatUserOptionLabel(u)"
+              :value="u.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="处罚类型" required>
           <el-select v-model="form.penaltyType" placeholder="请选择处罚类型" style="width:100%">
             <el-option label="扣分" value="credit_deduct" />
-            <el-option label="功能限制" value="function_limit" />
+            <el-option label="封禁" value="function_limit" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="form.penaltyType==='credit_deduct'" label="扣分值">
           <el-input-number v-model="form.deductScore" :min="1" :max="100" :step="5" style="width:100%" />
         </el-form-item>
-        <template v-if="form.penaltyType==='function_limit'">
-          <el-form-item label="限制类型">
-            <el-select v-model="form.limitType" placeholder="请选择限制类型" style="width:100%">
-              <el-option label="账号封禁" value="account_ban" />
-              <el-option label="限制发起项目" value="restrict_create" />
-              <el-option label="限制加入项目" value="restrict_join" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="限制天数">
-            <el-input-number v-model="form.limitDays" :min="1" :max="365" :step="1" style="width:100%" />
-          </el-form-item>
-        </template>
         <el-form-item label="处罚原因" required>
           <el-input v-model="form.reason" type="textarea" :rows="3" maxlength="200" show-word-limit placeholder="请输入处罚原因" />
         </el-form-item>
@@ -97,19 +105,33 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { WarningFilled, CircleClose } from '@element-plus/icons-vue'
 import { getPenaltyList, createPenalty, revokePenalty } from '@/api/penalty'
+import { lookupUsers, formatUserOptionLabel } from '@/api/user'
+import { useEntityResolver } from '@/composables/useEntityResolver'
+import UserLabel from '@/components/UserLabel.vue'
+
+const { loadUsers, userName } = useEntityResolver()
 
 // API Penalty: id, userId, type, creditDeductValue, reason, adminId, status, revokedAt, createdAt
 const penalties = ref([])
-const fetchList = async () => { try { penalties.value = await getPenaltyList() } catch {} }
+
+const fetchList = async () => {
+  try {
+    penalties.value = await getPenaltyList()
+    loadUsers(penalties.value.map((p) => p.userId)).catch(() => {})
+  } catch {}
+}
 onMounted(fetchList)
 
 // 映射展示字段
 const displayPenalties = computed(() => penalties.value.map(p => {
-  const detail = p.type === 'credit_deduct' ? `扣除信誉分 ${p.creditDeductValue || 0} 分` : (p.reason || '')
+  const detail = p.type === 'credit_deduct'
+    ? `扣除信誉分 ${p.creditDeductValue || 0} 分`
+    : '账号封禁'
+  const username = userName(p.userId)
   return {
     ...p,
     penaltyNo: 'PNL-' + String(p.id).padStart(3, '0'),
-    username: '用户#' + p.userId,
+    username,
     penaltyType: p.type,
     detail,
     createdAt: p.createdAt,
@@ -122,7 +144,7 @@ const pg = ref(1); const ps = ref(10)
 const pagedList = computed(() => { const s = (pg.value - 1) * ps.value; return displayPenalties.value.slice(s, s + ps.value) })
 
 const handleRevoke = (row) => {
-  ElMessageBox.confirm(`确定要撤销对「${row.username}」的处罚吗？撤销后将恢复相关信誉分或功能权限。`, `撤销处罚`, { type: 'warning' }).then(async () => {
+  ElMessageBox.confirm(`确定要撤销对「${row.username}」的处罚吗？撤销后将恢复相关信誉分或解除封禁。`, `撤销处罚`, { type: 'warning' }).then(async () => {
     await revokePenalty(row.id, { reason: '管理员撤销' })
     ElMessage.success('处罚已撤销'); fetchList()
   }).catch(() => {})
@@ -130,14 +152,33 @@ const handleRevoke = (row) => {
 
 // 弹窗
 const dlg = ref(false)
-const userOptions = [
-  { id: 1, name: '测试用户A' }, { id: 2, name: '测试用户B' }, { id: 3, name: '测试用户C' }, { id: 4, name: '测试用户D' }, { id: 5, name: '测试用户E' }
-]
-const form = ref({ userId: '', penaltyType: '', deductScore: 5, limitType: '', limitDays: 7, reason: '' })
+const userOptions = ref([])
+const userSearchLoading = ref(false)
+let searchSeq = 0
+const form = ref({ userId: '', penaltyType: '', deductScore: 5, reason: '' })
 const canExecute = computed(() => form.value.userId && form.value.penaltyType && form.value.reason.trim())
 
+const searchUserOptions = async (keyword) => {
+  const q = keyword?.trim()
+  if (!q) {
+    userOptions.value = []
+    return
+  }
+  const seq = ++searchSeq
+  userSearchLoading.value = true
+  try {
+    const list = await lookupUsers(q)
+    if (seq === searchSeq) userOptions.value = list
+  } catch {
+    if (seq === searchSeq) userOptions.value = []
+  } finally {
+    if (seq === searchSeq) userSearchLoading.value = false
+  }
+}
+
 const handleExecute = () => {
-  form.value = { userId: '', penaltyType: '', deductScore: 5, limitType: '', limitDays: 7, reason: '' }
+  form.value = { userId: '', penaltyType: '', deductScore: 5, reason: '' }
+  userOptions.value = []
   dlg.value = true
 }
 
@@ -184,12 +225,12 @@ const handleConfirm = async () => {
 .cell-time { color:#404752; font-size:14px; font-family:Inter,sans-serif }
 .cell-detail { font-size:14px; font-weight:600 }
 .detail-deduct { color:#BA1A1A; font-family:Inter,sans-serif }
-.detail-limit { color:#191C1E }
+.detail-ban { color:#191C1E }
 .cell-none { color:#707784; font-size:13px; font-style:italic }
 
 .type-tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:500 }
 .type-deduct { background:#FFDAD6; color:#93000A }
-.type-limit { background:#D2E4FF; color:#0A1C30 }
+.type-ban { background:#D2E4FF; color:#0A1C30 }
 
 .status-tag { display:inline-block; padding:3px 11px; border-radius:12px; font-size:12px; font-weight:500 }
 .status-active { background:#FFDAD6; border:1px solid rgba(186,26,26,.20); color:#BA1A1A }

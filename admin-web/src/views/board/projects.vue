@@ -20,7 +20,12 @@
           <el-empty description="该板块暂无项目" :image-size="80" />
         </template>
         <el-table-column prop="name" label="项目名称" min-width="200" />
-        <el-table-column prop="leader" label="队长" width="120" />
+        <el-table-column label="队长" width="160">
+          <template #default="{ row }">
+            <UserLabel v-if="row.creatorId" :user-id="row.creatorId" />
+            <span v-else>--</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="memberCount" label="人数上限" width="100" align="center" />
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
@@ -43,6 +48,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getBoardProjects } from '@/api/board'
+import { useEntityResolver } from '@/composables/useEntityResolver'
+import UserLabel from '@/components/UserLabel.vue'
+
+const { loadUsers } = useEntityResolver()
 
 const route = useRoute()
 const loading = ref(false)
@@ -56,7 +65,7 @@ const projectList = computed(() => {
   return rawProjects.value.map(p => ({
     id: p.id,
     name: p.title || ('项目#' + p.id),
-    leader: p.creatorId ? ('用户#' + p.creatorId) : '--',
+    creatorId: p.creatorId,
     memberCount: p.maxMembers !== undefined ? p.maxMembers : '--',
     status: p.status || 'active',
     createdDate: (p.createdAt || '').slice(0, 10)
@@ -68,6 +77,7 @@ const fetchProjects = async () => {
   try {
     const data = await getBoardProjects(boardId.value)
     rawProjects.value = Array.isArray(data) ? data : (data.records || data.list || [])
+    loadUsers(rawProjects.value.map((p) => p.creatorId)).catch(() => {})
   } catch (e) {
     rawProjects.value = []
   } finally {

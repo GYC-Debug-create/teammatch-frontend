@@ -14,7 +14,7 @@
       </div>
       <div class="appeal-header-right">
         <el-button class="btn-export" :icon="Download">导出报表</el-button>
-        <el-button class="btn-refresh" :icon="Refresh" @click="activeTab = 'all'">刷新数据</el-button>
+        <el-button class="btn-refresh" :icon="Refresh" @click="handleRefresh">刷新数据</el-button>
       </div>
     </div>
 
@@ -35,7 +35,7 @@
         <img src="/assets/CodeBuddyAssets/154_215/17.svg" class="search-icon" />
         <input
           v-model="searchKeyword"
-          placeholder="搜索编号/申诉人"
+          placeholder="搜索编号/用户ID/昵称"
           class="search-input"
           @input="handleSearch"
         />
@@ -73,8 +73,10 @@
           <template #default="{ row }">{{ row.targetType === 'evaluation' ? '评价#' : '处罚#' }}{{ row.targetId }}</template>
         </el-table-column>
 
-        <el-table-column label="申诉人" width="100">
-          <template #default="{ row }">用户#{{ row.userId }}</template>
+        <el-table-column label="申诉人" width="150">
+          <template #default="{ row }">
+            <UserLabel :user-id="row.userId" />
+          </template>
         </el-table-column>
 
         <el-table-column prop="reason" label="申诉原因" min-width="140" />
@@ -146,8 +148,11 @@
               <span class="info-value">{{ currentAppeal.targetId || '-' }}</span>
             </div>
             <div class="info-cell">
-              <span class="info-label">申诉人ID</span>
-              <span class="info-value">{{ currentAppeal.userId || '-' }}</span>
+              <span class="info-label">申诉人</span>
+              <span class="info-value">
+                <UserLabel v-if="currentAppeal.userId" :user-id="currentAppeal.userId" stacked />
+                <span v-else>-</span>
+              </span>
             </div>
             <div class="info-cell">
               <span class="info-label">提交时间</span>
@@ -228,7 +233,7 @@
         <div class="detail-section" v-if="currentAppeal.status !== 'pending'">
           <h4 class="section-title">处理记录</h4>
           <div class="record-box">
-            <span>处理人：管理员#{{ currentAppeal.handlerId }}</span>
+            <span>处理人：<UserLabel v-if="currentAppeal.handlerId" :user-id="currentAppeal.handlerId" /><span v-else>-</span></span>
             <span class="record-sep">|</span>
             <span>时间：{{ currentAppeal.handledAt }}</span>
             <br />
@@ -261,6 +266,10 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh } from '@element-plus/icons-vue'
 import { getAppealList, handleAppeal } from '@/api/appeal'
+import { useEntityResolver } from '@/composables/useEntityResolver'
+import UserLabel from '@/components/UserLabel.vue'
+
+const { loadUsers, userName } = useEntityResolver()
 
 // ===== 状态管理 =====
 const statusTabs = [
@@ -272,7 +281,7 @@ const statusTabs = [
 const activeTab = ref('all')
 const statusMap = { pending: '待处理', approved: '已通过', rejected: '已驳回' }
 const scoreLabels = { communication: '沟通协作', task: '任务完成', skill: '技术能力', responsibility: '责任心' }
-const penaltyTypeMap = { credit_deduct: '信誉扣分', function_limit: '功能限制', account_ban: '账号封禁' }
+const penaltyTypeMap = { credit_deduct: '信誉扣分', function_limit: '账号封禁' }
 
 const statusIcon = (status) => {
   const map = {
@@ -286,11 +295,21 @@ const statusIcon = (status) => {
 // ===== 数据 =====
 const appeals = ref([])
 const fetchList = async (status) => {
-  try { appeals.value = await getAppealList(status ? { status } : {}) } catch {}
+  try {
+    const list = await getAppealList(status ? { status } : {})
+    appeals.value = list
+    loadUsers(list.flatMap((a) => [a.userId, a.handlerId])).catch(() => {})
+  } catch {}
 }
 onMounted(() => fetchList())
 
 const switchTab = (tab) => { activeTab.value = tab; fetchList(tab === 'all' ? null : tab) }
+
+const handleRefresh = () => {
+  searchKeyword.value = ''
+  currentPage.value = 1
+  fetchList(activeTab.value === 'all' ? null : activeTab.value)
+}
 
 // ===== 搜索 & 分页 =====
 const searchKeyword = ref('')
@@ -300,7 +319,12 @@ const pageSize = ref(10)
 const filteredList = computed(() => {
   let list = appeals.value
   const kw = searchKeyword.value.trim().toLowerCase()
-  if (kw) list = list.filter(a => String(a.id).includes(kw) || String(a.userId).includes(kw))
+  if (kw) {
+    list = list.filter((a) => {
+      const name = userName(a.userId).toLowerCase()
+      return String(a.id).includes(kw) || String(a.userId).includes(kw) || name.includes(kw)
+    })
+  }
   return list
 })
 

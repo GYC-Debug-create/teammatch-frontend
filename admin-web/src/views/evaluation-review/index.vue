@@ -14,7 +14,7 @@
     <div class="filter-bar">
       <span class="filter-label">审核状态：</span>
       <div class="filter-tabs">
-        <button v-for="t in statusTabs" :key="t.key" :class="['filter-tab', { active: activeTab === t.key }]" @click="activeTab = t.key">{{ t.label }}</button>
+        <button v-for="t in statusTabs" :key="t.key" :class="['filter-tab', { active: activeTab === t.key }]" @click="switchTab(t.key)">{{ t.label }}</button>
       </div>
       <div class="filter-actions">
         <el-button class="btn-filter" :icon="Filter">筛选器</el-button>
@@ -28,8 +28,16 @@
         <template #empty><el-empty description="暂无评价数据" :image-size="80" /></template>
 
         <el-table-column label="评价编号" width="130"><template #default="{ row }"><span class="cell-id">{{ row.evalNo }}</span></template></el-table-column>
-        <el-table-column prop="projectName" label="所属项目" width="140" />
-        <el-table-column prop="targetName" label="评价对象" width="100" />
+        <el-table-column label="所属项目" width="180">
+          <template #default="{ row }">
+            <ProjectLabel :project-id="row.projectId" />
+          </template>
+        </el-table-column>
+        <el-table-column label="评价对象" width="150">
+          <template #default="{ row }">
+            <UserLabel :user-id="row.targetId" />
+          </template>
+        </el-table-column>
         <el-table-column label="四维均分" width="140">
           <template #default="{ row }">
             <span :class="['cell-score', row.avgScore < 2 ? 'score-low' : row.avgScore >= 5 ? 'score-high' : 'score-normal']">{{ row.avgScore.toFixed(1) }}</span>
@@ -64,10 +72,10 @@
       <template v-if="cur">
         <!-- 被评价人 -->
         <div class="dlg-hero">
-          <div class="hero-avatar">{{ cur.targetName?.[0] || '?' }}</div>
+          <div class="hero-avatar">{{ (cur.targetId && String(cur.targetId)[0]) || '?' }}</div>
           <div class="hero-info">
-            <strong>{{ cur.targetName }}</strong>
-            <span class="hero-project">{{ cur.projectName }}</span>
+            <UserLabel :user-id="cur.targetId" stacked />
+            <ProjectLabel :project-id="cur.projectId" class="hero-project" />
           </div>
         </div>
 
@@ -110,7 +118,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Filter, Download } from '@element-plus/icons-vue'
-import { getPendingEvaluations, reviewEvaluation } from '@/api/evaluation'
+import { getEvaluations, reviewEvaluation } from '@/api/evaluation'
+import { useEntityResolver } from '@/composables/useEntityResolver'
+import UserLabel from '@/components/UserLabel.vue'
+import ProjectLabel from '@/components/ProjectLabel.vue'
+
+const { loadUsers, loadProjects } = useEntityResolver()
 
 const statusTabs = [
   { key:'all', label:'全部' },{ key:'pending', label:'待复核' },{ key:'approved', label:'已通过' },
@@ -126,24 +139,68 @@ const statusIcon = (s) => {
   return m[s] || m.pending
 }
 
-// API 返回 PendingEvaluationVO: evaluationId, projectId, targetId, communicationScore, taskScore, skillScore, responsibilityScore, averageScore, comment, status, createdAt
+/** 顶部 tab → 后端 status 参数 */
+const TAB_API_STATUS = {
+  pending: 'pending_review',
+  approved: 'normal',
+  voided: 'voided',
+  kept_no_credit: 'kept_no_credit',
+}
+
+const mapReviewStatus = (status) => {
+  if (!status || status === 'pending_review') return 'pending'
+  if (status === 'normal') return 'approved'
+  if (status === 'voided') return 'voided'
+  if (status === 'kept_no_credit') return 'kept_no_credit'
+  return status
+}
+
+// API 返回 PendingEvaluationVO: evaluationId, projectId, targetId, ..., status, createdAt
 const evals = ref([])
-const fetchList = async () => { try { evals.value = await getPendingEvaluations() } catch {} }
+const loading = ref(false)
+
+const fetchList = async () => {
+  loading.value = true
+  try {
+    const tab = activeTab.value
+    const params = tab === 'all' ? {} : { status: TAB_API_STATUS[tab] }
+    const list = await getEvaluations(params)
+    evals.value = Array.isArray(list) ? list : []
+    if (!evals.value.length) return
+    loadUsers(evals.value.flatMap((e) => [e.targetId, e.evaluatorId])).catch(() => {})
+    loadProjects(evals.value.map((e) => e.projectId)).catch(() => {})
+  } catch {
+    evals.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const switchTab = (key) => {
+  activeTab.value = key
+  pg.value = 1
+  fetchList()
+}
+
 onMounted(fetchList)
 
-// 映射为展示字段
-const displayList = computed(() => evals.value.map((e, i) => {
-  const avg = e.averageScore || 0
-  const scores = { communication: e.communicationScore, task: e.taskScore, skill: e.skillScore, responsibility: e.responsibilityScore }
+const displayList = computed(() => evals.value.map((e) => {
+  const avg = Number(e.averageScore) || 0
+  const scores = {
+    communication: Number(e.communicationScore) || 0,
+    task: Number(e.taskScore) || 0,
+    skill: Number(e.skillScore) || 0,
+    responsibility: Number(e.responsibilityScore) || 0,
+  }
   return {
     ...e,
     id: e.evaluationId,
     evalNo: 'EVL-' + String(e.evaluationId).padStart(3, '0'),
-    projectName: '项目#' + e.projectId,
-    targetName: '用户#' + e.targetId,
-    avgScore: typeof avg === 'number' ? avg : Number(avg),
+    projectId: e.projectId,
+    targetId: e.targetId,
+    avgScore: avg,
     anomalyType: avg <= 2 ? 'extreme_low' : avg >= 5 ? 'extreme_high' : 'none',
-    reviewStatus: 'pending',
+    reviewStatus: mapReviewStatus(e.status),
     scores,
     tags: { positive: [], negative: [] },
     anomalyReason: '由系统标记为待复核评价',
@@ -167,7 +224,9 @@ const doAction = async (type) => {
   const a = actions[type]
   ElMessageBox.confirm(a.msg, a.title, { type:'warning' }).then(async () => {
     await reviewEvaluation(cur.value.id, { action: type === 'approve' ? 'approve' : type === 'void' ? 'void' : 'kept_no_credit' })
-    dlg.value = false; ElMessage.success(a.success); fetchList()
+    dlg.value = false
+    ElMessage.success(a.success)
+    await fetchList()
   }).catch(() => {})
 }
 </script>
@@ -229,7 +288,7 @@ const doAction = async (type) => {
 .hero-avatar { width:48px; height:48px; border-radius:50%; background:#D2E4FF; color:#0060A9; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700 }
 .hero-info { display:flex; flex-direction:column; gap:2px }
 .hero-info strong { font-size:16px; color:#191C1E }
-.hero-project { font-size:13px; color:#404752 }
+.hero-project { margin-top: 4px; }
 
 .dlg-section { margin-bottom:20px }
 .dlg-section h4 { font-size:14px; font-weight:600; color:#0060A9; margin:0 0 10px; letter-spacing:.8px }

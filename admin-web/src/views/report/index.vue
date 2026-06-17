@@ -57,13 +57,18 @@
         </el-table-column>
 
         <!-- 被举报对象 -->
-        <el-table-column label="被举报对象" min-width="130">
-          <template #default="{ row }">{{ row.targetType === 'user' ? '用户#' : '项目#' }}{{ row.targetId }}</template>
+        <el-table-column label="被举报对象" min-width="180">
+          <template #default="{ row }">
+            <UserLabel v-if="row.targetType === 'user'" :user-id="row.targetId" />
+            <ProjectLabel v-else :project-id="row.targetId" />
+          </template>
         </el-table-column>
 
         <!-- 举报人 -->
-        <el-table-column label="举报人" width="100">
-          <template #default="{ row }">用户#{{ row.reporterId }}</template>
+        <el-table-column label="举报人" width="150">
+          <template #default="{ row }">
+            <UserLabel :user-id="row.reporterId" />
+          </template>
         </el-table-column>
 
         <!-- 举报原因 -->
@@ -140,16 +145,26 @@
             </div>
             <div class="info-cell">
               <span class="info-label">被举报对象</span>
-              <span class="info-value-inline">
-                <strong>{{ currentReport.targetName }}</strong>
-                <span class="id-badge">ID: {{ currentReport.targetId || '-' }}</span>
+              <span class="info-value">
+                <EntityLabel
+                  v-if="currentReport.targetId"
+                  :type="currentReport.targetType === 'user' ? 'user' : 'project'"
+                  :entity-id="currentReport.targetId"
+                  stacked
+                />
+                <span v-else>-</span>
               </span>
             </div>
             <div class="info-cell">
               <span class="info-label">举报人</span>
-              <span class="info-value-inline">
-                <strong>{{ currentReport.reporterName }}</strong>
-                <span class="id-badge id-badge--light">ID: {{ currentReport.reporterId || '-' }}</span>
+              <span class="info-value">
+                <EntityLabel
+                  v-if="currentReport.reporterId"
+                  type="user"
+                  :entity-id="currentReport.reporterId"
+                  stacked
+                />
+                <span v-else>-</span>
               </span>
             </div>
           </div>
@@ -234,6 +249,12 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Filter, Download } from '@element-plus/icons-vue'
 import { getReportList, handleReport } from '@/api/report'
+import { useEntityResolver } from '@/composables/useEntityResolver'
+import UserLabel from '@/components/UserLabel.vue'
+import ProjectLabel from '@/components/ProjectLabel.vue'
+import EntityLabel from '@/components/EntityLabel.vue'
+
+const { loadUsers, loadProjects } = useEntityResolver()
 
 // ===== 筛选状态 =====
 const statusTabs = [
@@ -250,9 +271,21 @@ const statusMap = { pending: '待处理', resolved: '已解决', dismissed: '已
 const reports = ref([])
 const loading = ref(false)
 
+const enrichReports = async (list) => {
+  loadUsers([
+    ...list.map((r) => r.reporterId),
+    ...list.filter((r) => r.targetType === 'user').map((r) => r.targetId),
+  ]).catch(() => {})
+  loadProjects(list.filter((r) => r.targetType === 'project').map((r) => r.targetId)).catch(() => {})
+}
+
 const fetchList = async (status) => {
   loading.value = true
-  try { reports.value = await getReportList(status ? { status } : {}) } finally { loading.value = false }
+  try {
+    const list = await getReportList(status ? { status } : {})
+    reports.value = list
+    enrichReports(list)
+  } finally { loading.value = false }
 }
 onMounted(() => fetchList())
 

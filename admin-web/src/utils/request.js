@@ -78,7 +78,9 @@ service.interceptors.response.use(
       errorMsg = ERROR_MAP[code] || ERROR_MAP[String(code)] || '请求失败，请稍后重试'
     }
 
-    ElMessage.error(errorMsg)
+    if (!response.config.silent) {
+      ElMessage.error(errorMsg)
+    }
 
     // 401 / M3000 → 清 token 跳登录
     if (code === 401 || code === 'M3000') {
@@ -90,18 +92,19 @@ service.interceptors.response.use(
   },
   (error) => {
     // HTTP 错误 / 网络异常
+    const silent = error.config?.silent
     if (error.response) {
       const status = error.response.status
       const msg = ERROR_MAP[status] || `请求错误 ${status}`
-      ElMessage.error(msg)
+      if (!silent) ElMessage.error(msg)
       if (status === 401) {
         localStorage.removeItem('adminToken')
         router.push('/login')
       }
     } else if (error.code === 'ECONNABORTED') {
-      ElMessage.error('请求超时，请稍后重试')
+      if (!silent) ElMessage.error('请求超时，请稍后重试')
     } else {
-      ElMessage.error('网络连接失败，请检查网络')
+      if (!silent) ElMessage.error('网络连接失败，请检查网络')
     }
     return Promise.reject(error)
   }
