@@ -28,6 +28,10 @@ page{background:#F9F9FF;color:#191C22}
 .user-name{font-size:16px;font-weight:600;color:#191C22}
 .match-badge{background:rgba(0,88,187,0.10);padding:2px 8px;border-radius:6px;flex-shrink:0}
 .match-text{font-size:11px;color:#0058BB;font-weight:600}
+.user-credit{font-size:12px;color:#459A5C;font-weight:600;flex-shrink:0}
+.diagnosis-bar{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.diag-text{font-size:11px;color:#727784}
+.diag-divider{color:#E1E2EB}
 .user-major{display:block;font-size:13px;color:#424753;margin-top:2px}
 .user-skills{display:block;font-size:12px;color:#727784;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 

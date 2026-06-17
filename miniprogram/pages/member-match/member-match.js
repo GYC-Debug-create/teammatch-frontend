@@ -1,3 +1,4 @@
+var apiService = require('../../utils/api-service')
 var teamService = require('../../utils/team-service')
 
 Page({
@@ -13,12 +14,10 @@ Page({
     isSearching: false,
     invitingId: null,
     inviteMsg: '',
-    // 项目选择弹窗
     showProjectPicker: false,
     pickTargetUserId: null,
     pickTargetNickname: '',
     myProjects: [],
-    // 首页进入时选中的目标项目
     activeProjectId: null,
     showProjectBar: false
   },
@@ -33,40 +32,43 @@ Page({
     this.loadRecommendUsers()
   },
 
+  getRecommendations: function(projectId, limit) {
+    return apiService.request({
+      url: '/m4/projects/' + projectId + '/recommendations?limit=' + (limit || 50),
+      method: 'GET'
+    })
+  },
+
   // 加载推荐用户
   async loadRecommendUsers() {
     var that = this
     this.setData({ loading: true })
 
     try {
-      // 获取全量项目，按成员聚合推荐用户
-      var allProjects = await teamService.getAllProjects()
-      var targetSkills = []
-
+      // 获取项目信息（仅从项目页进入时有 projectId）
       if (this.data.projectId) {
-        // 场景1：来自项目成员页 → 匹配该项目技能标签
-        var project = await teamService.getProjectDetail(this.data.projectId)
-        targetSkills = (project.skills || []).map(function(s) {
-          return typeof s === 'string' ? s.toLowerCase() : (s.name || '').toLowerCase()
-        })
-        // 记录项目状态，已结束的项目禁止邀请
-        var projStatus = (project.status || '').toUpperCase()
-        var leaderId = project.creatorId || project.creator_id || 0
-        var myId = parseInt(wx.getStorageSync('userId')) || 0
-        that.setData({
-          projectName: project.name || project.title || that.data.projectName,
-          projectStatus: projStatus,
-          isProjectLeader: leaderId === myId
-        })
-      } else {
-        // 场景2：首页直接进入 → 匹配用户创建的项目技能
-        var userId = parseInt(wx.getStorageSync('userId')) || 0
+        try {
+          var project = await teamService.getProjectDetail(this.data.projectId)
+          var projStatus = (project.status || '').toUpperCase()
+          var leaderId = project.creatorId || project.creator_id || 0
+          var myId = parseInt(wx.getStorageSync('userId')) || 0
+          that.setData({
+            projectName: project.name || project.title || that.data.projectName,
+            projectStatus: projStatus,
+            isProjectLeader: leaderId === myId
+          })
+        } catch (e) { /* 非关键 */ }
+      }
+
+      // 获取我的招募中项目（邀请选择器上下文）
+      var userId = parseInt(wx.getStorageSync('userId')) || 0
+      try {
+        var allProjects = await teamService.getAllProjects()
         var myCreatedProjects = []
         for (var i = 0; i < allProjects.length; i++) {
           var p = allProjects[i]
           if (p.creatorId === userId || p.creator_id === userId) {
             var pStatus = (p.status || '').toUpperCase()
-            // 只收集招募中的项目
             if (pStatus !== 'ENDED' && pStatus !== 'COMPLETED' && pStatus !== 'FINISHED') {
               myCreatedProjects.push({
                 id: p.id,
@@ -76,100 +78,45 @@ Page({
                 maxMembers: p.maxMembers || '--'
               })
             }
-            var skills = (p.skills || []).map(function(s) {
-              return typeof s === 'string' ? s.toLowerCase() : (s.name || '').toLowerCase()
-            })
-            targetSkills = targetSkills.concat(skills)
           }
         }
         that.setData({
           myProjects: myCreatedProjects,
-          activeProjectId: myCreatedProjects.length > 0 ? myCreatedProjects[0].id : null,
-          showProjectBar: myCreatedProjects.length > 1
+          activeProjectId: that.data.activeProjectId || (myCreatedProjects.length > 0 ? myCreatedProjects[0].id : null),
+          showProjectBar: !that.data.projectId && myCreatedProjects.length > 1
         })
-      }
+      } catch (e) { /* 非关键 */ }
 
-      // 场景1 也收集队长项目
-      if (that.data.projectId) {
-        var myId = parseInt(wx.getStorageSync('userId')) || 0
-        if (that.data.isProjectLeader) {
-          var pStatus = (project.status || '').toUpperCase()
-          if (pStatus !== 'ENDED' && pStatus !== 'COMPLETED') {
-            that.setData({ myProjects: [{
-              id: project.id || project.projectId,
-              name: project.name || project.title || '',
-              status: pStatus,
-              members: project.currentMembers || '--',
-              maxMembers: project.maxMembers || '--'
-            }] })
-          }
-        }
-      }
-
-      // 收集所有项目的成员（去重），同时记录技能匹配度
-      var userMap = {}
-      var currentUserId = parseInt(wx.getStorageSync('userId')) || 0
-
-      for (var j = 0; j < allProjects.length; j++) {
-        var pid = allProjects[j].id || allProjects[j].projectId
+      // 调用后端推荐接口
+      // 项目页进入用 projectId，首页进入用 activeProjectId
+      var effectiveProjectId = this.data.projectId || this.data.activeProjectId
+      var userList = []
+      if (effectiveProjectId) {
         try {
-          var members = await teamService.getMembers(pid)
-          for (var k = 0; k < members.length; k++) {
-            var muid = members[k].userId || members[k].id
-            if (muid === currentUserId || userMap[muid]) continue
-            var userSkills = (members[k].skills || []).map(function(s) {
-              return typeof s === 'string' ? s.toLowerCase() : (s.name || '').toLowerCase()
-            })
-            var matchScore = 0
-            if (targetSkills.length > 0 && userSkills.length > 0) {
-              for (var t = 0; t < targetSkills.length; t++) {
-                if (userSkills.indexOf(targetSkills[t]) > -1) matchScore++
-              }
+          var recRes = await this.getRecommendations(effectiveProjectId, 50)
+          var items = (recRes && recRes.data) || []
+          userList = items.map(function(item) {
+            return {
+              userId: item.userId,
+              nickname: item.nickname || '未知用户',
+              avatarUrl: item.avatarUrl || '',
+              avatarText: (item.nickname || '?').slice(0, 1),
+              creditScore: item.creditScore,
+              jaccardSimilarity: item.jaccardSimilarity || 0,
+              techAuthority: item.techAuthority || 0,
+              trustFactor: item.trustFactor || 0,
+              finalScore: item.finalScore || 0,
+              matchedSkills: item.matchedSkills || [],
+              authorityBreakdown: item.authorityBreakdown || '',
+              major: '',
+              skills: (item.matchedSkills || []).join('、') || '--',
+              matchScore: Math.round((item.jaccardSimilarity || 0) * 100)
             }
-            userMap[muid] = {
-              userId: muid,
-              major: members[k].major || '',
-              userSkills: userSkills,
-              matchScore: matchScore,
-              projectName: allProjects[j].name || allProjects[j].title || ''
-            }
-          }
-        } catch (e) { /* skip */ }
-      }
-
-      // 批量拉取用户档案（昵称 + 头像）
-      var userIds = Object.keys(userMap)
-      var profileMap = {}
-      var profilePromises = userIds.map(function(uid) {
-        return teamService.getUserProfile(uid).then(function(profile) {
-          profileMap[uid] = {
-            nickname: (profile && profile.nickname) || '未知用户',
-            avatarUrl: (profile && (profile.avatarUrl || profile.avatar)) || '',
-            avatarText: ((profile && profile.nickname) || '?').slice(0, 1)
-          }
-        }).catch(function() {
-          profileMap[uid] = { nickname: '未知用户', avatarUrl: '', avatarText: '?' }
-        })
-      })
-      await Promise.all(profilePromises)
-
-      // 合并档案信息并按匹配度排序
-      var userList = userIds.map(function(uid) {
-        var u = userMap[uid]
-        var p = profileMap[uid] || {}
-        return {
-          userId: parseInt(uid),
-          nickname: p.nickname || '未知用户',
-          avatarUrl: p.avatarUrl || '',
-          avatarText: p.avatarText || '?',
-          major: u.major || '',
-          skills: u.userSkills.join('、') || '--',
-          matchScore: u.matchScore,
-          projectName: u.projectName || ''
+          })
+        } catch (e) {
+          console.log('[member-match] 推荐接口失败:', e)
         }
-      }).sort(function(a, b) {
-        return b.matchScore - a.matchScore
-      })
+      }
 
       that.setData({ users: userList, filteredUsers: userList, loading: false })
     } catch (err) {
@@ -178,7 +125,7 @@ Page({
     }
   },
 
-  // 搜索过滤：优先调用后端 API，失败时回退本地过滤
+  // 搜索过滤
   onSearchInput(e) {
     var keyword = (e.detail.value || '').trim()
     this.setData({ searchKeyword: keyword })
@@ -200,12 +147,13 @@ Page({
             avatarText: (u.nickname || u.name || 'U').slice(0, 1),
             major: u.major || u.department || '',
             skills: (u.skills || []).join('、') || '--',
-            matchScore: 0
+            matchScore: 0,
+            matchedSkills: [],
+            authorityBreakdown: ''
           }
         })
       that.setData({ filteredUsers: mapped, isSearching: false })
     }).catch(function() {
-      // API 失败，回退本地过滤
       var kw = keyword.toLowerCase()
       var filtered = that.data.users.filter(function(u) {
         return u.nickname.toLowerCase().indexOf(kw) > -1
@@ -215,23 +163,25 @@ Page({
     })
   },
 
-  // 切换当前选中的项目（首页多项目栏）
   switchActiveProject(e) {
     var id = e.currentTarget.dataset.projectId
     this.setData({ activeProjectId: id })
+    this.loadRecommendUsers()
   },
 
-  // 点击邀请 → 弹出项目选择器
   inviteUser(e) {
     var targetUserId = e.currentTarget.dataset.userId
     var nickname = e.currentTarget.dataset.nickname || ''
-
     var myId = parseInt(wx.getStorageSync('userId')) || 0
     if (targetUserId === myId) {
       wx.showToast({ title: '不能邀请自己', icon: 'none' })
       return
     }
-    // 首页项目栏已选中 → 直接用 activeProjectId
+    // 项目页进入：固定邀到当前项目，不走多项目切换
+    if (this.data.projectId) {
+      this.doInvite(this.data.projectId, targetUserId, nickname)
+      return
+    }
     if (this.data.showProjectBar && this.data.activeProjectId) {
       this.doInvite(this.data.activeProjectId, targetUserId, nickname)
       return
@@ -241,11 +191,9 @@ Page({
       return
     }
     if (this.data.myProjects.length === 1) {
-      // 只有一个项目，直接邀请
       this.doInvite(this.data.myProjects[0].id, targetUserId, nickname)
       return
     }
-    // 多个项目，弹出选择器
     this.setData({
       showProjectPicker: true,
       pickTargetUserId: targetUserId,
@@ -253,19 +201,16 @@ Page({
     })
   },
 
-  // 选择项目后发送邀请
   selectProject(e) {
     var projectId = e.currentTarget.dataset.projectId
     this.setData({ showProjectPicker: false })
     this.doInvite(projectId, this.data.pickTargetUserId, this.data.pickTargetNickname)
   },
 
-  // 关闭项目选择器
   closeProjectPicker() {
     this.setData({ showProjectPicker: false })
   },
 
-  // 实际发送邀请
   doInvite(projectId, targetUserId, nickname) {
     var that = this
     that.setData({ invitingId: targetUserId })

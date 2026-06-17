@@ -1,11 +1,10 @@
 <view class="page">
   <view class="hero">
     <text class="hero-title">{{projectName ? projectName + ' · ' : ''}}推荐成员</text>
-    <text class="hero-sub" wx:if="{{projectId}}">匹配项目所需技能的用户</text>
+    <text class="hero-sub" wx:if="{{projectId}}">基于级联过滤算法的智能推荐</text>
     <text class="hero-sub" wx:else>基于你创建的项目推荐合适队友</text>
   </view>
 
-  <!-- 首页进入：多项目选择栏 -->
   <view class="project-bar" wx:if="{{showProjectBar}}">
     <text class="project-bar-label">邀请到：</text>
     <view class="project-bar-chip {{item.id === activeProjectId ? 'chip-active' : ''}}" wx:for="{{myProjects}}" wx:key="id" bindtap="switchActiveProject" data-project-id="{{item.id}}">
@@ -13,25 +12,21 @@
     </view>
   </view>
 
-  <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input">
       <input class="search-field" placeholder="搜索昵称或技能..." placeholder-class="ph" value="{{searchKeyword}}" bindinput="onSearchInput" />
     </view>
   </view>
 
-  <!-- 加载态 -->
   <view class="state-wrap" wx:if="{{loading}}">
     <text class="state-text">加载中...</text>
   </view>
 
-  <!-- 空态 -->
   <view class="state-wrap" wx:elif="{{filteredUsers.length === 0 && !loading}}">
     <text class="state-text">暂未找到推荐成员</text>
-    <text class="state-desc">创建更多项目或添加技能标签后将有更多推荐</text>
+    <text class="state-desc">技能匹配度过低或信誉分不足的用户已被过滤</text>
   </view>
 
-  <!-- 用户列表 -->
   <scroll-view class="user-scroll" scroll-y enhanced show-scrollbar="{{false}}" wx:else>
     <view class="user-card" wx:for="{{filteredUsers}}" wx:key="userId">
       <view class="user-left">
@@ -40,11 +35,13 @@
         <view class="user-info">
           <view class="user-name-row">
             <text class="user-name">{{item.nickname}}</text>
-            <view class="match-badge" wx:if="{{item.matchScore > 0}}">
-              <text class="match-text">匹配 {{item.matchScore}}</text>
-            </view>
+            <text class="user-credit">信誉{{item.creditScore || '--'}}</text>
           </view>
-          <text class="user-major" wx:if="{{item.major}}">{{item.major}}</text>
+          <view class="diagnosis-bar" wx:if="{{item.authorityBreakdown}}">
+            <text class="diag-text">技能匹配 {{item.matchScore}}%</text>
+            <text class="diag-text diag-divider">|</text>
+            <text class="diag-text">{{item.authorityBreakdown}}</text>
+          </view>
           <text class="user-skills">技能: {{item.skills}}</text>
         </view>
       </view>
@@ -55,7 +52,6 @@
     </view>
   </scroll-view>
 
-  <!-- 项目选择弹窗 -->
   <view class="picker-overlay" wx:if="{{showProjectPicker}}" bindtap="closeProjectPicker">
     <view class="picker-panel" catchtap="">
       <text class="picker-title">选择要邀请加入的项目</text>
