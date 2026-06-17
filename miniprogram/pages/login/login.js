@@ -2,15 +2,25 @@
 var apiService = require('../../utils/api-service.js')
 
 Page({
-  data: { agreed: false },
+  data: { agreed: false, shakeAgree: false },
 
   // 微信一键登录
   toggleAgreed: function() {
-    this.setData({ agreed: !this.data.agreed })
+    this.setData({ agreed: !this.data.agreed, shakeAgree: false })
+  },
+
+  showUserAgreement: function() {
+    wx.navigateTo({ url: '/pages/agreement/user-agreement/user-agreement' })
+  },
+
+  showPrivacyPolicy: function() {
+    wx.navigateTo({ url: '/pages/agreement/privacy-policy/privacy-policy' })
   },
 
   goToLogin: function() {
     if (!this.data.agreed) {
+      this.setData({ shakeAgree: true })
+      setTimeout(() => { this.setData({ shakeAgree: false }) }, 600)
       wx.showToast({ title: '请先勾选同意用户协议和隐私政策', icon: 'none' })
       return
     }

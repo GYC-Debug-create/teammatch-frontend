@@ -5,7 +5,8 @@ var apiService = require('../../utils/api-service.js')
 Page({
   data: {
     loading: true,
-    user: null
+    user: null,
+    notFound: false
   },
 
   onLoad: function(options) {
@@ -39,23 +40,27 @@ Page({
     // 真实模式
     try {
       var profile = await teamService.getUserProfile(userId)
+      // 后端返回空数据表示用户未入驻
+      if (!profile || (!profile.nickname && !profile.nickName)) {
+        this.setData({ notFound: true, loading: false })
+        return
+      }
       this.setData({
         user: {
-          nickname: profile.nickname || '未知用户',
+          nickname: profile.nickname || profile.nickName || '未知用户',
           avatarUrl: profile.avatarUrl || profile.avatar || '',
           school: profile.school || '',
           major: profile.major || '',
           grade: profile.grade || '',
           bio: profile.bio || '',
           creditScore: profile.creditScore || profile.trustScore || 0,
-          githubUsername: profile.githubUsername || '',
+          githubUsername: profile.githubUsername || profile.giteeUsername || '',
           email: profile.email || ''
         },
         loading: false
       })
     } catch (err) {
-      this.setData({ loading: false })
-      wx.showToast({ title: '加载用户信息失败', icon: 'none' })
+      this.setData({ notFound: true, loading: false })
     }
   }
 })

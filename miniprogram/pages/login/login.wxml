@@ -29,10 +29,13 @@
   </button>
 
   <!-- 协议勾选 -->
-  <view class="agreement" bindtap="toggleAgreed">
-    <view class="checkbox {{agreed ? 'checked' : ''}}">
+  <view class="agreement {{shakeAgree ? 'shake' : ''}}">
+    <view class="checkbox {{agreed ? 'checked' : ''}}" bindtap="toggleAgreed">
       <text wx:if="{{agreed}}" class="check-icon">✓</text>
     </view>
-    <text class="agreement-text">已阅读并同意《用户协议》和《隐私政策》</text>
+    <text class="agreement-text" catchtap="toggleAgreed">已阅读并同意</text>
+    <text class="agreement-link" catchtap="showUserAgreement">《用户协议》</text>
+    <text class="agreement-text">和</text>
+    <text class="agreement-link" catchtap="showPrivacyPolicy">《隐私政策》</text>
   </view>
 </view>

@@ -21,7 +21,6 @@
         <view class="board-item {{item.rank <= 3 ? 'top-' + item.rank : ''}}"
               wx:for="{{leaderboardData}}"
               wx:key="rank"
-              data-item="{{item}}"
               data-user-id="{{item.userId}}"
               bindtap="viewProfile">
           <!-- 排名区 -->
