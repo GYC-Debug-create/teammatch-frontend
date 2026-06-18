@@ -81,6 +81,18 @@ page {
   overflow: hidden;
 }
 
+.btn-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.btn-avatar::after { border: 0; }
+
 .user-avatar-txt {
   display: flex;
   align-items: center;

@@ -65,7 +65,39 @@ Page({
       }
     }
 
-    // 从缓存恢复已选技能
+    // 先从后端获取已选技能（防止重新登录后本地缓存丢失）
+    var backendIds = null
+    try {
+      var skillsRes = await request({ url: '/profile/skills', method: 'GET' })
+      var raw = skillsRes.data
+      // 兼容后端返回数组 [1,2,3] 或对象 { skillTagIds: [1,2,3] }
+      if (Array.isArray(raw)) backendIds = raw
+      else if (raw && raw.skillTagIds) backendIds = raw.skillTagIds
+      else if (raw && raw.tags) backendIds = raw.tags.map(function(t) { return t.id || t })
+    } catch (e) {}
+    if (!backendIds || backendIds.length === 0) {
+      try {
+        var profileRes = await request({ url: '/profile/detail', method: 'GET' })
+        var pdata = profileRes.data || {}
+        if (pdata.skillTagIds) backendIds = pdata.skillTagIds
+        else if (pdata.skills && Array.isArray(pdata.skills)) backendIds = pdata.skills
+      } catch (e) {}
+    }
+    if (backendIds && backendIds.length > 0) {
+      this.setData({ selectedIds: backendIds })
+      var profile = wx.getStorageSync('profile') || {}
+      profile.skillTagIds = backendIds
+      wx.setStorageSync('profile', profile)
+      wx.setStorageSync('skillTagIds', backendIds)
+      return
+    }
+
+    // 后端未返回 → 从独立缓存恢复（不依赖 profile，防止被登出清除）
+    var savedIds = wx.getStorageSync('skillTagIds')
+    if (savedIds && savedIds.length > 0) {
+      this.setData({ selectedIds: savedIds })
+      return
+    }
     var profile = wx.getStorageSync('profile')
     if (profile && profile.skillTagIds) {
       this.setData({ selectedIds: profile.skillTagIds })
@@ -107,6 +139,7 @@ Page({
         var profile = wx.getStorageSync('profile') || {}
         profile.skillTagIds = that.data.selectedIds
         wx.setStorageSync('profile', profile)
+        wx.setStorageSync('skillTagIds', that.data.selectedIds)  // 独立 key，登出不丢失
 
         wx.showToast({ title: '技能保存成功', icon: 'success' })
         setTimeout(function() {
@@ -127,6 +160,7 @@ Page({
         var profile = wx.getStorageSync('profile') || {}
         profile.skillTagIds = this.data.selectedIds
         wx.setStorageSync('profile', profile)
+        wx.setStorageSync('skillTagIds', this.data.selectedIds)  // 独立 key
 
         wx.showToast({ title: '技能保存成功', icon: 'success' })
         setTimeout(() => {

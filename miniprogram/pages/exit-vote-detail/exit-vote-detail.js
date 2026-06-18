@@ -34,6 +34,7 @@ Page({
     error: null,
     submitting: false,
     currentUserId: null,
+    isLeader: false,
     countdownText: '--:--:--',
     formatDeadline: ''
   },
@@ -42,7 +43,8 @@ Page({
     const voteId = parseInt(options.voteId) || 0
     const projectId = parseInt(options.projectId) || 0
     const app = getApp()
-    const currentUserId = (app && app.globalData && app.globalData.userId) || null
+    var currentUserId = (app && app.globalData && app.globalData.userId) || wx.getStorageSync('userId') || null
+    if (currentUserId) currentUserId = parseInt(currentUserId)
     this.setData({ voteId, projectId, currentUserId })
   },
 
@@ -182,7 +184,9 @@ Page({
 
       // 丰富用户信息
       that.enrichTargetUser(voteInfo).then(function(enriched) {
-        that.setData({ voteInfo: enriched, loading: false, formatDeadline: formatDeadline })
+        var uid = that.data.currentUserId || wx.getStorageSync('userId') || 0
+        var isLeader = Number(uid) === Number(enriched.initiatorId)
+        that.setData({ voteInfo: enriched, isLeader: isLeader, loading: false, formatDeadline: formatDeadline })
         // 启动实时倒计时
         that.startCountdown(voteInfo.deadlineAt)
       })
@@ -209,11 +213,11 @@ Page({
   },
 
   handleCloseVote() {
-    if (!this.isLeader() || this.data.voteInfo.status !== 'voting') return
+    if (!this.data.isLeader || this.data.voteInfo.status !== 'voting') return
 
     wx.showModal({
       title: '关闭投票',
-      content: '确定要提前关闭此投票吗？',
+      content: '确定要提前关闭此投票吗？关闭后将根据当前票数判定结果',
       success: (res) => {
         if (res.confirm) {
           teamService.closeExitVote(this.data.projectId, this.data.voteId).then(() => {
@@ -228,8 +232,30 @@ Page({
     })
   },
 
+  handleCancelVote() {
+    if (!this.data.isLeader || this.data.voteInfo.status !== 'voting') return
+
+    wx.showModal({
+      title: '撤回投票',
+      content: '确定要撤回该投票吗？撤回后投票作废，不会对任何成员产生影响。',
+      success: (res) => {
+        if (res.confirm) {
+          teamService.cancelExitVote(this.data.projectId, this.data.voteId).then(() => {
+            wx.showToast({ title: '投票已撤回', icon: 'success' })
+            setTimeout(() => { wx.navigateBack() }, 1000)
+          }).catch(err => {
+            var msg = (err && err.message) || '操作失败'
+            wx.showToast({ title: msg, icon: 'none' })
+          })
+        }
+      }
+    })
+  },
+
   isLeader() {
-    return this.data.currentUserId === this.data.voteInfo.initiatorId
+    var uid = this.data.currentUserId || wx.getStorageSync('userId') || 0
+    var iid = this.data.voteInfo.initiatorId || 0
+    return Number(uid) === Number(iid)
   },
 
 

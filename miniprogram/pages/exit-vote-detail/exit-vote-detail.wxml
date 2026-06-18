@@ -103,7 +103,8 @@
 
       <view class="voted-tip" wx:if="{{voteInfo.myVote}}">你已投票（{{voteInfo.myVote === 'agree' ? '赞成' : '反对'}}）</view>
 
-      <view class="close-wrap" wx:if="{{isLeader() && voteInfo.status === 'voting'}}">
+      <view class="close-wrap" wx:if="{{isLeader && voteInfo.status === 'voting'}}">
+        <text class="cancel-link" bindtap="handleCancelVote">撤回投票</text>
         <text class="close-link" bindtap="handleCloseVote">关闭投票</text>
       </view>
     </scroll-view>

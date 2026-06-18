@@ -24,7 +24,7 @@
 
   <!-- 内容区 -->
   <block wx:else>
-    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower" lower-threshold="100">
+    <scroll-view class="sv" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower" lower-threshold="100" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresherRefresh">
       <!-- 项目列表 -->
       <view class="project-list">
         <block wx:for="{{projects}}" wx:key="id">

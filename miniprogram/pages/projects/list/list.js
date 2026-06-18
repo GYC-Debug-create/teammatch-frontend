@@ -22,6 +22,7 @@ Page({
     boardMap: {},
     searchKeyword: '',
     loading: false,
+    refreshing: false,
     displayCount: PAGE_SIZE,
     hasMore: true
   },
@@ -109,10 +110,33 @@ Page({
     this.renderPage()
   },
 
-  onPullDownRefresh: function() {
-    this.setData({ displayCount: PAGE_SIZE })
-    this.renderPage()
-    wx.stopPullDownRefresh()
+  onRefresherRefresh: function() {
+    var that = this
+    this.setData({ refreshing: true, displayCount: PAGE_SIZE })
+    teamService.getAllProjects().then(function(list) {
+      var mapped = (list || []).map(function(p) {
+        var pid = p.id || p.projectId
+        var status = p.status || 'recruiting'
+        return {
+          id: pid,
+          title: p.name || p.title || ('项目#' + pid),
+          description: p.description || '',
+          boardName: that.data.boardMap[p.boardId] || p.boardName || '',
+          maxMembers: p.maxMembers || 0,
+          currentMembers: p.currentMembers || p.memberCount || 0,
+          status: status,
+          statusText: getStatusText(status),
+          skills: p.skills || [],
+          deadline: p.deadline || '',
+          creatorName: p.creatorName || p.leader || ''
+        }
+      })
+      that.setData({ allProjects: mapped, refreshing: false })
+      that.renderPage()
+    }).catch(function() {
+      wx.showToast({ title: '刷新失败', icon: 'none' })
+      that.setData({ refreshing: false })
+    })
   },
 
   goToDetail: function(e) {

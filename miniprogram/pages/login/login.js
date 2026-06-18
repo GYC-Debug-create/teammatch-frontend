@@ -43,6 +43,16 @@ Page({
             console.log('[login] wx.login code:', loginRes.code)
 
             apiService.login(loginRes.code).then(function(result) {
+              // 检查用户状态：封禁用户禁止登录
+              if (result && result.status === 'banned') {
+                wx.showModal({
+                  title: '账号已被封禁',
+                  content: '您的账号已被管理员封禁，如有疑问请联系管理员。',
+                  showCancel: false
+                })
+                return
+              }
+
               // token/id/nickname 已由 api-service login() 自动存入 storage
               // 此处仅补充微信头像昵称
               wx.setStorageSync('userInfo', userInfo)

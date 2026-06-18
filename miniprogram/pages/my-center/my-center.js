@@ -133,6 +133,27 @@ Page({
     }
   },
 
+  onChooseAvatar: function(e) {
+    var that = this
+    var tempPath = e.detail.avatarUrl
+    wx.showLoading({ title: '上传头像...' })
+    teamService.uploadFile(tempPath, 'avatar').then(function(ossUrl) {
+      wx.hideLoading()
+      that.setData({ 'userInfo.avatarUrl': ossUrl })
+      var userInfo = wx.getStorageSync('userInfo') || {}
+      userInfo.avatarUrl = ossUrl
+      wx.setStorageSync('userInfo', userInfo)
+      // 同步到后端
+      request({ url: '/profile/update', method: 'PUT', data: { avatarUrl: ossUrl } })
+        .then(function() { teamService.clearProfileCache() })
+        .catch(function() {})
+      wx.showToast({ title: '头像已更新', icon: 'success', duration: 1200 })
+    }).catch(function(err) {
+      wx.hideLoading()
+      wx.showToast({ title: '上传失败', icon: 'none' })
+    })
+  },
+
   changeAvatar: function() {
     var that = this
     wx.chooseMedia({

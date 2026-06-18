@@ -398,12 +398,22 @@ page {
 .close-wrap {
   text-align: center;
   padding: 32rpx 0 48rpx;
+  display: flex;
+  justify-content: center;
+  gap: 48rpx;
 }
 
 .close-link {
   font-size: 32rpx;
   color: #727784;
   font-weight: 400;
+  line-height: 48rpx;
+}
+
+.cancel-link {
+  font-size: 32rpx;
+  color: #DC2626;
+  font-weight: 500;
   line-height: 48rpx;
 }
 

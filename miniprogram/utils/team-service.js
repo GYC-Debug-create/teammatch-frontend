@@ -5,8 +5,8 @@
  */
 
 var USE_MOCK = false
-//var BASE_URL = 'http://localhost:8080/api'
-var BASE_URL = 'https://api.teammatch.top/api'
+var BASE_URL = 'http://localhost:8080/api'
+//var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 用户档案内存缓存（5分钟有效）==========
 var profileCache = {}
@@ -453,6 +453,27 @@ function closeExitVote(projectId, voteId) {
   })
 }
 
+/**
+ * 撤回投票（队长取消已发起的投票，不作废不扣分）
+ */
+function cancelExitVote(projectId, voteId) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: BASE_URL + '/m4/projects/' + projectId + '/exit/votes/' + voteId + '/cancel?operatorId=' + getUserId(),
+      method: 'POST',
+      header: authHeader(),
+      timeout: 10000,
+      success: function(res) {
+        if (res.data && isSuccessCode(res.data.code)) resolve(res.data)
+        else reject(res.data)
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+
+
 // ========== 方法 10-11：互评 ==========
 
 /**
@@ -602,7 +623,7 @@ function uploadFile(filePath, category) {
         try {
           var body = JSON.parse(res.data)
           if (body && isSuccessCode(body.code)) {
-            resolve(body.data.storedUrl)
+            resolve(body.data.accessUrl || body.data.storedUrl)
           } else {
             reject(body)
           }
@@ -1032,6 +1053,7 @@ module.exports = {
   getExitVoteDetail: getExitVoteDetail,
   submitExitVote: submitExitVote,
   closeExitVote: closeExitVote,
+  cancelExitVote: cancelExitVote,
   createExitVote: createExitVote,
   checkEvaluationEligibility: checkEvaluationEligibility,
   getEvaluatableMembers: getEvaluatableMembers,

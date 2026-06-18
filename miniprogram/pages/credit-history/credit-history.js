@@ -89,21 +89,31 @@ Page({
         teamService.getCurrentCreditScore(),
         teamService.getCreditHistory()
       ])
-      // 字段映射：后端VO字段 → 前端模板期望字段
-      var mappedRecords = (records || []).map(function(r) {
+
+      var sourceMap = {
+        evaluation: '互评',
+        exit_vote: '投票退出',
+        self_exit: '主动退出',
+        penalty: '处罚',
+        penalty_restore: '处罚撤销',
+        appeal_restore: '申诉恢复'
+      }
+
+      var mapped = (records || []).map(function(r) {
         return {
           id: r.id,
           changeType: r.changeType,
           changeValue: r.changeValue,
-          effective: r.effective,
-          desc: cleanDesc(r.changeType, r.description),
-          sourceDesc: getSourceDesc(r.changeType),
-          time: formatTime(r.createdAt)
+          effective: r.effective !== false,
+          desc: r.description || r.reason || (r.changeValue > 0 ? '信誉分恢复' : '信誉分扣除'),
+          sourceDesc: sourceMap[r.changeType] || r.changeType || '',
+          time: r.createdAt || ''
         }
       })
+
       this.setData({
         currentScore: score,
-        records: mappedRecords,
+        records: mapped,
         loading: false
       })
     } catch (err) {

@@ -1,1 +1,1 @@
-{ "usingComponents": {}, "navigationBarTitleText": "TeamMatch" }
+{ "usingComponents": {}, "navigationBarTitleText": "TeamMatch", "enablePullDownRefresh": true }

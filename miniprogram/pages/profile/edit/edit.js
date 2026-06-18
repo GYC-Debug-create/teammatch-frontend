@@ -181,7 +181,13 @@ Page({
       if (form.nickname) userInfo.nickName = form.nickname
       if (form.avatarUrl) userInfo.avatarUrl = form.avatarUrl
       wx.setStorageSync('userInfo', userInfo)
-      wx.setStorageSync('profile', form)
+      // 合并旧 profile 保留 skillTagIds 不被覆盖
+      var oldProfile = wx.getStorageSync('profile') || {}
+      var savedSkills = wx.getStorageSync('skillTagIds') || []
+      var merged = Object.assign({}, oldProfile, form)
+      merged.skillTagIds = oldProfile.skillTagIds || savedSkills
+      wx.setStorageSync('profile', merged)
+      wx.setStorageSync('skillTagIds', merged.skillTagIds)
       // 清除档案缓存，下次重新拉取
       teamService.clearProfileCache()
       wx.showToast({ title: '档案保存成功', icon: 'success' })

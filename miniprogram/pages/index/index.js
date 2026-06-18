@@ -41,6 +41,16 @@ Page({
     }
   },
 
+  async onPullDownRefresh() {
+    var token = wx.getStorageSync('token')
+    this.setData({ isLoggedIn: !!token })
+    if (token) {
+      await this.fetchTechProfile()
+      await this.syncEmailStatus()
+    }
+    wx.stopPullDownRefresh()
+  },
+
   async syncEmailStatus() {
     try {
       var res = await request({ url: '/profile/detail', method: 'GET' })

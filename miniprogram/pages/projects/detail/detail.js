@@ -44,7 +44,46 @@ Page({
 
   onLoad: function(options) {
     var projectId = options.id || 1
+    this.setData({ projectId: projectId })
     this.loadProjectDetail(projectId)
+  },
+
+  onShow: function() {
+    // 从其他页面返回时刷新成员列表
+    if (this.data.project) {
+      this.refreshMembers()
+    }
+  },
+
+  async refreshMembers() {
+    try {
+      var memberRes = await request({
+        url: '/m4/projects/' + this.data.projectId + '/members',
+        method: 'GET'
+      })
+      var rawMembers = memberRes.data || []
+      var enriched = await Promise.all(rawMembers.map(async function(m) {
+        var uid = m.userId || m.id
+        var avatar = ''
+        var name = m.nickname || m.name || ''
+        try {
+          var profile = await teamService.getUserProfile(uid)
+          avatar = profile.avatarUrl || profile.avatar || profile.avatar_url || ''
+          name = profile.nickname || profile.nickName || name || ''
+        } catch (e) {}
+        return {
+          id: uid,
+          name: name || '未知用户',
+          role: m.role === 'leader' ? '队长' : '成员',
+          avatar: avatar,
+          userId: uid
+        }
+      }))
+      this.setData({
+        'project.members': enriched,
+        'project.currentMembers': enriched.length
+      })
+    } catch (e) {}
   },
 
   async loadProjectDetail(projectId) {
