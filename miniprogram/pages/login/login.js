@@ -58,7 +58,7 @@ Page({
               wx.setStorageSync('userInfo', userInfo)
               console.log('[login] 登录成功, userId:', result.id)
 
-              wx.showToast({ title: '登录成功', icon: 'success' })
+              wx.showToast({ title: '欢迎使用', icon: 'success' })
               setTimeout(function() {
                 wx.switchTab({ url: '/pages/index/index' })
               }, 500)

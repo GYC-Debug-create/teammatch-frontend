@@ -25,7 +25,7 @@
 
   <!-- 进入按钮 -->
   <button class="enter-btn" type="primary" bindtap="goToLogin">
-    微信一键登录
+    立即体验
   </button>
 
   <!-- 协议勾选 -->

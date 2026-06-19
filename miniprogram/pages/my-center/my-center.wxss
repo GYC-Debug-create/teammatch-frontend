@@ -68,13 +68,13 @@ page {
 .user-top {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  margin-bottom: 24rpx;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
 }
 
 .user-avatar {
-  width: 96rpx;
-  height: 96rpx;
+  width: 100rpx;
+  height: 100rpx;
   border-radius: 50%;
   background-color: #ECEDF7;
   flex-shrink: 0;
@@ -82,25 +82,41 @@ page {
 }
 
 .btn-avatar {
-  width: 96rpx;
-  height: 96rpx;
+  width: 100rpx !important;
+  height: 100rpx !important;
+  min-width: 100rpx !important;
+  max-width: 100rpx !important;
   border-radius: 50%;
-  padding: 0;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   margin: 0;
+  margin-left: 0;
+  margin-right: 0;
   background: transparent;
   flex-shrink: 0;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: none;
 }
 .btn-avatar::after { border: 0; }
 
 .user-avatar-txt {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 88, 187, 0.10);
   color: #0058BB;
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .user-info {
@@ -109,10 +125,12 @@ page {
 }
 
 .user-nickname {
-  font-size: 36rpx;
+  font-size: 34rpx;
   color: #111111;
   font-weight: 700;
-  line-height: 50rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .btn-get-profile {
