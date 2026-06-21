@@ -3,6 +3,9 @@ var api = require('../../utils/api-service.js')
 var request = api.request
 var USE_MOCK = api.USE_MOCK
 
+var INITIAL_PAGE_SIZE = 10
+var LOAD_MORE_PAGE_SIZE = 10
+
 // ========== Mock 数据 ==========
 // 真实 GitHub/Gitee 数据: username|techScore|totalRepos|totalStars|totalCommits|totalPrs
 var MOCK_DATA = [
@@ -74,12 +77,18 @@ Page({
     loading: true,
     leaderboardData: [],
     sortType: '',
-    hasGithub: false
+    hasGithub: false,
+    currentUserId: 0,
+    myRank: null,
+    displayCount: INITIAL_PAGE_SIZE,
+    hasMore: true,
+    loadingMore: false
   },
 
   onLoad: function(options) {
     var sortType = (options && options.sort) || ''
-    this.setData({ sortType: sortType })
+    var uid = parseInt(wx.getStorageSync('userId')) || 0
+    this.setData({ sortType: sortType, currentUserId: uid })
     this.loadLeaderboard()
     this.checkGithubBind()
   },
@@ -112,7 +121,7 @@ Page({
     // 尝试拉取真实 API 数据并合并
     try {
       var sort = that.data.sortType
-      var url = '/leaderboard?page=1&size=20'
+      var url = '/leaderboard?page=1&size=100'
       if (sort) url += '&sort=' + sort
       var res = await request({ url: url, method: 'GET' })
       var apiList = (res.data || []).map(mapItem)
@@ -133,7 +142,33 @@ Page({
     else if (s === 'totalCommits') data.sort(function(a, b) { return (b.totalCommits || 0) - (a.totalCommits || 0) })
     else data.sort(function(a, b) { return (b.score || 0) - (a.score || 0) })
     data.forEach(function(item, i) { item.rank = i + 1 })
-    that.setData({ leaderboardData: data, loading: false })
+
+    // 找出"我的排名"
+    var uid = that.data.currentUserId
+    var mine = null
+    for (var j = 0; j < data.length; j++) {
+      if (data[j].userId === uid) { mine = data[j]; break }
+    }
+
+    that.setData({
+      leaderboardData: data,
+      myRank: mine,
+      loading: false,
+      displayCount: INITIAL_PAGE_SIZE,
+      hasMore: data.length > INITIAL_PAGE_SIZE
+    })
+  },
+
+  onScrollToLower: function() {
+    if (this.data.loadingMore || !this.data.hasMore) return
+    var newCount = this.data.displayCount + LOAD_MORE_PAGE_SIZE
+    this.setData({
+      loadingMore: true,
+      displayCount: newCount,
+      hasMore: newCount < this.data.leaderboardData.length
+    })
+    var that = this
+    setTimeout(function() { that.setData({ loadingMore: false }) }, 300)
   },
 
   viewProfile: function(e) {
@@ -143,11 +178,5 @@ Page({
 
   goGitHubBind: function() {
     wx.switchTab({ url: '/pages/index/index' })
-  },
-
-  goProjectList: function() {
-    wx.navigateTo({
-      url: '/pages/projects/list/list'
-    })
   }
 })

@@ -48,6 +48,8 @@
         wx:key="id"
         bindtap="viewMember"
         data-user-id="{{item.userId}}"
+        hover-class="member-card--hover"
+        hover-stay-time="200"
       >
         <!-- 头像 -->
         <view class="member-avatar-wrap {{item.role === 'leader' ? 'leader' : (item.status === 'active' ? 'active' : 'exited')}}" wx:if="{{!item.avatarUrl}}">
@@ -65,7 +67,7 @@
           </text>
         </view>
 
-        <!-- 右侧区：标签 + 信誉分 + 更多 -->
+        <!-- 右侧区：标签 + 信誉分 -->
         <view class="member-right">
           <!-- 标签行 -->
           <view class="tag-row">
@@ -80,18 +82,19 @@
           </view>
         </view>
 
-        <!-- 更多图标：队长可发起移除投票 -->
-        <image
-          wx:if="{{currentUserId && currentUserId !== item.userId && item.role !== 'leader' && item.status === 'active'}}"
-          class="action-icon"
-          src="/assets/CodeBuddyAssets/47_53/31.svg"
-          mode="aspectFit"
-          bindtap="handleMemberAction"
+        <!-- 移除投票入口：仅在 hover 整张卡片时浮现 -->
+        <view
+          wx:if="{{isLeader && currentUserId !== item.userId && item.role !== 'leader' && item.status === 'active'}}"
+          class="remove-vote-entry"
+          catchtap="handleMemberAction"
           data-id="{{item.id}}"
           data-user-id="{{item.userId}}"
           data-nickname="{{item.nickname}}"
           data-credit-score="{{item.creditScore}}"
-        />
+        >
+          <text class="remove-vote-icon">⋮</text>
+          <text class="remove-vote-label">发起投票移除</text>
+        </view>
       </view>
     </view>
   </scroll-view>
