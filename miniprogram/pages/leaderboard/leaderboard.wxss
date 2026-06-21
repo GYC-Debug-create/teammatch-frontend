@@ -84,6 +84,68 @@ page {
   line-height: 38rpx;
 }
 
+/* ========== 我的排名卡 ========== */
+.my-rank-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  background: linear-gradient(135deg, #e7edfb 0%, #d6e0f9 100%);
+  border: 2rpx solid #2f54eb;
+  border-radius: 32rpx;
+  box-shadow: 0 6rpx 24rpx rgba(47, 84, 235, 0.18);
+  box-sizing: border-box;
+}
+
+.my-rank-card.my-rank-top {
+  background: linear-gradient(135deg, #fff3cc 0%, #ffe48a 100%);
+  border-color: #f0c040;
+  box-shadow: 0 6rpx 24rpx rgba(240, 192, 64, 0.25);
+}
+
+.my-tag {
+  display: inline-block;
+  margin-left: 8rpx;
+  padding: 0 10rpx;
+  font-size: 18rpx;
+  font-weight: 700;
+  color: #fff;
+  background: #2f54eb;
+  border-radius: 6rpx;
+  vertical-align: middle;
+}
+
+.my-rank-empty {
+  padding: 24rpx 28rpx;
+  margin-bottom: 20rpx;
+  background: rgba(47, 84, 235, 0.06);
+  border: 2rpx dashed rgba(47, 84, 235, 0.25);
+  border-radius: 24rpx;
+  text-align: center;
+}
+
+.my-rank-empty-text {
+  font-size: 26rpx;
+  color: rgba(9, 36, 75, 0.60);
+  line-height: 36rpx;
+}
+
+/* ========== 加载更多 ========== */
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 24rpx 0 16rpx;
+}
+
+.ld-spin-small {
+  width: 28rpx;
+  height: 28rpx;
+  border-width: 3rpx;
+}
+
 /* ========== 榜单列表 ========== */
 .board-list {
   margin-bottom: 32rpx;

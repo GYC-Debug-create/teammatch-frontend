@@ -1,7 +1,15 @@
 <view class="page">
   <view class="hero">
-    <text class="hero-title">组队中心</text>
-    <text class="hero-sub">探索项目、管理你的团队</text>
+    <view class="hero-row">
+      <view class="hero-copy">
+        <text class="hero-title">组队中心</text>
+        <text class="hero-sub">探索项目、管理你的团队</text>
+      </view>
+      <view wx:if="{{activeTab==='joined'}}" class="hero-back" bindtap="goMyCenter">
+        <text class="hero-back-icon">‹</text>
+        <text class="hero-back-text">返回</text>
+      </view>
+    </view>
   </view>
 
   <view class="tabs">
@@ -38,7 +46,7 @@
           <view class="proj-avatar">{{item.name[0]}}</view>
           <view class="proj-info">
             <text class="proj-name">{{item.name}}</text>
-            <text class="proj-meta">{{item.leader}} · {{item.members}}人 · <text class="status-tag {{item.status}}">{{item.statusText}}</text></text>
+            <text class="proj-meta"><text class="proj-type">{{item.boardName || '未分类'}}</text> · {{item.members}}人 · <text class="status-tag {{item.status}}">{{item.statusText}}</text></text>
           </view>
         </view>
         <text class="proj-expand-arrow {{expandedId===item.id?'arrow-rotated':''}}">▼</text>
@@ -80,6 +88,29 @@
       </view>
     </view>
 
+    <!-- 已结束项目（折叠区） -->
+    <view wx:if="{{endedProjects.length > 0}}">
+      <view class="ended-toggle" bindtap="toggleEnded">
+        <text class="ended-toggle-text">已结束项目 ({{endedProjects.length}})</text>
+        <text class="ended-toggle-arrow {{showEndedProjects?'arrow-rotated':''}}">▼</text>
+      </view>
+
+      <block wx:if="{{showEndedProjects}}">
+        <view class="card proj-card proj-card-ended" wx:for="{{endedProjects}}" wx:key="id">
+          <view class="proj-header" bindtap="goProjectDetail" data-id="{{item.id}}">
+            <view class="proj-left">
+              <view class="proj-avatar proj-avatar-ended">{{item.name[0]}}</view>
+              <view class="proj-info">
+                <text class="proj-name proj-name-ended">{{item.name}}</text>
+                <text class="proj-meta"><text class="proj-type">{{item.boardName || '未分类'}}</text> · {{item.members}}人 · <text class="status-tag {{item.status}}">{{item.statusText}}</text></text>
+              </view>
+            </view>
+            <text class="proj-expand-arrow">›</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
     <!-- 待处理退出投票 -->
     <view class="section-hd" wx:if="{{pendingVotes.length>0}}">
       <text class="section-title">待处理投票</text>
@@ -94,7 +125,7 @@
       <text class="card-arrow">›</text>
     </view>
 
-    <view class="empty" wx:if="{{joinedProjects.length===0}}">
+    <view class="empty" wx:if="{{joinedProjects.length===0 && endedProjects.length===0}}">
       <text class="empty-text">暂未加入任何项目</text>
       <view class="btn-link" bindtap="switchTab" data-tab="discover">去发现项目</view>
     </view>

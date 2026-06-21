@@ -1,4 +1,6 @@
 var teamService = require('../../utils/team-service')
+var api = require('../../utils/api-service.js')
+var request = api.request
 
 function getUserId() {
   var id = wx.getStorageSync('userId')
@@ -28,6 +30,9 @@ Page({
   data: {
     activeTab: 'discover',
     joinedProjects: [],
+    endedProjects: [],
+    showEndedProjects: false,
+    boardMap: {},
     pendingVotes: [],
     loadingJoined: false,
 
@@ -48,7 +53,21 @@ Page({
       wx.removeStorageSync('teamTab')
       this.setData({ activeTab: 'joined' })
     }
+    this.loadBoards()
     this.loadData()
+  },
+
+  loadBoards() {
+    var that = this
+    if (this.data.boardMap && Object.keys(this.data.boardMap).length) {
+      return Promise.resolve(this.data.boardMap)
+    }
+    return request({ url: '/boards', method: 'GET' }).then(function(res) {
+      var map = {}
+      ;(res.data || []).forEach(function(b) { map[b.id] = b.name })
+      that.setData({ boardMap: map })
+      return map
+    }).catch(function() { return {} })
   },
 
   loadData() {
@@ -94,14 +113,29 @@ Page({
             leader: p.leader || p.creatorName || '--',
             members: enriched[i].count || p.currentMembers || p.memberCount || '--',
             maxMembers: p.maxMembers || '--',
+            boardName: that.data.boardMap[p.boardId] || p.boardName || '',
+            createdAt: p.createdAt || p.created_at || '',
             status: status,
             statusText: statusText(status),
             isLeader: enriched[i].isLeader,
             projectId: p.projectId || p.id
           }
         })
-        that.setData({ joinedProjects: mapped, loadingJoined: false })
-        that.loadPendingVotes(mapped)
+        // 按创建时间倒序：最近的项目在上
+        mapped.sort(function(a, b) {
+          var ta = new Date(a.createdAt).getTime() || 0
+          var tb = new Date(b.createdAt).getTime() || 0
+          if (ta === tb) return 0
+          return tb - ta
+        })
+        var active = mapped.filter(function(p) { return p.status !== 'ended' })
+        var ended = mapped.filter(function(p) { return p.status === 'ended' })
+        that.setData({
+          joinedProjects: active,
+          endedProjects: ended,
+          loadingJoined: false
+        })
+        that.loadPendingVotes(active)
       })
     }).catch(function(err) {
       console.log('[team-center] 加载项目失败:', err)
@@ -141,6 +175,14 @@ Page({
     this.setData({
       expandedId: this.data.expandedId === id ? null : id
     })
+  },
+
+  toggleEnded() {
+    this.setData({ showEndedProjects: !this.data.showEndedProjects })
+  },
+
+  goMyCenter() {
+    wx.switchTab({ url: '/pages/my-center/my-center' })
   },
 
   // ==================== 项目状态流转 ====================

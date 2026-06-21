@@ -4,8 +4,13 @@ page{background:#F9F9FF;color:#191C22}
 .page{padding:16px}
 
 .hero{margin-bottom:20px}
+.hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hero-copy{flex:1;min-width:0}
 .hero-title{display:block;font-size:20px;font-weight:700;color:#191C22}
 .hero-sub{display:block;font-size:13px;color:#424753;margin-top:4px}
+.hero-back{display:flex;align-items:center;gap:2px;padding:8px 14px;background:#fff;border-radius:18px;box-shadow:0 2px 8px rgba(0,0,0,0.05);flex-shrink:0}
+.hero-back-icon{font-size:20px;color:#0058BB;font-weight:700;line-height:1}
+.hero-back-text{font-size:13px;color:#0058BB;font-weight:600}
 
 .tabs{display:flex;gap:8px;margin-bottom:16px}
 .tab{padding:10px 24px;border-radius:24px;font-size:14px;font-weight:600;background:#EDEEF4;color:#424753}
@@ -36,7 +41,17 @@ page{background:#F9F9FF;color:#191C22}
 .proj-avatar{width:44px;height:44px;border-radius:12px;background:#D2E4FF;color:#0058BB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
 .proj-info{flex:1;min-width:0}
 .proj-name{display:block;font-size:15px;font-weight:600;color:#191C22}
+/* Project meta line */
 .proj-meta{display:block;font-size:13px;color:#424753;margin-top:2px}
+.proj-type{color:#0058BB;font-weight:500}
+
+/* Ended projects toggle */
+.ended-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;margin:10px 0;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.03)}
+.ended-toggle-text{font-size:14px;font-weight:600;color:#424753}
+.ended-toggle-arrow{font-size:12px;color:#C2C6D5;transition:transform 0.25s ease}
+.proj-card-ended{opacity:0.78}
+.proj-avatar-ended{background:#EDEEF4;color:#727784}
+.proj-name-ended{color:#424753}
 
 /* Status tag inside project meta */
 .status-tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600}
