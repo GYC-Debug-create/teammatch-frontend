@@ -49,15 +49,21 @@ page{background:#F9F9FF;color:#191C22}
 .ended-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;margin:10px 0;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.03)}
 .ended-toggle-text{font-size:14px;font-weight:600;color:#424753}
 .ended-toggle-arrow{font-size:12px;color:#C2C6D5;transition:transform 0.25s ease}
-.proj-card-ended{opacity:0.78}
+.proj-card-ended{opacity:0.92}
 .proj-avatar-ended{background:#EDEEF4;color:#727784}
 .proj-name-ended{color:#424753}
+.ended-actions{display:flex;gap:8px;width:100%;padding:0 17px 17px;box-sizing:border-box}
+.ended-act{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:14px;font-weight:600}
+.ended-act-detail{background:#EDEEF4;color:#424753}
+.ended-act-eval{background:rgba(16,185,129,0.12);color:#059669}
+.ended-act-closed{background:#EDEEF4;color:#A0A5B4}
 
 /* Status tag inside project meta */
 .status-tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .status-tag.recruiting{background:rgba(0,107,92,0.10);color:#006B5C}
 .status-tag.in_progress{background:rgba(0,88,187,0.10);color:#0058BB}
 .status-tag.ended{background:rgba(194,198,213,0.30);color:#727784}
+.status-tag.eval_closed{background:rgba(194,198,213,0.30);color:#727784}
 
 /* Expand arrow */
 .proj-expand-arrow{font-size:12px;color:#C2C6D5;flex-shrink:0;padding:8px;transition:transform 0.3s ease}

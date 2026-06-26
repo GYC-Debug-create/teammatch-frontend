@@ -5,8 +5,8 @@
  */
 
 var USE_MOCK = false
-var BASE_URL = 'http://localhost:8080/api'
-//var BASE_URL = 'https://api.teammatch.top/api'
+//var BASE_URL = 'http://localhost:8080/api'
+var BASE_URL = 'https://api.teammatch.top/api'
 
 // ========== 用户档案内存缓存（5分钟有效）==========
 var profileCache = {}
@@ -623,7 +623,54 @@ function uploadFile(filePath, category) {
         try {
           var body = JSON.parse(res.data)
           if (body && isSuccessCode(body.code)) {
-            resolve(body.data.accessUrl || body.data.storedUrl)
+            var uploadResult = normalizeUploadResult(body.data)
+            resolve(uploadResult.storedUrl || uploadResult.accessUrl)
+          } else {
+            reject(body)
+          }
+        } catch (e) {
+          reject({ message: '上传响应解析失败' })
+        }
+      },
+      fail: function(err) { reject(err) }
+    })
+  })
+}
+
+function normalizeUploadResult(data) {
+  data = data || {}
+  var accessUrl = data.accessUrl || data.storedUrl || ''
+  if (accessUrl && accessUrl.indexOf('http://') === 0) {
+    accessUrl = accessUrl.replace('http://', 'https://')
+  }
+  var storedUrl = data.storedUrl || ''
+  return {
+    objectKey: data.objectKey || '',
+    storedUrl: storedUrl,
+    accessUrl: accessUrl,
+    displayUrl: accessUrl || storedUrl
+  }
+}
+
+/**
+ * 上传头像并立即更新当前用户档案
+ * POST /api/profile/avatar
+ * @returns {Promise<{objectKey:string, storedUrl:string, accessUrl:string, displayUrl:string}>}
+ */
+function uploadAvatar(filePath) {
+  return new Promise(function(resolve, reject) {
+    var token = getToken()
+    wx.uploadFile({
+      url: BASE_URL + '/profile/avatar',
+      filePath: filePath,
+      name: 'file',
+      header: { 'Authorization': 'Bearer ' + token },
+      timeout: 30000,
+      success: function(res) {
+        try {
+          var body = JSON.parse(res.data)
+          if (body && isSuccessCode(body.code)) {
+            resolve(normalizeUploadResult(body.data))
           } else {
             reject(body)
           }
@@ -1061,6 +1108,7 @@ module.exports = {
   getCurrentCreditScore: getCurrentCreditScore,
   getCreditHistory: getCreditHistory,
   uploadFile: uploadFile,
+  uploadAvatar: uploadAvatar,
   submitReport: submitReport,
   getMyReports: getMyReports,
   getAppealTargets: getAppealTargets,

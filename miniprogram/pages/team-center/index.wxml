@@ -107,6 +107,11 @@
             </view>
             <text class="proj-expand-arrow">›</text>
           </view>
+          <view class="ended-actions">
+            <view class="ended-act ended-act-detail" catchtap="goProjectDetail" data-id="{{item.id}}">项目详情</view>
+            <view wx:if="{{item.status==='ended'}}" class="ended-act ended-act-eval" catchtap="goEvaluation" data-id="{{item.id}}" data-name="{{item.name}}">互评</view>
+            <view wx:else class="ended-act ended-act-closed">已截止</view>
+          </view>
         </view>
       </block>
     </view>

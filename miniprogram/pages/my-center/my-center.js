@@ -1,8 +1,6 @@
 // pages/my-center/my-center.js
 var api = require('../../utils/api-service.js')
-var request = api.request
 var USE_MOCK = api.USE_MOCK
-var BASE_URL = api.BASE_URL
 var teamService = require('../../utils/team-service.js')
 
 Page({
@@ -133,24 +131,41 @@ Page({
     }
   },
 
+  applyAvatarResult: function(uploadResult) {
+    var avatarUrl = uploadResult.displayUrl || uploadResult.accessUrl || uploadResult.storedUrl
+    var storedUrl = uploadResult.storedUrl || ''
+    if (!avatarUrl) return
+
+    this.setData({
+      'userInfo.avatarUrl': avatarUrl,
+      hasUserProfile: true
+    })
+
+    var userInfo = wx.getStorageSync('userInfo') || {}
+    userInfo.avatarUrl = avatarUrl
+    wx.setStorageSync('userInfo', userInfo)
+
+    var profile = wx.getStorageSync('profile') || {}
+    profile.avatarUrl = avatarUrl
+    profile.avatarStoredUrl = storedUrl
+    wx.setStorageSync('profile', profile)
+
+    teamService.clearProfileCache()
+  },
+
   onChooseAvatar: function(e) {
     var that = this
     var tempPath = e.detail.avatarUrl
     wx.showLoading({ title: '上传头像...' })
-    teamService.uploadFile(tempPath, 'avatar').then(function(ossUrl) {
+    teamService.uploadAvatar(tempPath).then(function(uploadResult) {
       wx.hideLoading()
-      that.setData({ 'userInfo.avatarUrl': ossUrl })
-      var userInfo = wx.getStorageSync('userInfo') || {}
-      userInfo.avatarUrl = ossUrl
-      wx.setStorageSync('userInfo', userInfo)
-      // 同步到后端
-      request({ url: '/profile/update', method: 'PUT', data: { avatarUrl: ossUrl } })
-        .then(function() { teamService.clearProfileCache() })
-        .catch(function() {})
+      that.applyAvatarResult(uploadResult)
       wx.showToast({ title: '头像已更新', icon: 'success', duration: 1200 })
     }).catch(function(err) {
       wx.hideLoading()
-      wx.showToast({ title: '上传失败', icon: 'none' })
+      var msg = (err && err.message) || '上传失败'
+      if (err && err.code === 'M6024') msg = 'OSS 未配置'
+      wx.showToast({ title: msg, icon: 'none' })
     })
   },
 
@@ -163,35 +178,17 @@ Page({
       success: function(res) {
         var tempFilePath = res.tempFiles[0].tempFilePath
         wx.showLoading({ title: '上传中...' })
-        var token = wx.getStorageSync('token') || ''
-        wx.uploadFile({
-          url: BASE_URL + '/profile/avatar',
-          filePath: tempFilePath,
-          name: 'file',
-          header: { 'Authorization': 'Bearer ' + token },
-          success: function(uploadRes) {
+        teamService.uploadAvatar(tempFilePath)
+          .then(function(uploadResult) {
             wx.hideLoading()
-            try {
-              var data = JSON.parse(uploadRes.data)
-              if (data.code === '00000' && data.data && data.data.accessUrl) {
-                var newUrl = data.data.accessUrl.replace('http://', 'https://')
-                that.setData({ 'userInfo.avatarUrl': newUrl })
-                var userInfo = wx.getStorageSync('userInfo') || {}
-                userInfo.avatarUrl = newUrl
-                wx.setStorageSync('userInfo', userInfo)
-                wx.showToast({ title: '头像更新成功', icon: 'success' })
-              } else {
-                wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
-              }
-            } catch (e) {
-              wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
-            }
-          },
-          fail: function() {
+            that.applyAvatarResult(uploadResult)
+            wx.showToast({ title: '头像更新成功', icon: 'success' })
+          })
+          .catch(function(err) {
             wx.hideLoading()
-            wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
-          }
-        })
+            var msg = (err && err.message) || '头像上传失败，请重试'
+            wx.showToast({ title: msg, icon: 'none' })
+          })
       }
     })
   },

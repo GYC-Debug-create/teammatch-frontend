@@ -126,12 +126,12 @@ import ProjectLabel from '@/components/ProjectLabel.vue'
 const { loadUsers, loadProjects } = useEntityResolver()
 
 const statusTabs = [
-  { key:'all', label:'全部' },{ key:'pending', label:'待复核' },{ key:'approved', label:'已通过' },
+  { key:'all', label:'全部' },{ key:'pending', label:'待复核' },{ key:'approved', label:'正常计分' },
   { key:'voided', label:'已作废' },{ key:'kept_no_credit', label:'保留不计分' }
 ]
 const activeTab = ref('all')
 const anomalyMap = { extreme_low:'极端低分', extreme_high:'极端满分', none:'无异常' }
-const reviewMap = { pending:'待复核', approved:'已通过', voided:'已作废', kept_no_credit:'保留不计分' }
+const reviewMap = { pending:'待复核', approved:'正常计分', voided:'已作废', kept_no_credit:'保留不计分' }
 const dimLabels = { communication:'沟通协作', task:'任务完成', skill:'技术能力', responsibility:'责任心' }
 
 const statusIcon = (s) => {

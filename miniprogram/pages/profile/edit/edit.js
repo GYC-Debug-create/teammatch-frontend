@@ -20,7 +20,8 @@ Page({
     showGradeOther: false,
     isLoading: false,
     loadingData: true,
-    errorMsg: ''
+    errorMsg: '',
+    avatarStoredUrl: ''
   },
 
   onLoad() {
@@ -57,7 +58,7 @@ Page({
         if (wxAvatar) form.avatarUrl = wxAvatar
       }
 
-      this.setData({ form: form, loadingData: false })
+      this.setData({ form: form, loadingData: false, avatarStoredUrl: '' })
     } catch (err) {
       // 后端失败，回退本地缓存
       this.loadFromCache()
@@ -76,7 +77,11 @@ Page({
       grade: '',
       bio: ''
     }
-    if (profile) form = Object.assign(form, profile)
+    var avatarStoredUrl = ''
+    if (profile) {
+      form = Object.assign(form, profile)
+      avatarStoredUrl = profile.avatarStoredUrl || ''
+    }
     this.setData({ showSchoolOther: false, showMajorOther: false, showGradeOther: false })
     if (userInfo) {
       var wxNick = userInfo.nickName || userInfo.nickname
@@ -84,18 +89,34 @@ Page({
       var wxAvatar = userInfo.avatarUrl || userInfo.avatar
       if (wxAvatar) form.avatarUrl = wxAvatar
     }
-    this.setData({ form: form, loadingData: false })
+    this.setData({ form: form, loadingData: false, avatarStoredUrl: avatarStoredUrl })
   },
 
-  // 选择头像 → 上传 OSS → 用 storedUrl
+  // 选择头像 → 上传 OSS → 后端立即更新档案头像
   onChooseAvatar(e) {
     var that = this
     var tempPath = e.detail.avatarUrl
     wx.showLoading({ title: '上传头像...' })
-    teamService.uploadFile(tempPath, 'avatar').then(function(ossUrl) {
+    teamService.uploadAvatar(tempPath).then(function(uploadResult) {
       wx.hideLoading()
-      that.setData({ ['form.avatarUrl']: ossUrl })
-      wx.showToast({ title: '头像已上传', icon: 'success', duration: 1000 })
+      var displayUrl = uploadResult.displayUrl || uploadResult.accessUrl || uploadResult.storedUrl
+      var storedUrl = uploadResult.storedUrl || ''
+      that.setData({
+        ['form.avatarUrl']: displayUrl,
+        avatarStoredUrl: storedUrl
+      })
+
+      var userInfo = wx.getStorageSync('userInfo') || {}
+      userInfo.avatarUrl = displayUrl
+      wx.setStorageSync('userInfo', userInfo)
+
+      var profile = wx.getStorageSync('profile') || {}
+      profile.avatarUrl = displayUrl
+      profile.avatarStoredUrl = storedUrl
+      wx.setStorageSync('profile', profile)
+
+      teamService.clearProfileCache()
+      wx.showToast({ title: '头像已更新', icon: 'success', duration: 1000 })
     }).catch(function(err) {
       wx.hideLoading()
       var msg = (err && err.message) || '上传失败'
@@ -171,10 +192,19 @@ Page({
     this.setData({ isLoading: true, errorMsg: '' })
 
     try {
+      var payload = {
+        nickname: form.nickname,
+        school: form.school,
+        major: form.major,
+        grade: form.grade,
+        bio: form.bio
+      }
+      if (this.data.avatarStoredUrl) payload.avatarUrl = this.data.avatarStoredUrl
+
       await request({
         url: '/profile/update',
         method: 'PUT',
-        data: form
+        data: payload
       })
       // 同步更新缓存
       var userInfo = wx.getStorageSync('userInfo') || {}
@@ -185,6 +215,7 @@ Page({
       var oldProfile = wx.getStorageSync('profile') || {}
       var savedSkills = wx.getStorageSync('skillTagIds') || []
       var merged = Object.assign({}, oldProfile, form)
+      if (this.data.avatarStoredUrl) merged.avatarStoredUrl = this.data.avatarStoredUrl
       merged.skillTagIds = oldProfile.skillTagIds || savedSkills
       wx.setStorageSync('profile', merged)
       wx.setStorageSync('skillTagIds', merged.skillTagIds)

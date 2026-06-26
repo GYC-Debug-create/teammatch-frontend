@@ -14,6 +14,7 @@ function getUserId() {
  */
 function normalizeStatus(raw) {
   var s = (raw || '').toUpperCase().trim()
+  if (s === 'EVAL_CLOSED') return 'eval_closed'
   if (s === 'ENDED' || s === 'COMPLETED' || s === 'FINISHED') return 'ended'
   if (s === 'RECRUITING') return 'recruiting'
   // 剩余一律视为进行中
@@ -23,6 +24,7 @@ function normalizeStatus(raw) {
 function statusText(status) {
   if (status === 'recruiting') return '招募中'
   if (status === 'in_progress') return '进行中'
+  if (status === 'eval_closed') return '互评已截止'
   return '已结束'
 }
 
@@ -128,8 +130,8 @@ Page({
           if (ta === tb) return 0
           return tb - ta
         })
-        var active = mapped.filter(function(p) { return p.status !== 'ended' })
-        var ended = mapped.filter(function(p) { return p.status === 'ended' })
+        var active = mapped.filter(function(p) { return p.status !== 'ended' && p.status !== 'eval_closed' })
+        var ended = mapped.filter(function(p) { return p.status === 'ended' || p.status === 'eval_closed' })
         that.setData({
           joinedProjects: active,
           endedProjects: ended,
