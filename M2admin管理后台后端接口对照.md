@@ -467,7 +467,7 @@
 |------|------|
 | **请求方式** | `POST` |
 | **完整路径** | `/api/auth/login/password` |
-| **Body** | `{ "username": "admin用户名", "password": "admin密码" }` |
+| **Body** | `{ "username": "admin用户名", "password": "<密码>" }` |
 | **成功响应 data** | `LoginResponse`（含 `token` 字段） |
 
 > 注：只有 `role=admin` 的用户可以通过密码登录，普通用户使用 `POST /api/auth/login`（Mock 微信登录）

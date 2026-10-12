@@ -29,7 +29,7 @@ Page({
             bio: 'Vue.js 重度用户，追求代码优雅。热爱前端技术，喜欢参与开源项目。',
             creditScore: 96,
             githubUsername: 'linqiao-vue',
-            email: 'user-6ecb17e3@example.invalid'
+            email: 'user-d72d2a9d@example.invalid'
           },
           loading: false
         })
