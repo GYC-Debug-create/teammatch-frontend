@@ -1,78 +1,131 @@
-# TeamMatch 前端（shixun12_frontend）
+# TeamMatch 前端（teammatch-frontend）
 
-TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
+TeamMatch 校园组队与互评平台的前端代码，包含两个子项目：
 
-> **仓库结构**
-> - `miniprogram/` — 微信小程序（用户端）
-> - `admin-web/` — Vue3 + ElementPlus Web 管理后台（待搭建）
+- `miniprogram/`：微信小程序用户端（微信原生框架，未使用第三方框架）
+- `admin-web/`：Vue 3 + Element Plus 管理后台（Vite 构建）
 
-> **⚠️ 当前状态（W10）**
-> 以下页面均为**静态 Mock 页面**，仅完成了 UI 布局和 Mock 数据的展示逻辑。
-> **尚未实现的功能**：页面间跳转、真实接口联调、表单校验的完整覆盖、错误处理、页面美化等。
-> 这些内容将在 W10-W13 的联调和优化阶段逐步补全。
+---
+
+## 当前状态
+
+> 本节依据仓库代码整理，功能的完成度以代码为准。
+
+- **小程序**：`app.json` 注册了 33 个页面，底部 tabBar 包含 `index`、`team-center`、`credit-center`、`my-center` 四个页面。`utils/api-service.js` 为统一请求封装（基于 `wx.request`，携带 Bearer Token，按统一响应码处理）；`utils/team-service.js` 封装了组队、互评、信誉、举报、申诉等接口。
+- **请求模式**：两个文件中的 `USE_MOCK` 默认为 `false`，即默认请求后端。在 `api-service.js` 中设为 `true` 后，经该模块的请求改走本地 `MOCK_MAP`。`team-service.js` 直接调用 `wx.request`，不经过该开关（其中同名变量当前未被引用）。
+- **管理后台**：已有登录、板块管理、板块项目、举报处理、申诉处理、评价复核、处罚管理等页面，接口统一以 `/api` 为前缀（开发环境由 Vite 代理到后端）。「信誉分审计」路由目前为占位页。
+- **未使用**：小程序端目前未引入 WeUI 等第三方组件库。
 
 ---
 
 ## 技术栈
 
-- 微信小程序原生框架（未使用第三方框架）
-- Mock 数据内联在各页面的 `Page()` 方法中，联调时将替换为 `wx.request` 调用
+- 小程序：微信小程序原生框架（见 `miniprogram/app.json`、`miniprogram/project.config.json`）
+- 管理后台：Vue 3、Vue Router 4、Element Plus、Axios、Vite 5（见 `admin-web/package.json`）
 
 ---
 
 ## 项目结构
 
-\`\`\`
-├── miniprogram/                 # 微信小程序用户端
-│   ├── pages/
-│   │   ├── login/               # 登录页
-│   │   ├── index/               # 首页-微信登录入口
-│   │   ├── function-hub/        # 功能选择界面
-│   │   ├── team-requests/       # 组队请求管理
-│   │   ├── project-members/     # 项目成员列表
-│   │   ├── exit-project/        # 成员主动退出
-│   │   ├── exit-vote-detail/    # 退出投票详情
-│   │   ├── evaluation/          # 互评页
-│   │   ├── credit-history/      # 信誉分变化记录
-│   │   ├── report/              # 举报入口
-│   │   ├── appeal/              # 申诉入口
-│   │   ├── my-reports/          # 我的举报列表
-│   │   ├── my-appeals/          # 我的申诉列表
-│   │   ├── profile/             # 个人档案
-│   │   ├── email-verify/        # 邮箱认证
-│   │   ├── projects/            # 项目相关
-│   │   └── logs/                # 占位页
+```
+├── miniprogram/                     # 微信小程序（用户端）
+│   ├── pages/                       # 页面（已在 app.json 中注册）
 │   ├── utils/
-│   │   ├── util.js              # 通用工具
-│   │   └── team-service.js      # 组队/互评/治理服务（18个方法）
-│   ├── docs/
-│   │   └── alignment-T003-token.md
+│   │   ├── api-service.js           # 统一请求封装（Token、响应码、Mock 开关）
+│   │   ├── team-service.js          # 组队 / 互评 / 信誉 / 举报 / 申诉等接口
+│   │   ├── util.js                  # 通用工具
+│   │   └── render-fix.wxss
+│   ├── docs/                        # 对齐记录文档
 │   ├── app.js / app.json / app.wxss
-│   └── project.config.json
-├── admin-web/                   # Web 管理后台（待搭建）
-│   └── .gitkeep
-├── .gitignore
+│   ├── project.config.json          # 微信开发者工具项目配置
+│   └── sitemap.json
+├── admin-web/                       # Vue 3 管理后台
+│   ├── src/
+│   │   ├── api/                     # 按业务模块封装的接口
+│   │   ├── components/ composables/
+│   │   ├── router/                  # 路由（meta.title 为页面标题）
+│   │   ├── utils/request.js         # axios 实例（baseURL: /api）
+│   │   └── views/                   # 页面
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── package.json
+│   └── package-lock.json
+├── M2后端接口对照.md                  # M2 阶段后端接口对照
+├── M2admin管理后台后端接口对照.md       # 管理后台接口对照
+├── package.json                     # 根目录仅声明 sharp 开发依赖
+├── package-lock.json
 └── README.md
-\`\`\`
+```
 
+### 小程序页面（app.json 注册，共 33 个）
+
+```
+login/login                  index/index                  function-hub/function-hub
+team-center/index            credit-center/index          my-center/my-center
+profile/profile              profile/edit/edit            profile/skills/skills
+profile-auth/profile-auth    profile-claim/profile-claim  email-verify/email-verify
+agreement/user-agreement/user-agreement                   agreement/privacy-policy/privacy-policy
+projects/list/list           projects/detail/detail       projects/create/create
+initiate-vote/initiate-vote  vote-management/vote-management
+team-requests/team-requests  project-members/project-members  member-match/member-match
+exit-project/exit-project    exit-vote-detail/exit-vote-detail
+evaluation-list/evaluation-list  evaluation/evaluation    credit-history/credit-history
+leaderboard/leaderboard      report/report                appeal/appeal
+my-reports/my-reports        my-appeals/my-appeals        logs/logs
+```
 
 ---
 
-## M1 已完成页面清单（均为静态 Mock 版本）
+## 本地开发
+
+### 小程序（miniprogram/）
+
+1. 安装并打开[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)（最新版）。
+2. 点击「导入项目」，项目目录选择仓库中的 `miniprogram/` 文件夹（不是仓库根目录）。
+3. AppID 在 `miniprogram/project.config.json` 的 `appid` 字段中配置，可使用测试号或自己的 AppID。
+4. 后端地址为 `utils/api-service.js` 与 `utils/team-service.js` 中的 `BASE_URL`。`api-service.js` 中注释掉的 `http://localhost:8080/api` 为本地联调示例。
+5. 更多对接说明见 `miniprogram/docs/` 下的相关文档。
+
+### 管理后台（admin-web/）
+
+```bash
+cd admin-web
+npm install
+npm run dev        # 开发服务器（端口 5173），/api 代理到 vite.config.js 中配置的后端
+npm run build      # 生产构建
+npm run preview    # 预览构建结果
+```
+
+---
+
+## 相关文档
+
+| 文件 | 说明 |
+|:---|:---|
+| `miniprogram/docs/alignment-T003-token.md` | T-003：Token 存取与携带约定 |
+| `miniprogram/docs/T-036-对齐记录.md` | T-036：状态字段对齐记录 |
+| `M2后端接口对照.md` | M2 阶段后端接口对照 |
+| `M2admin管理后台后端接口对照.md` | 管理后台接口对照 |
+
+---
+
+## 里程碑页面记录
+
+> 以下内容写于 W10，描述的是当时的页面清单，具体实现状态以代码为准。
+
+### M1 页面清单
 
 | 任务ID | 页面名称 | 文件路径 | 说明 |
 |:---|:---|:---|:---|
 | T-002 | 登录引导页 | `pages/login/login` | 欢迎页，点击跳转首页进行微信登录 |
-| T-006 | 邮箱认证页 | `pages/email-verify/email-verify` | 邮箱输入、验证码发送/校验（Mock: 输入 654321 成功） |
+| T-006 | 邮箱认证页 | `pages/email-verify/email-verify` | 邮箱输入、验证码发送/校验 |
 | T-008 | 个人档案编辑页 | `pages/profile/edit/edit` | 昵称、学校、专业、年级、简介表单 |
 | T-010 | 技能标签选择页 | `pages/profile/skills/skills` | 按分类展示预置标签，多选后全量替换保存 |
 | T-012 | 项目列表页 | `pages/projects/list/list` | 项目卡片列表，包含状态、人数、技能标签 |
 | T-014 | 项目详情页 | `pages/projects/detail/detail` | 项目完整信息、成员列表、技能需求 |
 | T-016 | 发布项目表单 | `pages/projects/create/create` | 标题、描述、板块、人数、技能、截止日期 |
 
----
-
-## M2 已完成页面清单（Mock 模式，后端未就绪）
+### M2 页面清单
 
 | 任务ID | 页面名称 | 文件路径 | 说明 |
 |:---|:---|:---|:---|
@@ -81,9 +134,9 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 | T-033 | 请求列表联调准备 | `pages/team-requests/team-requests` | Service 层封装，加载/错误/空状态 |
 | T-034 | 接受/拒绝/取消联调 | `pages/team-requests/team-requests` | 防重复点击，操作 loading 状态 |
 | T-035 | 成员列表联调 | `pages/project-members/project-members` | Service 层接入，加载/错误/空状态 |
-| T-036 | 状态字段对齐 | — | 与 M4 对齐记录文档 |
+| T-036 | 状态字段对齐 | `miniprogram/docs/T-036-对齐记录.md` | 与 M4 对齐记录文档 |
 | T-037 | 成员主动退出页 | `pages/exit-project/exit-project` | 退出原因、确认弹窗、扣分提示 |
-| T-038 | 退出投票详情页 | `pages/exit-vote-detail/exit-vote-detail` | 倒计时、票数统计、投票按钮 ⚠️ timeout 问题待修复 |
+| T-038 | 退出投票详情页 | `pages/exit-vote-detail/exit-vote-detail` | 倒计时、票数统计、投票按钮（曾出现 timeout，见已知问题） |
 | T-039 | 退出投票联调 | `pages/exit-vote-detail/exit-vote-detail` | Service 层真实接口预留 |
 | T-040 | 互评页 | `pages/evaluation/evaluation` | 四维评分、标签选择、技能点赞 |
 | T-041 | 互评资格/提交联调 | `pages/evaluation/evaluation` | 资格校验、错误码处理 |
@@ -92,9 +145,9 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 | T-044 | 申诉入口页 | `pages/appeal/appeal` | 评价/处罚申诉、对象选择 |
 | T-045 | 举报申诉联调 | `pages/report/report`、`pages/appeal/appeal` | Service 层完善，My List 接口预留 |
 
-### M2 Service 层封装（`utils/team-service.js`）
+### M2 Service 层主要方法（`utils/team-service.js`）
 
-所有接口使用 `USE_MOCK = true` 切换 Mock/真实模式：
+以下为 M2 阶段梳理的主要方法，`team-service.js` 中已导出更多方法，以代码为准。
 
 | 方法 | 用途 |
 |------|------|
@@ -121,70 +174,12 @@ TeamMatch 校园组队与互评平台 - 微信小程序前端项目。
 
 ## 待完成内容
 
-### M1 待完成
-- [ ] **页面间跳转**：如首页 → 档案页、项目列表 → 项目详情 → 申请加入等
-- [ ] **真实接口联调**（T-005/T-007/T-009/T-011/T-013/T-015/T-017）
-- [ ] **请求封装**：创建 `utils/request.js`，统一处理 Token 携带、401 拦截
-- [ ] **错误处理**：reasonCode 统一提示（T-024）
-- [ ] **页面美化**：与 M2 统一 UI 风格，计划引入 WeUI 组件库
-- [ ] **搜索/筛选**（T-023）
-- [ ] **冷启动榜单/画像页面**（T-018/T-019/T-020）
+> 写于 W10，现状以代码为准。
 
-### M2 待完成
-- [ ] 修复 `exit-vote-detail` 页面 timeout 问题
-- [ ] T-046 ~ T-051 Vue3 Web 管理后台页面
-- [ ] T-052 ~ T-060 联调 / 测试 / 证据 / 答辩
-
----
-
-## 本地开发指南
-
-### 环境要求
-
-- [微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)（最新版）
-- 一个微信小程序 AppID（测试号即可，不影响开发）
-
-### 使用步骤
-
-1. 克隆本项目到本地：
-   \`\`\`bash
-   git clone "https://你的学号@gerrit.lilingkun.com/a/shixun12_frontend"
-   \`\`\`
-
-2. 打开**微信开发者工具**，点击 **“导入项目”**。
-
-3. 填写项目信息：
-   | 字段 | 内容 |
-   |:---|:---|
-   | 项目名称 | 任意，如 `TeamMatch 前端` |
-   | 目录 | 选择克隆后的 `shixun12_frontend/miniprogram` 文件夹 |
-   | AppID | 使用你自己的测试号，或从 `project.config.json` 获取 |
-
-4. 点击 **“确定”**，工具会自动加载项目并编译。
-
-5. 如果编译后没有看到期望的页面，可以在顶部工具栏**“编译模式”**中选择要预览的页面路径，例如：
-   - `pages/login/login`
-   - `pages/projects/list/list`
-   - `pages/profile/skills/skills`
-
-6. 开始开发和调试。
-
-> **注意**：v2.0 起项目结构已拆分，小程序文件全部位于 `miniprogram/` 目录下。
-> 微信开发者工具导入时需选择 `shixun12_frontend/miniprogram` 而不是仓库根目录。
-
----
-
-## Git 提交规范
-
-所有代码需通过 Gerrit 评审后合并：
-
-\`\`\`bash
-git add .
-git commit -m "feat: 功能描述"
-git push origin HEAD:refs/for/master
-\`\`\`
-
-提交说明需写清影响范围。
+- 管理后台「信誉分审计」页面（当前为占位页）
+- 小程序页面美化与组件库统一（原计划引入 WeUI，当前代码中未引用）
+- `exit-vote-detail` 的 timeout 问题（见下方已知问题）
+- 搜索/筛选、冷启动榜单与画像等 W10 时期的待办，完成情况以代码为准
 
 ---
 
@@ -192,5 +187,22 @@ git push origin HEAD:refs/for/master
 
 | 问题 | 影响范围 | 状态 |
 |------|----------|------|
-| `exit-vote-detail` 出现 `Error: timeout` | 投票详情页无法正常加载 | 待修复 |
-| 所有页面使用 Mock 数据 | 全平台 | 待后端接口就绪后切换 |
+| `exit-vote-detail` 曾出现 `Error: timeout` | 退出投票详情页 | W10 时记录为待修复，当前以代码为准 |
+| 部分页面文件中仍保留 Mock 相关代码 | 小程序 | 默认请求后端（`USE_MOCK` 默认为 `false`），以代码为准 |
+
+---
+
+## 提交规范
+
+提交说明需写清影响范围，格式参考历史提交，例如：`feat: 功能描述`、`fix(frontend): 问题描述`。
+
+原团队使用 Gerrit 进行评审（`git push origin HEAD:refs/for/master`），本公开副本不包含 Gerrit 远程配置。
+
+---
+
+## 仓库说明
+
+- 本仓库为团队共同开发项目的公开副本。
+- 历史提交中的密钥已按规则替换为 `<REDACTED>`（按规则扫描，未检出需替换的内容）。
+- 提交者邮箱已匿名化（统一为 GitHub noreply 地址或匿名占位地址）。
+- 如需完整开发记录，请联系团队成员。
